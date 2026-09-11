@@ -15,14 +15,16 @@ import {
   ShieldAlert,
   CheckCircle2,
   PlusCircle,
+  MessageSquare,
 } from "lucide-react";
-import { MOCK_NOTIFICATIONS, MOCK_PROJECTS } from "@/lib/mock-data";
+import { MOCK_NOTIFICATIONS, MOCK_PROJECTS, MOCK_FAMILIES } from "@/lib/mock-data";
 import { NotificationType } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SmsWhatsappPanel } from "@/components/notifications/sms-whatsapp-panel";
 
 export default function NotificationsPage() {
   const [filterType, setFilterType] = useState<string>("all");
@@ -30,6 +32,7 @@ export default function NotificationsPage() {
   const [selectedNotif, setSelectedNotif] = useState<typeof MOCK_NOTIFICATIONS[0] | null>(
     MOCK_NOTIFICATIONS[0]
   );
+  const [showCitizenDispatch, setShowCitizenDispatch] = useState(false);
 
   const filteredNotifs = useMemo(() => {
     return MOCK_NOTIFICATIONS.filter((n) => {
@@ -56,10 +59,21 @@ export default function NotificationsPage() {
             Publishing, tracking, and citizen objection management for Sections 4, 11, 15, 19, 21, and 23 of RFCTLARR Act 2013.
           </p>
         </div>
-        <Button variant="default" size="sm" className="gap-1.5 self-start sm:self-auto bg-[#15803D] hover:bg-[#166534] text-white">
-          <PlusCircle className="h-4 w-4" />
-          <span>Draft New Gazette Notice</span>
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCitizenDispatch(true)}
+            className="gap-1.5 border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400 font-bold text-xs"
+          >
+            <MessageSquare className="h-4 w-4 text-emerald-600" />
+            <span>Citizen Dispatch Simulator</span>
+          </Button>
+          <Button variant="default" size="sm" className="gap-1.5 bg-[#15803D] hover:bg-[#166534] text-white">
+            <PlusCircle className="h-4 w-4" />
+            <span>Draft New Gazette Notice</span>
+          </Button>
+        </div>
       </div>
 
       {/* Statutory Sunset Alerts Banner */}
@@ -240,6 +254,15 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
+
+      {/* Statutory WhatsApp & SMS Simulator Panel */}
+      <SmsWhatsappPanel
+        isOpen={showCitizenDispatch}
+        onClose={() => setShowCitizenDispatch(false)}
+        family={MOCK_FAMILIES[0]}
+        projectName="NH-48 Greenfield Express Bypass"
+        officerName="District Collector & CALA"
+      />
     </div>
   );
 }

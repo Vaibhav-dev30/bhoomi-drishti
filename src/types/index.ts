@@ -200,6 +200,7 @@ export interface AffectedFamily {
   rrStatus: RRStatus;
   totalCompensation: number;
   compensationPaid: number;
+  phone?: string;
   village: string;
   district: string;
   state: string;
@@ -492,5 +493,58 @@ export interface AuditLogEntry {
   targetResource: string;
   details: string;
   ipAddress: string;
+}
+
+export type NotificationChannel = "whatsapp" | "sms" | "both";
+export type NotificationDeliveryStatus = "delivered" | "sent" | "read" | "failed";
+
+export interface CitizenNotificationLog {
+  id: string;
+  familyId: string;
+  recipientName: string;
+  recipientPhone: string;
+  channel: NotificationChannel;
+  templateId: string;
+  templateTitle: string;
+  statutorySection: string;
+  messageText: string;
+  language: "hi" | "en";
+  status: NotificationDeliveryStatus;
+  sentAt: string;
+  deliveredAt?: string;
+  sentByOfficerName: string;
+  projectId: string;
+  khasraNo: string;
+}
+
+export type GrievanceCategory =
+  | "valuation_inadequate"
+  | "measurement_boundary_dispute"
+  | "multi_crop_food_security"
+  | "omission_of_claimant"
+  | "rr_entitlement_dispute"
+  | "public_purpose_challenge"
+  | "other";
+
+export interface CitizenGrievance {
+  id: string;
+  khasraNo: string;
+  village: string;
+  district: string;
+  state: string;
+  claimantName: string;
+  claimantPhone: string;
+  aadhaarLast4?: string;
+  category: GrievanceCategory;
+  statutorySection: "Section 15" | "Section 23" | "Section 64" | "General";
+  groundsDescription: string;
+  supportingDocName?: string;
+  status: "submitted" | "under_scrutiny" | "hearing_scheduled" | "resolved" | "dismissed";
+  hearingDate?: string;
+  hearingOfficer?: string;
+  hearingVenue?: string;
+  filedAt: string;
+  updatedAt: string;
+  officialRemarks?: string;
 }
 

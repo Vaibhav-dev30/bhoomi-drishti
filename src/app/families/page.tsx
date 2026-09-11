@@ -13,6 +13,9 @@ import {
   Home,
   UserCheck,
   ArrowRight,
+  MessageSquare,
+  Phone,
+  Send,
 } from "lucide-react";
 import { MOCK_FAMILIES, MOCK_PROJECTS } from "@/lib/mock-data";
 import { useApp } from "@/context/app-context";
@@ -21,12 +24,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SmsWhatsappPanel } from "@/components/notifications/sms-whatsapp-panel";
+import { AffectedFamily } from "@/types";
 
 export default function FamiliesPage() {
   const { currentUser, scopedGrants } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [displacementFilter, setDisplacementFilter] = useState("all");
+  const [selectedFamilyForNotify, setSelectedFamilyForNotify] = useState<AffectedFamily | null>(null);
 
   // Jurisdictional Scoping
   const authorizedProjects = useMemo(() => {
@@ -230,6 +236,12 @@ export default function FamiliesPage() {
                   <div className="text-[11px] text-slate-500">
                     S/o {fam.fatherHusbandName} • <span className="font-medium text-slate-700">{fam.familyMembers} members</span>
                   </div>
+                  {fam.phone && (
+                    <div className="mt-1 inline-flex items-center gap-1 font-mono text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                      <Phone className="h-2.5 w-2.5 text-emerald-600" />
+                      <span>{fam.phone}</span>
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="text-xs text-slate-700 font-medium">
                   {fam.village}, {fam.district}
@@ -279,22 +291,45 @@ export default function FamiliesPage() {
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/compensation?familyId=${fam.id}`}>
+                  <div className="flex items-center justify-end gap-1.5">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]"
+                      onClick={() => setSelectedFamilyForNotify(fam)}
+                      className="h-8 rounded-lg border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400 font-bold text-xs"
                     >
-                      <span>Ledger</span>
-                      <ArrowRight className="h-3 w-3 ml-1" />
+                      <MessageSquare className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                      <span>Notify</span>
                     </Button>
-                  </Link>
+                    <Link href={`/compensation?familyId=${fam.id}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]"
+                      >
+                        <span>Ledger</span>
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      {/* Statutory WhatsApp & SMS Simulator Panel */}
+      <SmsWhatsappPanel
+        isOpen={!!selectedFamilyForNotify}
+        onClose={() => setSelectedFamilyForNotify(null)}
+        family={selectedFamilyForNotify}
+        projectName={
+          authorizedProjects.find((p) => p.id === selectedFamilyForNotify?.projectId)?.name ||
+          "NH-48 Greenfield Express Bypass"
+        }
+        officerName={currentUser?.name || "District Collector & CALA"}
+      />
     </div>
   );
 }

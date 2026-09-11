@@ -15,7 +15,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const { currentUser } = useApp();
   const [mounted, setMounted] = useState(false);
 
-  const isPublicPage = PUBLIC_ROUTES.includes(pathname);
+  const isPublicPage = PUBLIC_ROUTES.includes(pathname) || pathname.startsWith("/public");
   const isMapPage = pathname === "/map";
 
   useEffect(() => {
