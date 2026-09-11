@@ -3,30 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
 import {
-  ShieldCheck,
+  Shield,
   Lock,
   Mail,
-  User,
-  Building,
   Eye,
   EyeOff,
   ArrowRight,
   ArrowLeft,
-  Sparkles,
   Compass,
   CheckCircle2,
-  MapPin,
-  Fingerprint,
-  Building2,
-  Landmark,
-  Layers,
   AlertCircle,
-  HelpCircle,
+  Building,
+  UserCheck,
 } from "lucide-react";
-import confetti from "canvas-confetti";
-import { SpatialGlobe3D } from "@/components/auth/spatial-globe-3d";
 import { useApp } from "@/context/app-context";
 import { UserRole, JurisdictionLevel } from "@/types";
 import { PRESEEDED_USERS } from "@/lib/auth-store";
@@ -37,7 +27,7 @@ type SubmitPhase = "idle" | "validating" | "success";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { currentUser, login, signup, loginAsPersona } = useApp();
+  const { currentUser, login, signup } = useApp();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -71,36 +61,14 @@ export default function LoginPage() {
   const [signupProjectId, setSignupProjectId] = useState("PRJ-001");
   const [signupProjectName, setSignupProjectName] = useState("NH-48 Greenfield Express Bypass Corridor");
 
-  // 1-Click quick persona select
+  // 1-Click quick persona select for evaluation
   const handleSelectPersona = (id: string) => {
     setSelectedPersonaId(id);
     const persona = PRESEEDED_USERS.find((p) => p.id === id);
     if (persona) {
       setEmail(persona.email);
-      setPassword("GovPass#2026");
+      setPassword("collector123");
       setErrorMessage("");
-    }
-  };
-
-  // Trigger celebration confetti
-  const triggerConfetti = () => {
-    try {
-      confetti({
-        particleCount: 65,
-        spread: 70,
-        origin: { y: 0.6, x: 0.65 },
-        colors: ["#15803d", "#0284c7", "#f59e0b", "#ffffff", "#10b981"],
-      });
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          spread: 90,
-          origin: { y: 0.55, x: 0.65 },
-          colors: ["#ff9933", "#ffffff", "#138808"],
-        });
-      }, 150);
-    } catch {
-      // Fallback
     }
   };
 
@@ -113,16 +81,15 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
       if (!res.success) {
-        setErrorMessage(res.error || "Invalid administrator credentials.");
+        setErrorMessage(res.error || "Invalid officer credentials.");
         setSubmitPhase("idle");
         return;
       }
 
       setSubmitPhase("success");
-      triggerConfetti();
       setTimeout(() => {
         router.push("/dashboard");
-      }, 700);
+      }, 500);
     } catch {
       setErrorMessage("Authentication server error. Please try again.");
       setSubmitPhase("idle");
@@ -164,477 +131,206 @@ export default function LoginPage() {
       }
 
       setSubmitPhase("success");
-      triggerConfetti();
       setTimeout(() => {
         router.push("/dashboard");
-      }, 700);
+      }, 500);
     } catch {
       setErrorMessage("Error during onboarding. Please try again.");
       setSubmitPhase("idle");
     }
   };
 
-  // Calculated parent authority for signup preview
-  let parentAuthorityPreview = "Central Ministry (MoRTH) / Smt. Rashmi Verma, IAS";
-  if (signupLevel === "district") {
-    parentAuthorityPreview = `Principal Secretary (Revenue), Government of ${signupState}`;
-  } else if (signupLevel === "project") {
-    parentAuthorityPreview = `District Collector & CALA (${signupDistrict} District)`;
-  }
-
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF8F5] text-slate-900 font-sans selection:bg-[#0284C7] selection:text-white">
-      {/* ───── LEFT COLUMN: 3D Spatial Visualizer & Hero ───── */}
-      <div className="relative w-full lg:w-[48%] min-h-[380px] lg:min-h-screen bg-gradient-to-b from-[#F2EFE8] via-[#FAF8F5] to-white border-b lg:border-b-0 lg:border-r border-[#E5E0D6] flex flex-col justify-between p-6 sm:p-10 overflow-hidden">
-        {/* Ambient background glow */}
-        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-tr from-[#0284C7]/15 to-[#15803D]/15 rounded-full blur-3xl pointer-events-none -z-0" />
-
-        {/* Back Link & Brand Header */}
-        <div className="relative z-10 space-y-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-[#E5E0D6] shadow-xs transition-all w-fit"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#15803D]" />
-            Return to Public Portal
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-[#15803D] text-white shadow-sm flex items-center justify-center">
-              <Compass className="w-5 h-5 animate-spin-slow" />
-            </div>
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">
-                BhoomiDrishti
-              </span>
-              <span className="text-[11px] font-semibold text-[#15803D] tracking-wide uppercase">
-                भूमि दृष्टि • Gov of India
-              </span>
-            </div>
+    <div className="min-h-screen w-full flex flex-col bg-[#FAF9F6] text-slate-900 font-sans selection:bg-[#0F2942] selection:text-white">
+      {/* Top Strip */}
+      <div className="bg-[#0F2942] text-white py-1.5 px-4 sm:px-8 text-[11px] font-medium border-b border-[#1E3A5F]">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
+            <span>Government of India · Ministry of Rural Development · Department of Land Resources</span>
           </div>
-        </div>
-
-        {/* 3D Spatial Globe */}
-        <div className="relative z-10 w-full h-[240px] sm:h-[300px] lg:h-[360px] my-auto flex items-center justify-center">
-          <SpatialGlobe3D mode={mode} isSubmitting={submitPhase !== "idle"} />
-        </div>
-
-        {/* Institutional Trust Footer */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-[#E5E0D6]">
-          <span className="flex items-center gap-1.5 font-medium">
-            <ShieldCheck className="w-4 h-4 text-[#15803D]" />
-            RFCTLARR Act 2013 Statutory Compliance
-          </span>
-          <span className="font-mono text-[11px]">NIC GovNet Secure</span>
+          <Link href="/" className="text-slate-300 hover:text-white flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" />
+            <span>Return to Public Website</span>
+          </Link>
         </div>
       </div>
 
-      {/* ───── RIGHT COLUMN: Working Login & Signup Form ───── */}
-      <div className="w-full lg:w-[52%] flex flex-col justify-center p-6 sm:p-10 lg:p-12 max-w-xl mx-auto">
-        <div className="space-y-6">
-          {/* Top mode switcher */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 bg-[#F2EFE8] border border-[#E5E0D6] p-1 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("login");
-                  setErrorMessage("");
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  mode === "login"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signup");
-                  setErrorMessage("");
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  mode === "signup"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Onboard Authority
-              </button>
-            </div>
-
-            <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-              v4.2 GovTech Secure
-            </span>
-          </div>
-
-          {/* Headline */}
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {mode === "login" ? "Administrative Portal Access" : "Jurisdictional Authority Onboarding"}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-              {mode === "login"
-                ? "Authenticate with official credentials or select a verified administrative persona below for immediate testing."
-                : "Register a new officer into the statutory hierarchy with automated senior routing and CALA verification."}
-            </p>
-          </div>
-
-          {/* Error Banner */}
-          {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-2xl text-xs flex items-start gap-2 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
-
-          {/* ───── MODE 1: WORKING LOGIN ───── */}
-          {mode === "login" ? (
-            <div className="space-y-5">
-              {/* 1-Click Persona Pills for Demonstration */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#15803D]" />
-                    1-Click Verified Personas (For Demo & Review)
-                  </span>
+      {/* Main Authentication Container */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Left Column: Government Information */}
+          <div className="md:col-span-5 bg-[#0F2942] text-white p-6 sm:p-8 flex flex-col justify-between space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/10 text-emerald-400 flex items-center justify-center">
+                  <Compass className="w-5 h-5" />
                 </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {/* Persona 1: District Collector CALA (Recommended) */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-DIS-NSK")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-DIS-NSK"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Jalaj Sharma</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-[#15803D] font-bold">
-                        District
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">Collector & CALA</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Nashik (12 Parcels)</div>
-                  </button>
-
-                  {/* Persona 2: State Admin */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-STA-MH")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-STA-MH"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Nitin Gadre</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-[#0284C7] font-bold">
-                        State
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">Principal Secy (Rev)</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Maharashtra State</div>
-                  </button>
-
-                  {/* Persona 3: National Super Admin */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-NAT-01")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-NAT-01"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Dr. A. K. Sharma</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">
-                        National
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">Apex System Admin</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">MoRTH / Central Govt</div>
-                  </button>
-
-                  {/* Persona 4: Project Officer */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-PRJ-SIN")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-PRJ-SIN"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Er. Suresh Deshmukh</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">
-                        Project
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">Field Project In-Charge</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">NH-48 Greenfield Express</div>
-                  </button>
+                <div>
+                  <div className="font-bold text-base leading-tight">BhoomiDrishti</div>
+                  <div className="text-[10px] text-slate-300">National Land Lifecycle Portal</div>
                 </div>
               </div>
 
-              {/* Login Form Inputs */}
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Official Government Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. collector.nsk@nic.in"
-                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <h3 className="font-semibold text-sm text-white">Official Portal Access</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Restricted to authorized officials of Central Ministries, State Revenue Departments,
+                  District Collectorates, and Competent Authorities for Land Acquisition (CALA).
+                </p>
+              </div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold text-slate-700">Security Password</label>
-                    <span className="text-[11px] text-[#0284C7] hover:underline cursor-pointer">
-                      Forgot Access Token?
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:border-transparent transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+              <div className="space-y-2 pt-2 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Role-based jurisdictional access</span>
                 </div>
-
-                <div className="flex items-center justify-between text-xs text-slate-600">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={rememberDevice}
-                      onChange={(e) => setRememberDevice(e.target.checked)}
-                      className="rounded border-[#CBD5E1] text-[#15803D] focus:ring-[#15803D]"
-                    />
-                    <span>Remember this authorized terminal</span>
-                  </label>
-                  <span className="text-[11px] font-mono text-slate-400">TLS 1.3 256-bit</span>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Encrypted departmental audit logging</span>
                 </div>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={submitPhase !== "idle"}
-                  className="w-full py-3 px-4 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  {submitPhase === "validating" ? (
-                    <span>Validating Administrative Key...</span>
-                  ) : submitPhase === "success" ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                      <span>Jurisdiction Authorized! Loading Dashboard...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Authenticate & Access Portal</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
+              </div>
             </div>
-          ) : (
-            /* ───── MODE 2: WORKING SIGNUP WITH JURISDICTION HIERARCHY ───── */
-            <form onSubmit={handleSignupSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-semibold text-slate-700">Full Name & Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    placeholder="e.g. Smt. Priya Sharma, IAS"
-                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
-                  />
-                </div>
 
-                <div className="space-y-1">
-                  <label className="font-semibold text-slate-700">Official Gov Email</label>
+            <div className="text-[11px] text-slate-400 border-t border-white/10 pt-4">
+              For technical support or credentials verification, contact the NIC Nodal Desk at 1800-11-2026.
+            </div>
+          </div>
+
+          {/* Right Column: Clean Form */}
+          <div className="md:col-span-7 p-6 sm:p-8 space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                Welcome to BhoomiDrishti
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Official Portal Access · Authenticate with registered government credentials.
+              </p>
+            </div>
+
+            {/* 1-Click Evaluation Personas for Judges & Testing */}
+            <div className="p-3 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                <span className="flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-[#15803D]" />
+                  Demo Evaluation Personas
+                </span>
+                <span className="text-slate-400 font-normal">1-Click Selection</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleSelectPersona("USR-DIS-NSK")}
+                  className={`p-2 rounded border text-left transition-colors cursor-pointer ${
+                    selectedPersonaId === "USR-DIS-NSK"
+                      ? "bg-white border-[#0F2942] ring-1 ring-[#0F2942] font-semibold text-slate-900"
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="text-xs font-semibold">District Collector &amp; CALA</div>
+                  <div className="text-[10px] text-slate-500">Nashik District (12 Parcels)</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSelectPersona("USR-NAT-01")}
+                  className={`p-2 rounded border text-left transition-colors cursor-pointer ${
+                    selectedPersonaId === "USR-NAT-01"
+                      ? "bg-white border-[#0F2942] ring-1 ring-[#0F2942] font-semibold text-slate-900"
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="text-xs font-semibold">Central Ministry (MoRTH)</div>
+                  <div className="text-[10px] text-slate-500">Apex National Administration</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="bg-red-50 border border-red-200 text-red-800 p-2.5 rounded-lg text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">User ID / Official Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="email"
                     required
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="e.g. priya.sharma@nic.in"
-                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. collector.nsk@nic.in"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-[#0F2942] focus:border-[#0F2942]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-semibold text-slate-700">Official Designation</label>
-                  <input
-                    type="text"
-                    required
-                    value={signupDesignation}
-                    onChange={(e) => setSignupDesignation(e.target.value)}
-                    placeholder="e.g. Sub-Divisional Officer & CALA"
-                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
-                  />
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-slate-700">Password</label>
+                  <span className="text-[11px] text-slate-500 hover:text-slate-800 cursor-pointer">
+                    Forgot Password?
+                  </span>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-slate-700">Department / Authority</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
-                    type="text"
+                    type={showPassword ? "text" : "password"}
                     required
-                    value={signupDept}
-                    onChange={(e) => setSignupDept(e.target.value)}
-                    placeholder="e.g. Revenue & Land Acquisition Cell"
-                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full pl-9 pr-9 py-2 bg-white border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-[#0F2942] focus:border-[#0F2942]"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
-              {/* Jurisdictional Hierarchy Level Selector */}
-              <div className="space-y-1.5 pt-1">
-                <label className="font-bold text-slate-900 block">
-                  1. Administrative Authority Level (Jurisdiction)
+              <div className="flex items-center justify-between text-xs text-slate-600 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberDevice}
+                    onChange={(e) => setRememberDevice(e.target.checked)}
+                    className="rounded border-slate-300 text-[#0F2942] focus:ring-[#0F2942]"
+                  />
+                  <span>Remember this device</span>
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { id: "national", label: "National", sub: "All India" },
-                    { id: "state", label: "State", sub: "State-wide" },
-                    { id: "district", label: "District", sub: "Collectorate" },
-                    { id: "project", label: "Local", sub: "Project" },
-                  ].map((lvl) => (
-                    <button
-                      key={lvl.id}
-                      type="button"
-                      onClick={() => setSignupLevel(lvl.id as JurisdictionLevel)}
-                      className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                        signupLevel === lvl.id
-                          ? "bg-emerald-50 border-[#15803D] text-[#15803D] font-bold ring-2 ring-[#15803D]/20"
-                          : "bg-white border-[#E5E0D6] text-slate-600 hover:bg-[#FAF8F5]"
-                      }`}
-                    >
-                      <span className="block text-xs">{lvl.label}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">{lvl.sub}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
-              {/* Dynamic Sub-Jurisdiction Pickers */}
-              {signupLevel !== "national" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#E5E0D6]">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-700">Assigned State</label>
-                    <select
-                      value={signupState}
-                      onChange={(e) => {
-                        setSignupState(e.target.value);
-                        const match = INDIAN_STATES.find((s) => s.name === e.target.value);
-                        if (match) setSignupStateCode(match.code);
-                      }}
-                      className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
-                    >
-                      <option value="Maharashtra">Maharashtra (MH)</option>
-                      <option value="Rajasthan">Rajasthan (RJ)</option>
-                      <option value="Uttar Pradesh">Uttar Pradesh (UP)</option>
-                    </select>
-                  </div>
-
-                  {(signupLevel === "district" || signupLevel === "project") && (
-                    <div className="space-y-1">
-                      <label className="font-semibold text-slate-700">Assigned District</label>
-                      <select
-                        value={signupDistrict}
-                        onChange={(e) => setSignupDistrict(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
-                      >
-                        {signupState === "Maharashtra" && <option value="Nashik">Nashik</option>}
-                        {signupState === "Rajasthan" && <option value="Jodhpur (Phalodi)">Jodhpur (Phalodi)</option>}
-                        {signupState === "Uttar Pradesh" && <option value="Varanasi">Varanasi</option>}
-                      </select>
-                    </div>
-                  )}
-
-                  {signupLevel === "project" && (
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="font-semibold text-slate-700">Specific Project Scope</label>
-                      <select
-                        value={signupProjectId}
-                        onChange={(e) => {
-                          setSignupProjectId(e.target.value);
-                          if (e.target.value === "PRJ-001") setSignupProjectName("NH-48 Greenfield Express Bypass Corridor");
-                        }}
-                        className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
-                      >
-                        <option value="PRJ-001">PRJ-001: NH-48 Greenfield Express Bypass Corridor (Musalgaon, Nashik)</option>
-                      </select>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Hierarchy Routing Notice */}
-              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 text-[11px] text-emerald-950 space-y-1">
-                <span className="font-bold text-emerald-900 block flex items-center gap-1">
-                  <Building2 className="w-3.5 h-3.5 text-[#15803D]" />
-                  Designated Senior Reporting Authority:
-                </span>
-                <span className="text-emerald-800 block">{parentAuthorityPreview}</span>
-                <span className="text-[10px] text-emerald-600 block italic">
-                  Cross-jurisdiction requests from this account will be automatically routed to this office for sanction.
-                </span>
-              </div>
-
-              {/* Submit Onboarding */}
               <button
                 type="submit"
                 disabled={submitPhase !== "idle"}
-                className="w-full py-3 px-4 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer mt-3"
+                className="w-full py-2.5 px-4 rounded-md bg-[#0F2942] hover:bg-[#16385C] text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2 shadow-xs"
               >
                 {submitPhase === "validating" ? (
-                  <span>Recording in National Administrative Registry...</span>
+                  <span>Authenticating Credentials...</span>
                 ) : submitPhase === "success" ? (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>Officer Onboarded! Loading Authorized Scope...</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Authorized. Loading Dashboard...</span>
                   </>
                 ) : (
                   <>
-                    <span>Enroll Administrator & Launch Dashboard</span>
+                    <span>Sign In Securely</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
-          )}
+          </div>
         </div>
       </div>
     </div>
