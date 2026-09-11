@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Shield,
@@ -12,29 +12,87 @@ import {
   Building,
   Check,
   ChevronRight,
-  ExternalLink,
-  Lock,
-  Eye,
-  FileCheck,
   Compass,
-  Landmark,
-  Search,
   Scale,
   Users,
   Database,
   BarChart3,
   X,
-  Send,
-  HelpCircle,
+  Menu,
+  FileCheck,
+  Lock,
 } from "lucide-react";
 
 export default function LandingPage() {
+  const [activeSection, setActiveSection] = useState<string>("");
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+
+  // Agency Onboarding Modal State
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [onboardSubmitted, setOnboardSubmitted] = useState(false);
   const [agencyName, setAgencyName] = useState("National Highways Authority of India (NHAI)");
   const [officerName, setOfficerName] = useState("");
   const [officerEmail, setOfficerEmail] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
+
+  const navItems = [
+    { id: "about", label: "About the Platform" },
+    { id: "acquisition", label: "Land Acquisition" },
+    { id: "cadastral", label: "Cadastral Intelligence" },
+    { id: "corridors", label: "Corridor Monitoring" },
+    { id: "governance", label: "Governance & Security" },
+  ];
+
+  // Scroll spy to update active navbar item and sticky navbar shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 130;
+      setIsScrolled(window.scrollY > 20);
+
+      if (window.scrollY < 250) {
+        setActiveSection("");
+        return;
+      }
+
+      const sectionIds = ["about", "acquisition", "cadastral", "corridors", "governance"];
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollPosition) {
+          setActiveSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smooth scroll handler with offset for sticky navbar
+  const scrollToSection = (id: string) => {
+    setMobileMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      const navOffset = 76;
+      const elementPosition = element.getBoundingClientRect().top;
+      const targetPosition = elementPosition + window.pageYOffset - navOffset;
+
+      window.scrollTo({
+        top: targetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollToTop = () => {
+    setMobileMenuOpen(false);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const handleOnboardingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,31 +102,22 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen w-full bg-[#FAF9F6] text-slate-900 font-sans selection:bg-[#0F2942] selection:text-white flex flex-col">
       {/* ─────────────────────────────────────────────────────────────
-          OFFICIAL TOP STRIP
+          1. STICKY MAIN NAVBAR (BEGINS DIRECTLY AT TOP OF PAGE)
       ───────────────────────────────────────────────────────────── */}
-      <div className="bg-[#0F2942] text-white py-1.5 px-4 sm:px-8 text-[11px] font-medium border-b border-[#1E3A5F]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Government of India · Ministry of Rural Development · Department of Land Resources</span>
-          </div>
-          <div className="hidden sm:flex items-center gap-4 text-slate-300">
-            <span>National Informatics Centre (NIC)</span>
-            <span>|</span>
-            <Link href="/public" className="hover:text-white underline-offset-2 hover:underline">
-              Citizen Public Portal
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          1. HEADER / NAVIGATION
-      ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 sm:px-8 py-3.5 transition-all">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-3 group">
+      <header
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-md shadow-xs border-b border-slate-200 py-3"
+            : "bg-white/80 backdrop-blur-sm border-b border-slate-200/80 py-4"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between">
+          {/* Brand - Click to smooth scroll top */}
+          <button
+            type="button"
+            onClick={scrollToTop}
+            className="flex items-center gap-3 text-left group cursor-pointer focus:outline-hidden"
+          >
             <div className="w-9 h-9 rounded-lg bg-[#0F2942] text-white flex items-center justify-center font-serif text-lg font-bold shadow-xs">
               <Compass className="w-5 h-5 text-emerald-400" />
             </div>
@@ -76,41 +125,94 @@ export default function LandingPage() {
               <div className="font-bold text-lg text-slate-900 tracking-tight leading-none group-hover:text-[#0F2942] transition-colors">
                 BhoomiDrishti
               </div>
-              <div className="text-[10px] font-medium text-slate-500 tracking-wide mt-1">
-                National Land Lifecycle Portal
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-[10px] font-medium text-slate-500 tracking-wide">
+                  National Land Lifecycle Portal
+                </span>
+                <span className="hidden md:inline text-slate-300 text-[10px]">·</span>
+                <span className="hidden md:inline text-[9.5px] text-slate-400 font-normal">
+                  Government of India
+                </span>
               </div>
             </div>
-          </Link>
+          </button>
 
-          {/* Clean Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-slate-700">
-            <a href="#about" className="hover:text-[#0F2942] transition-colors">
-              About the Platform
-            </a>
-            <a href="#workflow" className="hover:text-[#0F2942] transition-colors">
-              Land Acquisition
-            </a>
-            <a href="#capabilities" className="hover:text-[#0F2942] transition-colors">
-              Cadastral Intelligence
-            </a>
-            <a href="#corridors" className="hover:text-[#0F2942] transition-colors">
-              Corridor Monitoring
-            </a>
-            <a href="#governance" className="hover:text-[#0F2942] transition-colors">
-              Governance &amp; Security
-            </a>
+          {/* Desktop Center Navigation Links with Scroll-Spy Active Indicator */}
+          <nav className="hidden lg:flex items-center gap-8">
+            {navItems.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  className={`relative py-1.5 text-xs font-semibold transition-colors duration-200 cursor-pointer ${
+                    isActive ? "text-[#0F2942]" : "text-slate-600 hover:text-[#0F2942]"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {/* Subtle, non-flashy green/teal bottom line indicator */}
+                  <span
+                    className={`absolute bottom-0 left-0 right-0 h-[2px] bg-[#15803D] rounded-full transition-all duration-250 ${
+                      isActive ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"
+                    }`}
+                  />
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Right Action */}
+          {/* Right Action: Sign In & Mobile Menu Toggle */}
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#0F2942] hover:bg-[#16385C] text-white text-xs font-semibold shadow-xs transition-colors"
+              className="hidden sm:inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#0F2942] hover:bg-[#16385C] text-white text-xs font-semibold shadow-xs transition-colors"
             >
               Sign In
             </Link>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-4 space-y-2 shadow-md animate-in slide-in-from-top-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className={`w-full text-left py-2 px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between ${
+                  activeSection === item.id
+                    ? "bg-slate-50 text-[#0F2942] border-l-2 border-[#15803D]"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-[#0F2942]"
+                }`}
+              >
+                <span>{item.label}</span>
+                {activeSection === item.id && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+                )}
+              </button>
+            ))}
+            <div className="pt-2 border-t border-slate-100">
+              <Link
+                href="/login"
+                className="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-[#0F2942] text-white text-xs font-semibold shadow-xs"
+              >
+                Sign In to Portal
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -118,13 +220,8 @@ export default function LandingPage() {
       ───────────────────────────────────────────────────────────── */}
       <section className="py-12 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          {/* Left Column */}
+          {/* Left Column: Focused Visual Hierarchy */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-[#15803D] text-xs font-semibold">
-              <Check className="w-3.5 h-3.5 text-[#15803D]" />
-              <span>Unified National Land Governance System</span>
-            </div>
-
             <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-slate-900 tracking-tight leading-[1.18]">
               Empowering Land. <br />
               <span className="text-[#0F2942]">Enabling National Growth.</span>
@@ -136,7 +233,7 @@ export default function LandingPage() {
               infrastructure ecosystem.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0F2942] hover:bg-[#16385C] text-white text-xs sm:text-sm font-semibold shadow-xs transition-colors"
@@ -145,12 +242,13 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
-              <a
-                href="#about"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold border border-slate-300 shadow-xs transition-colors"
+              <button
+                type="button"
+                onClick={() => scrollToSection("about")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold border border-slate-300 shadow-xs transition-colors cursor-pointer"
               >
                 <span>Explore the Platform</span>
-              </a>
+              </button>
             </div>
 
             {/* Credible Statistics Row */}
@@ -170,7 +268,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right Column: Clean GIS Product Preview */}
+          {/* Right Column: Clean GIS Product Preview Card */}
           <div className="lg:col-span-6">
             <div className="bg-white rounded-xl border border-slate-200 shadow-md p-3 sm:p-4 space-y-3">
               {/* Product Preview Header Bar */}
@@ -262,16 +360,16 @@ export default function LandingPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. TRUST & CREDIBILITY STRIP
+          3. SECTION: ABOUT THE PLATFORM (scroll-mt-20 for sticky nav)
       ───────────────────────────────────────────────────────────── */}
-      <section id="about" className="py-12 px-4 sm:px-8 bg-white border-y border-slate-200">
+      <section id="about" className="scroll-mt-20 py-14 px-4 sm:px-8 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
               A unified digital platform for transparent and efficient land lifecycle management
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Connecting departments, district administrations, and infrastructure agencies on a single
+              Connecting central ministries, state revenue departments, and district administrations on a single
               source of truth.
             </p>
           </div>
@@ -325,9 +423,9 @@ export default function LandingPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. PLATFORM OVERVIEW: THE COMPLETE WORKFLOW
+          4. SECTION: LAND ACQUISITION (PROCESS ARCHITECTURE)
       ───────────────────────────────────────────────────────────── */}
-      <section id="workflow" className="py-14 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
+      <section id="acquisition" className="scroll-mt-20 py-14 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
         <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
           <span className="text-xs font-bold text-[#15803D] uppercase tracking-wider">
             Process Architecture
@@ -385,9 +483,9 @@ export default function LandingPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. KEY CAPABILITIES (ENTERPRISE GRID)
+          5. SECTION: CADASTRAL INTELLIGENCE (CAPABILITIES)
       ───────────────────────────────────────────────────────────── */}
-      <section id="capabilities" className="py-14 sm:py-16 px-4 sm:px-8 bg-white border-y border-slate-200">
+      <section id="cadastral" className="scroll-mt-20 py-14 sm:py-16 px-4 sm:px-8 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold text-[#0F2942] uppercase tracking-wider">
@@ -478,9 +576,9 @@ export default function LandingPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          6. NATIONAL CORRIDOR MONITORING PREVIEW
+          6. SECTION: CORRIDOR MONITORING & IMPACT METRICS
       ───────────────────────────────────────────────────────────── */}
-      <section id="corridors" className="py-14 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
+      <section id="corridors" className="scroll-mt-20 py-14 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-bold text-[#15803D] uppercase tracking-wider">
@@ -567,135 +665,124 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          7. IMPACT STATISTICS (CREDIBLE OFFICIAL DATA)
-      ───────────────────────────────────────────────────────────── */}
-      <section className="py-14 px-4 sm:px-8 bg-[#0F2942] text-white">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              National Infrastructure Footprint
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Aggregated land acquisition statistics across central ministries and participating state governments.
-            </p>
-          </div>
-
+        {/* Sober Government Statistics Strip */}
+        <div className="mt-8 p-6 rounded-xl bg-[#0F2942] text-white">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-1">
+            <div className="space-y-1">
               <div className="text-2xl sm:text-3xl font-bold text-white">3,12,180 Ha</div>
               <div className="text-xs text-slate-300 font-medium">Land Acquired</div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-1">
+            <div className="space-y-1">
               <div className="text-2xl sm:text-3xl font-bold text-emerald-400">₹1,12,450 Cr</div>
-              <div className="text-xs text-slate-300 font-medium">Compensation / DBT Disbursed</div>
+              <div className="text-xs text-slate-300 font-medium">Compensation Disbursed</div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-1">
+            <div className="space-y-1">
               <div className="text-2xl sm:text-3xl font-bold text-white">742</div>
               <div className="text-xs text-slate-300 font-medium">Districts Covered</div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-1">
+            <div className="space-y-1">
               <div className="text-2xl sm:text-3xl font-bold text-white">28</div>
-              <div className="text-xs text-slate-300 font-medium">States &amp; Union Territories</div>
+              <div className="text-xs text-slate-300 font-medium">States &amp; UTs</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          8. SECURITY & GOVERNANCE
+          7. SECTION: GOVERNANCE & SECURITY
       ───────────────────────────────────────────────────────────── */}
-      <section id="governance" className="py-14 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
-          <span className="text-xs font-bold text-[#0F2942] uppercase tracking-wider">
-            Enterprise Security
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            Built for transparency, security and accountability
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-600">
-            Engineered to adhere to national data protection and sovereign governance standards.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <Shield className="w-4 h-4 text-[#15803D]" />
-              <span>Role-Based Access Control</span>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Hierarchical access models spanning Central Ministry, State Revenue, District Collectorates,
-              and Competent Authorities (CALA).
+      <section id="governance" className="scroll-mt-20 py-14 sm:py-16 px-4 sm:px-8 bg-white border-t border-slate-200">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold text-[#0F2942] uppercase tracking-wider">
+              Enterprise Security
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              Built for transparency, security and accountability
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600">
+              Engineered to adhere to national data protection and sovereign governance standards.
             </p>
           </div>
 
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <Lock className="w-4 h-4 text-[#15803D]" />
-              <span>Secure Authentication</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <Shield className="w-4 h-4 text-[#15803D]" />
+                <span>Role-Based Access Control</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Hierarchical access models spanning Central Ministry, State Revenue, District Collectorates,
+                and Competent Authorities (CALA).
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Official email verification, dual-factor security credentials, and integration with
-              government identity infrastructure.
-            </p>
-          </div>
 
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <FileText className="w-4 h-4 text-[#15803D]" />
-              <span>Cryptographic Audit Trails</span>
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <Lock className="w-4 h-4 text-[#15803D]" />
+                <span>Secure Authentication</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Official email verification, dual-factor security credentials, and integration with
+                government identity infrastructure.
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Every status change, valuation determination, and payment approval is logged with immutable
-              timestamps and digital sign-offs.
-            </p>
-          </div>
 
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <Database className="w-4 h-4 text-[#15803D]" />
-              <span>Data Integrity &amp; Sync</span>
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <FileText className="w-4 h-4 text-[#15803D]" />
+                <span>Cryptographic Audit Trails</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Every status change, valuation determination, and payment approval is logged with immutable
+                timestamps and digital sign-offs.
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Direct API integration with State land records ensures no divergent parcel records or
-              duplicate compensation claims.
-            </p>
-          </div>
 
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <Scale className="w-4 h-4 text-[#15803D]" />
-              <span>Statutory Compliance</span>
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <Database className="w-4 h-4 text-[#15803D]" />
+                <span>Data Integrity &amp; Sync</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Direct API integration with State land records ensures no divergent parcel records or
+                duplicate compensation claims.
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Strict enforcement of legal timelines, public consultation rules, and solatium calculations
-              stipulated by law.
-            </p>
-          </div>
 
-          <div className="p-5 rounded-lg bg-white border border-slate-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-              <Users className="w-4 h-4 text-[#15803D]" />
-              <span>Controlled Departmental Access</span>
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <Scale className="w-4 h-4 text-[#15803D]" />
+                <span>Statutory Compliance</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Strict enforcement of legal timelines, public consultation rules, and solatium calculations
+                stipulated by law.
+              </p>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Inter-departmental request routing ensures executing agencies view only authorized
-              jurisdictional data footprints.
-            </p>
+
+            <div className="p-5 rounded-lg bg-[#FAF9F6] border border-slate-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                <Users className="w-4 h-4 text-[#15803D]" />
+                <span>Controlled Departmental Access</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Inter-departmental request routing ensures executing agencies view only authorized
+                jurisdictional data footprints.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          9. FINAL CTA SECTION
+          8. FINAL CTA SECTION
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-14 sm:py-16 px-4 sm:px-8 bg-white border-t border-slate-200">
+      <section className="py-14 sm:py-16 px-4 sm:px-8 bg-[#FAF9F6] border-t border-slate-200">
         <div className="max-w-4xl mx-auto text-center space-y-5">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Transforming India&apos;s land lifecycle through digital governance.
@@ -728,7 +815,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          10. AGENCY ONBOARDING MODAL
+          9. AGENCY ONBOARDING MODAL
       ───────────────────────────────────────────────────────────── */}
       {onboardingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
@@ -801,7 +888,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-2.5 rounded bg-slate-50 border border-slate-200 text-slate-600 text-[11px] leading-relaxed">
-                  Upon submission, your department credentials will be verified by the Department of Land Resources (DoLR).
+                  Upon submission, your credentials will be verified by the Department of Land Resources (DoLR).
                 </div>
 
                 <button
@@ -835,7 +922,7 @@ export default function LandingPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          11. GOVERNMENT FOOTER
+          10. OFFICIAL GOVERNMENT FOOTER
       ───────────────────────────────────────────────────────────── */}
       <footer className="mt-auto bg-[#F1F5F9] border-t border-slate-200 py-10 px-4 sm:px-8 text-xs text-slate-600">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -846,7 +933,8 @@ export default function LandingPage() {
                 National Land Lifecycle Portal
               </div>
               <p className="text-slate-500 text-xs leading-relaxed">
-                Department of Land Resources (DoLR), Ministry of Rural Development, Government of India.
+                An initiative of the Government of India. Developed under the Department of Land Resources (DoLR),
+                Ministry of Rural Development.
               </p>
             </div>
 
@@ -856,24 +944,40 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-1 text-slate-600 text-xs">
                 <li>
-                  <a href="#about" className="hover:text-slate-900">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("about")}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
                     About the Platform
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#workflow" className="hover:text-slate-900">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("acquisition")}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
                     Land Acquisition Workflow
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#capabilities" className="hover:text-slate-900">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("cadastral")}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
                     Cadastral Intelligence
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#corridors" className="hover:text-slate-900">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("corridors")}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
                     Corridor Monitoring
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -900,7 +1004,7 @@ export default function LandingPage() {
                 <li>Email: support-bhoomi@nic.in</li>
                 <li>
                   <Link href="/public" className="text-[#0F2942] font-semibold hover:underline">
-                    Public Citizen Grievances
+                    Public Citizen Inquiry
                   </Link>
                 </li>
               </ul>
@@ -909,7 +1013,7 @@ export default function LandingPage() {
 
           <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
             <div>
-              © 2026 BhoomiDrishti. An initiative for transparent digital governance. All rights reserved.
+              © 2026 BhoomiDrishti. An initiative of the Government of India. All rights reserved.
             </div>
             <div>
               Designed &amp; Hosted by National Informatics Centre (NIC)
