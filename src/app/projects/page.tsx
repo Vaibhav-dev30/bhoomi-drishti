@@ -35,7 +35,7 @@ import {
   BadgeAlert,
 } from "lucide-react";
 import { useApp } from "@/context/app-context";
-import { checkResourceAccess } from "@/lib/auth-store";
+import { checkResourceAccess, filterProjectsForUser, filterBhuParcelsForUser } from "@/lib/auth-store";
 import { RequestAccessModal } from "@/components/auth/request-access-modal";
 import { MOCK_PROJECTS, MOCK_PLOTS, MOCK_FAMILIES, INDIAN_STATES } from "@/lib/mock-data";
 import {
@@ -153,18 +153,35 @@ export default function ProjectsPage() {
   const [filterState, setFilterState] = useState("all");
   const [activeTab, setActiveTab] = useState<"stepper" | "khasras" | "matrix" | "families" | "documents">("stepper");
 
+  // Authorized Projects strictly scoped by user jurisdiction
+  const authorizedProjects = useMemo(() => {
+    return filterProjectsForUser(currentUser, scopedGrants, MOCK_PROJECTS);
+  }, [currentUser, scopedGrants]);
+
   // Demonstrable Project State
-  const flagshipProject = MOCK_PROJECTS[0];
-  const bhuProject = BHUNAKSHA_PROJECTS[0];
+  const flagshipProject = authorizedProjects[0] || MOCK_PROJECTS[0];
+  const bhuProject = useMemo(() => {
+    return BHUNAKSHA_PROJECTS.find((p) => p.id === flagshipProject.id) || BHUNAKSHA_PROJECTS[0];
+  }, [flagshipProject]);
+
+  // Scoped Cadastral Parcels strictly within user jurisdiction
+  const authorizedBhuParcels = useMemo(() => {
+    return filterBhuParcelsForUser(currentUser, scopedGrants, bhuProject.parcels);
+  }, [currentUser, scopedGrants, bhuProject]);
+
+  // Scoped Affected Families
+  const authorizedFamilies = useMemo(() => {
+    return MOCK_FAMILIES.filter((fam) => authorizedProjects.some((p) => p.id === fam.projectId));
+  }, [authorizedProjects]);
 
   // Interactive 12-stage demo state (current step defaulted to stage 8: Section 23 Award)
   const [currentStageIdx, setCurrentStageIdx] = useState<number>(8);
   const [inspectedStageNumber, setInspectedStageNumber] = useState<number>(8);
   const [stepNotification, setStepNotification] = useState<string | null>(null);
 
-  // Filtered projects list
+  // Filtered projects list - strictly within authorized projects
   const filteredProjects = useMemo(() => {
-    return MOCK_PROJECTS.filter((p) => {
+    return authorizedProjects.filter((p) => {
       const matchSearch =
         !searchQuery ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,7 +193,7 @@ export default function ProjectsPage() {
       const matchState = filterState === "all" || p.stateCode === filterState;
       return matchSearch && matchSector && matchStatus && matchState;
     });
-  }, [searchQuery, filterSector, filterStatus, filterState]);
+  }, [authorizedProjects, searchQuery, filterSector, filterStatus, filterState]);
 
   const activeInspectedStage = useMemo(() => {
     return LAMS_12_STAGES.find((s) => s.stageNumber === inspectedStageNumber) || LAMS_12_STAGES[0];
@@ -224,7 +241,31 @@ export default function ProjectsPage() {
     state: flagshipProject.state,
     stateCode: flagshipProject.stateCode,
     district: flagshipProject.district,
+    tehsil: flagshipProject.tehsil,
   });
+
+  if (authorizedProjects.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-4">
+          <div className="h-14 w-14 rounded-2xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center mx-auto">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">
+            No Statutory Land Acquisition Projects in Your Assigned Jurisdiction
+          </h2>
+          <p className="text-sm text-slate-600 max-w-lg mx-auto">
+            Your current assigned jurisdiction is <strong>{currentUser?.jurisdiction.displayText || "Unassigned"}</strong>. No ongoing infrastructure projects fall within these administrative bounds.
+          </p>
+          <div className="pt-4 flex justify-center gap-3">
+            <Link href="/dashboard">
+              <Button className="bg-[#0B2740] hover:bg-[#13385c] text-white">Return to Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-16">
@@ -657,7 +698,7 @@ export default function ProjectsPage() {
             }`}
           >
             <Layers className="h-3.5 w-3.5" />
-            <span>14 Cadastral Khasras (NIC BhuNaksha)</span>
+            <span>{authorizedBhuParcels.length} Cadastral Khasras (NIC BhuNaksha)</span>
           </button>
           <button
             onClick={() => setActiveTab("matrix")}
@@ -679,7 +720,7 @@ export default function ProjectsPage() {
             }`}
           >
             <Users className="h-3.5 w-3.5" />
-            <span>Affected Titleholders & R&R ({MOCK_FAMILIES.length})</span>
+            <span>Affected Titleholders & R&R ({authorizedFamilies.length})</span>
           </button>
           <button
             onClick={() => setActiveTab("documents")}
@@ -803,10 +844,10 @@ export default function ProjectsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>
-                Displaying all <strong className="text-slate-900 font-bold">{bhuProject.parcels.length} Demonstration Khasras</strong> of {bhuProject.village} Sajra Sheet
+                Displaying <strong className="text-slate-900 font-bold">{authorizedBhuParcels.length} Authorized Khasras</strong> in {flagshipProject.district} jurisdiction
               </span>
               <span className="font-mono text-slate-700 font-bold">
-                {bhuProject.totalAffectedParcels} Affected ({bhuProject.totalAffectedAreaHa} Ha) • {bhuProject.totalParcelsInVillageSheet - bhuProject.totalAffectedParcels} Buffer ({bhuProject.totalUnaffectedAreaHa} Ha)
+                {authorizedBhuParcels.filter((p) => p.isAffected).length} Affected ({authorizedBhuParcels.filter((p) => p.isAffected).reduce((s, p) => s + p.affectedAreaHa, 0).toFixed(2)} Ha) • {authorizedBhuParcels.filter((p) => !p.isAffected).length} Buffer
               </span>
             </div>
 
@@ -826,7 +867,7 @@ export default function ProjectsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bhuProject.parcels.map((parcel) => (
+                  {authorizedBhuParcels.map((parcel) => (
                     <TableRow key={parcel.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                       <TableCell className="font-mono font-bold text-xs text-slate-900 py-3">
                         <div className="flex items-center gap-1.5">
@@ -965,7 +1006,7 @@ export default function ProjectsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_FAMILIES.map((fam) => (
+                  {authorizedFamilies.map((fam) => (
                     <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                       <TableCell className="text-xs font-bold text-slate-900 py-3">
                         <div>{fam.familyHeadName}</div>

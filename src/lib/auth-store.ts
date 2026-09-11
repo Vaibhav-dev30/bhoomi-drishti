@@ -14,6 +14,7 @@ import {
   DashboardMetrics,
 } from "@/types";
 import { MOCK_PROJECTS, MOCK_PLOTS, NATIONAL_METRICS } from "./mock-data";
+import { BhuNakshaParcel } from "./bhunaksha-service";
 
 // --- Seeded Administrative Personas across the 4 Authority Levels ---
 export const PRESEEDED_USERS: AuthUser[] = [
@@ -171,7 +172,56 @@ export const PRESEEDED_USERS: AuthUser[] = [
     createdAt: "2024-01-20",
   },
 
-  // 4. LEVEL 3: TEHSIL & PROJECT OFFICER LEVEL
+  // 4. LEVEL 3: TEHSIL LEVEL
+  {
+    id: "USR-TEH-ALI",
+    name: "Shri Vikas Sharma",
+    email: "tehsildar.alipur@delhi.gov.in",
+    phone: "+91 98110 88990",
+    role: "field_surveyor",
+    designation: "Tehsildar & Assistant CALA (Alipur)",
+    department: "Tehsil Office, Alipur Sub-Division, North Delhi",
+    jurisdiction: {
+      level: "tehsil",
+      state: "Delhi",
+      stateCode: "DL",
+      district: "North Delhi",
+      districtCode: "DEL",
+      tehsil: "Alipur",
+      tehsilCode: "ALIPUR",
+      projectId: "DL-INFRA-001",
+      displayText: "Alipur Tehsil, North Delhi",
+    },
+    parentAuthorityId: "USR-DIS-DEL",
+    parentAuthorityTitle: "District Magistrate & CALA, Delhi",
+    parentAuthorityName: "Shri Ashwini Kumar, IAS",
+    createdAt: "2024-02-01",
+  },
+
+  // 5. LEVEL 4: PROJECT OFFICER LEVEL
+  {
+    id: "USR-PRJ-GZB",
+    name: "Er. Suresh Deshmukh",
+    email: "project.gzb@ncrtc.gov.in",
+    phone: "+91 94150 90123",
+    role: "lrb",
+    designation: "Field Project In-Charge & Nodal Officer",
+    department: "NCRTC / Regional Infrastructure Unit",
+    jurisdiction: {
+      level: "project",
+      state: "Uttar Pradesh",
+      stateCode: "UP",
+      district: "Ghaziabad",
+      districtCode: "GZB",
+      projectId: "DL-GZB-002",
+      projectName: "Delhi–Ghaziabad Regional Connectivity Project",
+      displayText: "Project DL-GZB-002 Corridor",
+    },
+    parentAuthorityId: "USR-DIS-GZB",
+    parentAuthorityTitle: "District Magistrate & CALA, Ghaziabad",
+    parentAuthorityName: "Shri Rakesh Kumar Singh, IAS",
+    createdAt: "2024-02-05",
+  },
   {
     id: "USR-PRJ-01",
     name: "Er. Rajiv Tyagi",
@@ -184,11 +234,11 @@ export const PRESEEDED_USERS: AuthUser[] = [
       level: "project",
       state: "Delhi",
       stateCode: "DL",
-      district: "Delhi",
+      district: "North Delhi",
       districtCode: "DEL",
       projectId: "DL-INFRA-001",
       projectName: "Delhi Land & Infrastructure Development Project",
-      displayText: "Delhi Infrastructure Corridor Scope",
+      displayText: "Project DL-INFRA-001 Scope",
     },
     parentAuthorityId: "USR-DIS-DEL",
     parentAuthorityTitle: "District Magistrate & CALA, Delhi",
@@ -336,7 +386,11 @@ export function checkResourceAccess(
   resource: {
     stateCode?: string;
     state?: string;
+    districtCode?: string;
     district?: string;
+    tehsilCode?: string;
+    tehsil?: string;
+    village?: string;
     projectId?: string;
     plotId?: string;
   }
@@ -373,11 +427,16 @@ export function checkResourceAccess(
     };
   }
 
-  // 3. Level 1: State authority check
+  // 3. Level 1: State authority check (State / UT level)
   if (jurisdiction.level === "state") {
+    const userStateCode = jurisdiction.stateCode?.toUpperCase();
+    const userState = (jurisdiction.state || "").toLowerCase();
+    const resStateCode = resource.stateCode?.toUpperCase();
+    const resState = (resource.state || "").toLowerCase();
+
     const matchesState =
-      (resource.stateCode && resource.stateCode === jurisdiction.stateCode) ||
-      (resource.state && resource.state === jurisdiction.state);
+      (resStateCode && userStateCode && resStateCode === userStateCode) ||
+      (resState && userState && (resState === userState || (userStateCode === "DL" && resState.includes("delhi"))));
 
     if (matchesState) {
       return { allowed: true };
@@ -394,45 +453,78 @@ export function checkResourceAccess(
 
   // 4. Level 2: District authority check
   if (jurisdiction.level === "district") {
-    const matchesDistrict = resource.district && resource.district.toLowerCase().includes((jurisdiction.district || "").toLowerCase());
-    const matchesState =
-      (resource.stateCode && resource.stateCode === jurisdiction.stateCode) ||
-      (resource.state && resource.state === jurisdiction.state);
+    const userDist = (jurisdiction.district || "").toLowerCase();
+    const userDistCode = jurisdiction.districtCode?.toUpperCase();
+    const resDist = (resource.district || "").toLowerCase();
+    const resDistCode = resource.districtCode?.toUpperCase();
 
-    if (matchesDistrict || (matchesState && !resource.district)) {
+    const matchesDistrict =
+      (userDistCode && resDistCode && userDistCode === resDistCode) ||
+      (userDist && resDist && (resDist.includes(userDist) || userDist.includes(resDist)));
+
+    if (matchesDistrict) {
       return { allowed: true };
     }
 
-    const seniorName = user.parentAuthorityName || "Principal Secretary (Revenue)";
     return {
       allowed: false,
       reason: `Outside authorized district boundary. Your authority is designated to ${jurisdiction.displayText}.`,
       seniorAuthority: user.parentAuthorityTitle || "State Government Authority",
       seniorRole: "state_government",
-      seniorName,
+      seniorName: user.parentAuthorityName || "Principal Secretary (Revenue)",
     };
   }
 
-  // 5. Level 3: Tehsil / Project officer check
-  if (jurisdiction.level === "tehsil" || jurisdiction.level === "project") {
-    const matchesProject = resource.projectId && resource.projectId === jurisdiction.projectId;
+  // 5. Level 3: Tehsil authority check
+  if (jurisdiction.level === "tehsil") {
+    const userTehsil = (jurisdiction.tehsil || "").toLowerCase();
+    const resTehsil = (resource.tehsil || "").toLowerCase();
+    const userProj = jurisdiction.projectId;
+    const resProj = resource.projectId;
 
+    // For projects: must match assigned project
+    if (resProj && userProj && resProj !== userProj) {
+      return {
+        allowed: false,
+        reason: `Outside assigned project/tehsil scope. Authorized strictly for ${jurisdiction.displayText}.`,
+        seniorAuthority: user.parentAuthorityTitle || "District Magistrate & CALA",
+        seniorRole: "district_collector",
+        seniorName: user.parentAuthorityName || "District Collector",
+      };
+    }
+
+    // For parcels: if parcel has tehsil, tehsil must match
+    if (resTehsil && userTehsil && !resTehsil.includes(userTehsil) && !userTehsil.includes(resTehsil)) {
+      return {
+        allowed: false,
+        reason: `Outside assigned tehsil boundary (${jurisdiction.tehsil}).`,
+        seniorAuthority: user.parentAuthorityTitle || "Sub-Divisional Magistrate & CALA",
+        seniorRole: "district_collector",
+        seniorName: user.parentAuthorityName || "District Collector",
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  // 6. Level 4: Project authority check
+  if (jurisdiction.level === "project") {
+    const matchesProject = resource.projectId && resource.projectId === jurisdiction.projectId;
     if (matchesProject) {
       return { allowed: true };
     }
 
     return {
       allowed: false,
-      reason: `Outside assigned project boundary. Authorized strictly for ${jurisdiction.displayText}.`,
+      reason: `Outside assigned project boundary. Authorized strictly for ${jurisdiction.projectName || jurisdiction.displayText}.`,
       seniorAuthority: user.parentAuthorityTitle || "District Collector & CALA",
       seniorRole: "district_collector",
       seniorName: user.parentAuthorityName || "District Collector",
     };
   }
 
-  // Default: Public or unassigned
+  // Default: Public / Citizen
   if (user.role === "public") {
-    // Citizens can see their own project and public notifications
     if (resource.projectId && resource.projectId === jurisdiction.projectId) {
       return { allowed: true };
     }
@@ -462,7 +554,9 @@ export function filterProjectsForUser(
       projectId: project.id,
       stateCode: project.stateCode,
       state: project.state,
+      districtCode: project.districtCode,
       district: project.district,
+      tehsil: project.tehsil,
     });
     return check.allowed;
   });
@@ -477,10 +571,32 @@ export function filterPlotsForUser(
   return plots.filter((plot) => {
     const check = checkResourceAccess(user, grants, {
       projectId: plot.projectId,
-      stateCode: plot.state === "Maharashtra" ? "MH" : plot.state === "Rajasthan" ? "RJ" : "UP",
+      stateCode: plot.state === "Delhi" ? "DL" : "UP",
       state: plot.state,
       district: plot.district,
+      tehsil: plot.tehsil,
+      village: plot.village,
       plotId: plot.id,
+    });
+    return check.allowed;
+  });
+}
+
+export function filterBhuParcelsForUser(
+  user: AuthUser | null,
+  grants: ScopedAccessGrant[],
+  parcels: BhuNakshaParcel[]
+): BhuNakshaParcel[] {
+  if (!user) return [];
+  return parcels.filter((p) => {
+    const check = checkResourceAccess(user, grants, {
+      projectId: p.projectId,
+      stateCode: p.stateCode || (p.state === "Delhi" ? "DL" : "UP"),
+      state: p.state,
+      district: p.district,
+      tehsil: p.tehsil,
+      village: p.village,
+      plotId: p.khasraNumber,
     });
     return check.allowed;
   });

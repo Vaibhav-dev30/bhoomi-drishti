@@ -24,15 +24,19 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { STATE_METRICS, NATIONAL_METRICS } from "@/lib/mock-data";
+import { STATE_METRICS, NATIONAL_METRICS, MOCK_PROJECTS } from "@/lib/mock-data";
 import { formatArea, formatCurrency } from "@/lib/utils";
+import { useApp } from "@/context/app-context";
+import { filterProjectsForUser } from "@/lib/auth-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function ReportsPage() {
+  const { currentUser, scopedGrants } = useApp();
   const [selectedReport, setSelectedReport] = useState("statutory_audit");
+  const authorizedProjects = filterProjectsForUser(currentUser, scopedGrants, MOCK_PROJECTS);
 
   const reportTemplates = [
     {
@@ -193,54 +197,41 @@ export default function ReportsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
-                  DL-INFRA-001
-                </TableCell>
-                <TableCell className="text-xs text-slate-900 font-medium">Delhi (DDA)</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">10 Feb 2024</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">15 Aug 2024</TableCell>
-                <TableCell className="text-xs text-[#15803D] font-bold">Award Declared (01 Mar 2025)</TableCell>
-                <TableCell>
-                  <Badge variant="success" className="text-[10px] bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Complied (No Lapse)</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
-                  UP-RLY-2024-002
-                </TableCell>
-                <TableCell className="text-xs text-slate-900 font-medium">Uttar Pradesh (NHSRCL)</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">15 Jan 2024</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">10 Jan 2025</TableCell>
-                <TableCell className="text-xs text-[#D97706] font-bold">Enquiry Pending</TableCell>
-                <TableCell>
-                  <Badge variant="default" className="text-[10px] bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]">Action Required (214d left)</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
-                  MP-IRR-2024-003
-                </TableCell>
-                <TableCell className="text-xs text-slate-900 font-medium">Madhya Pradesh (KBLPA)</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">15 Jun 2025</TableCell>
-                <TableCell className="text-xs text-slate-500 font-mono">Pending Sec 15</TableCell>
-                <TableCell className="text-xs text-slate-600 font-medium">Objection Window Open</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-[10px] border-[#E5E0D6] bg-[#FAF8F5] text-slate-700">On Schedule</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
-                  GJ-IND-2024-004
-                </TableCell>
-                <TableCell className="text-xs text-slate-900 font-medium">Gujarat (DICDL)</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">01 Jun 2023</TableCell>
-                <TableCell className="text-xs font-mono text-slate-600">15 Dec 2023</TableCell>
-                <TableCell className="text-xs text-[#15803D] font-bold">Award Passed (30 Sep 2024)</TableCell>
-                <TableCell>
-                  <Badge variant="success" className="text-[10px] bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Complied</Badge>
-                </TableCell>
-              </TableRow>
+              {authorizedProjects.length === 0 ? (
+                <TableRow className="border-[#F2EFE8]">
+                  <TableCell colSpan={6} className="text-center py-6 text-xs text-slate-500">
+                    No statutory land acquisition projects within your assigned jurisdiction ({currentUser?.jurisdiction.displayText || "Unassigned"}).
+                  </TableCell>
+                </TableRow>
+              ) : (
+                authorizedProjects.map((p) => {
+                  const isDelhi = p.id === "DL-INFRA-001";
+                  return (
+                    <TableRow key={p.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                      <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
+                        {p.id}
+                      </TableCell>
+                      <TableCell className="text-xs text-slate-900 font-medium">
+                        {p.state} ({p.lrbType})
+                      </TableCell>
+                      <TableCell className="text-xs font-mono text-slate-600">
+                        {p.sec11Date || "28 Feb 2026"}
+                      </TableCell>
+                      <TableCell className="text-xs font-mono text-slate-600">
+                        {p.sec19Date || "10 Apr 2026"}
+                      </TableCell>
+                      <TableCell className="text-xs text-[#15803D] font-bold">
+                        {p.awardDate ? `Award Target (${p.awardDate})` : "Sec 23 In Progress"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="success" className="text-[10px] bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">
+                          {isDelhi ? "Complied (Sec 14 & 25)" : "Corridor On Schedule"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>

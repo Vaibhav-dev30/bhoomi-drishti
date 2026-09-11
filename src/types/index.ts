@@ -416,6 +416,9 @@ export interface AdministrativeJurisdiction {
   district?: string;
   districtCode?: string;
   tehsil?: string;
+  tehsilCode?: string;
+  village?: string;
+  villageCode?: string;
   projectId?: string;
   projectName?: string;
   displayText: string;

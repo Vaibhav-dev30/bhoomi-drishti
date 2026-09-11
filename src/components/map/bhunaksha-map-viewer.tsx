@@ -58,6 +58,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BhuNakshaArchitectureModal } from "@/components/docs/bhunaksha-architecture-modal";
+import { useApp } from "@/context/app-context";
+import { filterBhuParcelsForUser } from "@/lib/auth-store";
 
 // Minimalist, authentic Cadastral Plot Number Label (non-intrusive)
 function createKhasraBadgeIcon(
@@ -149,18 +151,36 @@ export function BhuNakshaMapViewer({
   initialKhasraNumber,
   initialStageFilter,
 }: BhuNakshaMapViewerProps = {}) {
-  const currentProject = BHUNAKSHA_PROJECTS[0];
+  const { currentUser, scopedGrants } = useApp();
+
+  const activeProjectId = useMemo(() => {
+    if (currentUser?.jurisdiction.level === "district" && currentUser.jurisdiction.districtCode === "GZB") {
+      return "DL-GZB-002";
+    }
+    if (currentUser?.jurisdiction.level === "project" && currentUser.jurisdiction.projectId) {
+      return currentUser.jurisdiction.projectId;
+    }
+    return initialProjectId || "DL-INFRA-001";
+  }, [currentUser, initialProjectId]);
+
+  const currentProject = useMemo(() => {
+    return BHUNAKSHA_PROJECTS.find((p) => p.id === activeProjectId) || BHUNAKSHA_PROJECTS[0];
+  }, [activeProjectId]);
+
+  const authorizedParcels = useMemo(() => {
+    return filterBhuParcelsForUser(currentUser, scopedGrants, currentProject.parcels);
+  }, [currentUser, scopedGrants, currentProject]);
 
   // Selected Parcel state (defaults to null so map is completely clean and unencumbered)
   const [selectedParcel, setSelectedParcel] = useState<BhuNakshaParcel | null>(() => {
     if (initialKhasraNumber) {
-      const match = currentProject.parcels.find(
+      const match = authorizedParcels.find(
         (p) => p.khasraNumber === initialKhasraNumber
       );
       if (match) return match;
     }
     if (initialStageFilter) {
-      const match = currentProject.parcels.find((p) => {
+      const match = authorizedParcels.find((p) => {
         const enriched = getParcel12StageInfo(p);
         return enriched.stageIndex === initialStageFilter;
       });
@@ -172,7 +192,7 @@ export function BhuNakshaMapViewer({
   // Sync initial props
   useEffect(() => {
     if (initialKhasraNumber) {
-      const match = currentProject.parcels.find(
+      const match = authorizedParcels.find(
         (p) => p.khasraNumber === initialKhasraNumber
       );
       if (match) {
@@ -181,7 +201,7 @@ export function BhuNakshaMapViewer({
       }
     }
     if (initialStageFilter) {
-      const match = currentProject.parcels.find((p) => {
+      const match = authorizedParcels.find((p) => {
         const enriched = getParcel12StageInfo(p);
         return enriched.stageIndex === initialStageFilter;
       });
@@ -190,7 +210,7 @@ export function BhuNakshaMapViewer({
         return;
       }
     }
-  }, [currentProject, initialKhasraNumber, initialStageFilter]);
+  }, [authorizedParcels, initialKhasraNumber, initialStageFilter]);
 
   // Display Mode: "cadastralSheet" (authentic Sajra) | "hybrid" (satellite + vectors) | "osm" (street map)
   const [mapMode, setMapMode] = useState<"cadastralSheet" | "hybrid" | "osm">("cadastralSheet");
@@ -210,24 +230,27 @@ export function BhuNakshaMapViewer({
   const [copiedULPIN, setCopiedULPIN] = useState<boolean>(false);
 
   // Live Telemetry
-  const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number }>({
-    lat: currentProject.parcels[0].coordinates[0],
-    lng: currentProject.parcels[0].coordinates[1],
-  });
+  const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number }>(() => ({
+    lat: authorizedParcels[0]?.coordinates[0] || (activeProjectId === "DL-GZB-002" ? 28.68 : 28.72),
+    lng: authorizedParcels[0]?.coordinates[1] || (activeProjectId === "DL-GZB-002" ? 77.44 : 77.14),
+  }));
 
   // Camera coordinates
   const cameraConfig = useMemo(() => {
-    return { center: [19.856, 73.998] as [number, number], zoom: 16 };
-  }, []);
+    if (activeProjectId === "DL-GZB-002") {
+      return { center: [28.68, 77.44] as [number, number], zoom: 14 };
+    }
+    return { center: [28.725, 77.145] as [number, number], zoom: 14 };
+  }, [activeProjectId]);
 
   // Filtered parcels
   const visibleParcels = useMemo(() => {
-    return currentProject.parcels.filter((p) => {
+    return authorizedParcels.filter((p) => {
       if (filterImpact === "affected") return p.isAffected;
       if (filterImpact === "unaffected") return !p.isAffected;
       return true;
     });
-  }, [currentProject, filterImpact]);
+  }, [authorizedParcels, filterImpact]);
 
   // Copy ULPIN helper
   const handleCopyULPIN = (ulpin: string) => {

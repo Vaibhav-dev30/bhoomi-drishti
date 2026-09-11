@@ -31,7 +31,7 @@ import { BHUNAKSHA_PROJECTS } from "@/lib/bhunaksha-service";
 import { AcquisitionWorkflowStepper } from "@/components/workflow/acquisition-workflow-stepper";
 import { AffectedLandTable } from "@/components/workflow/affected-land-table";
 import { useApp } from "@/context/app-context";
-import { checkResourceAccess } from "@/lib/auth-store";
+import { checkResourceAccess, filterBhuParcelsForUser } from "@/lib/auth-store";
 import { RequestAccessModal } from "@/components/auth/request-access-modal";
 import { formatArea, formatCurrency, formatDate, getPercentage } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -48,7 +48,10 @@ export default function ProjectDetailPage({
 }) {
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
-  const project = MOCK_PROJECTS.find((p) => p.id === projectId) || MOCK_PROJECTS[0];
+  const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+  if (!project) {
+    notFound();
+  }
   const bhuProject = BHUNAKSHA_PROJECTS.find((p) => p.id === projectId) || BHUNAKSHA_PROJECTS[0];
   const workflowStages = getProjectWorkflow(project);
   const [activeTab, setActiveTab] = useState("overview");
@@ -61,7 +64,11 @@ export default function ProjectDetailPage({
     state: project.state,
     stateCode: project.stateCode,
     district: project.district,
+    tehsil: project.tehsil,
   });
+
+  const authorizedParcels = filterBhuParcelsForUser(currentUser, scopedGrants, bhuProject.parcels);
+  const authorizedFamilies = MOCK_FAMILIES.filter((fam) => fam.projectId === project.id);
 
   // Statutory Gate for Out-of-Jurisdiction Access
   if (!access.allowed) {
@@ -132,6 +139,11 @@ export default function ProjectDetailPage({
               <Lock className="w-4 h-4" />
               <span>Request Scoped Access from Senior Officer</span>
             </Button>
+            <Link href="/dashboard" className="w-full sm:w-auto">
+              <Button variant="default" className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0B2740] hover:bg-[#13385c] text-white">
+                Return to Dashboard
+              </Button>
+            </Link>
             <Link href="/projects" className="w-full sm:w-auto">
               <Button variant="outline" className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold border-[#E5E0D6] text-slate-700 hover:bg-[#F4EFEA]">
                 Return to My Projects
@@ -273,8 +285,8 @@ export default function ProjectDetailPage({
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-[#F5F2EB] border border-[#E5E0D6] w-full justify-start overflow-x-auto p-1 rounded-2xl">
           <TabsTrigger value="overview">Overview & Scope</TabsTrigger>
-          <TabsTrigger value="parcels">Land Parcels (Khasra)</TabsTrigger>
-          <TabsTrigger value="families">Affected Families ({MOCK_FAMILIES.length})</TabsTrigger>
+          <TabsTrigger value="parcels">Land Parcels ({authorizedParcels.length})</TabsTrigger>
+          <TabsTrigger value="families">Affected Families ({authorizedFamilies.length})</TabsTrigger>
           <TabsTrigger value="compensation">Valuation Ledger (Sec 26-30)</TabsTrigger>
           <TabsTrigger value="documents">Statutory Documents (DMS)</TabsTrigger>
         </TabsList>
@@ -356,7 +368,7 @@ export default function ProjectDetailPage({
 
         {/* Tab 2: Land Parcels */}
         <TabsContent value="parcels" className="space-y-4 mt-4">
-          <AffectedLandTable parcels={bhuProject.parcels} />
+          <AffectedLandTable parcels={authorizedParcels} />
         </TabsContent>
 
         {/* Tab 3: Affected Families */}
@@ -390,7 +402,7 @@ export default function ProjectDetailPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_FAMILIES.map((fam) => (
+                  {authorizedFamilies.map((fam) => (
                     <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                       <TableCell className="text-xs font-bold text-slate-900 py-3">
                         <div>{fam.familyHeadName}</div>

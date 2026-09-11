@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import React, { useState, Suspense } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Compass,
@@ -18,6 +18,8 @@ import { AffectedLandTable } from "@/components/workflow/affected-land-table";
 import { AcquisitionWorkflowStepper } from "@/components/workflow/acquisition-workflow-stepper";
 import { BhuNakshaArchitectureModal } from "@/components/docs/bhunaksha-architecture-modal";
 import { Button } from "@/components/ui/button";
+import { useApp } from "@/context/app-context";
+import { filterBhuParcelsForUser } from "@/lib/auth-store";
 
 // Dynamically import Leaflet BhuNaksha viewer with SSR disabled
 const BhuNakshaMapViewer = dynamic(
@@ -53,7 +55,21 @@ function MapPageContent() {
     return "map";
   });
   const [archModalOpen, setArchModalOpen] = useState(false);
-  const primaryProject = BHUNAKSHA_PROJECTS[0];
+  const { currentUser, scopedGrants } = useApp();
+
+  const primaryProject = useMemo(() => {
+    if (currentUser?.jurisdiction.level === "district" && currentUser.jurisdiction.districtCode === "GZB") {
+      return BHUNAKSHA_PROJECTS.find((p) => p.id === "DL-GZB-002") || BHUNAKSHA_PROJECTS[0];
+    }
+    if (currentUser?.jurisdiction.level === "project" && currentUser.jurisdiction.projectId) {
+      return BHUNAKSHA_PROJECTS.find((p) => p.id === currentUser.jurisdiction.projectId) || BHUNAKSHA_PROJECTS[0];
+    }
+    return BHUNAKSHA_PROJECTS[0];
+  }, [currentUser]);
+
+  const authorizedParcels = useMemo(() => {
+    return filterBhuParcelsForUser(currentUser, scopedGrants, primaryProject.parcels);
+  }, [currentUser, scopedGrants, primaryProject]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2.5">
@@ -93,7 +109,7 @@ function MapPageContent() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              📋 Parcels ({primaryProject.parcels.length})
+              📋 Parcels ({authorizedParcels.length})
             </button>
             <button
               onClick={() => setActiveTab("workflow")}
@@ -123,13 +139,14 @@ function MapPageContent() {
       <div className="flex-1 flex flex-col min-h-0">
         {activeTab === "map" && (
           <BhuNakshaMapViewer
+            initialProjectId={primaryProject.id}
             initialKhasraNumber={khasraParam ?? undefined}
             initialStageFilter={stageParam ? parseInt(stageParam, 10) : undefined}
           />
         )}
 
         {activeTab === "table" && (
-          <AffectedLandTable parcels={primaryProject.parcels} />
+          <AffectedLandTable parcels={authorizedParcels} />
         )}
 
         {activeTab === "workflow" && (

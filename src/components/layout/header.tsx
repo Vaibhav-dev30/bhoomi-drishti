@@ -90,18 +90,18 @@ export function Header() {
         </div>
 
         {/* Center: Jurisdiction Badge & Clock */}
-        <div className="hidden xl:flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {currentUser && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF8F5] border border-[#E5E0D6] text-xs">
-              <span className="h-2 w-2 rounded-full bg-[#15803D]" />
-              <span className="font-semibold text-slate-700">Jurisdiction:</span>
-              <span className="font-bold text-slate-900 font-mono text-[11px] truncate max-w-[200px]">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs shadow-2xs">
+              <span className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" />
+              <span className="text-[10.5px] uppercase font-bold text-slate-500 hidden sm:inline">Jurisdiction:</span>
+              <span className="font-bold text-slate-900 font-mono text-[11px] truncate max-w-[180px] sm:max-w-[240px]">
                 {currentUser.jurisdiction.displayText}
               </span>
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 bg-[#FAF8F5] border border-[#E5E0D6] px-2.5 py-1 rounded-full">
+          <div className="hidden lg:flex items-center gap-1.5 text-xs font-mono text-slate-500 bg-[#FAF8F5] border border-[#E5E0D6] px-2.5 py-1 rounded-full">
             <Clock className="h-3 w-3 text-[#0284C7]" />
             <span>{timeStr || "09:00:00 AM IST"}</span>
           </div>

@@ -43,6 +43,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useApp } from "@/context/app-context";
+import { checkResourceAccess, filterBhuParcelsForUser } from "@/lib/auth-store";
 
 // ============================================================
 // PROJECT DATA MODELS FOR TWO OFFICIAL DEMO PROJECTS
@@ -244,8 +246,25 @@ const STAGE_CONFIG: Record<number, {
 };
 
 export default function DashboardPage() {
-  // Selected Project State (Only 2 projects allowed: DL-INFRA-001 or DL-GZB-002)
-  const [selectedProjectId, setSelectedProjectId] = useState<"DL-INFRA-001" | "DL-GZB-002">("DL-INFRA-001");
+  const { currentUser, scopedGrants } = useApp();
+
+  // Strict Jurisdictional Project Filtering
+  const authorizedProjectConfigs = useMemo(() => {
+    return OFFICIAL_PROJECTS.filter((p) => {
+      const check = checkResourceAccess(currentUser, scopedGrants, {
+        projectId: p.id,
+        state: p.state,
+        stateCode: p.id === "DL-INFRA-001" ? "DL" : "UP",
+        district: p.district,
+      });
+      return check.allowed;
+    });
+  }, [currentUser, scopedGrants]);
+
+  // Selected Project State (guaranteed to default to authorized project)
+  const [selectedProjectId, setSelectedProjectId] = useState<"DL-INFRA-001" | "DL-GZB-002">(() => {
+    return authorizedProjectConfigs[0]?.id || "DL-INFRA-001";
+  });
 
   // Track manual workflow stages per project (Delhi starts at 1, Ghaziabad starts at 2)
   const [projectStages, setProjectStages] = useState<{ "DL-INFRA-001": number; "DL-GZB-002": number }>({
@@ -258,6 +277,18 @@ export default function DashboardPage() {
 
   // Selected Parcel ID (e.g. DEMO-482 or DEMO-501)
   const [selectedParcelId, setSelectedParcelId] = useState<string>("DEMO-482");
+
+  // Synchronize selection when currentUser / authorizedProjectConfigs changes
+  useEffect(() => {
+    if (authorizedProjectConfigs.length > 0) {
+      const isAllowed = authorizedProjectConfigs.some((p) => p.id === selectedProjectId);
+      if (!isAllowed) {
+        const nextId = authorizedProjectConfigs[0].id;
+        setSelectedProjectId(nextId);
+        setSelectedParcelId(nextId === "DL-INFRA-001" ? "DEMO-482" : "DEMO-501");
+      }
+    }
+  }, [authorizedProjectConfigs, selectedProjectId]);
 
   // RoR Inspection Modal / Action Toast state
   const [actionNotification, setActionNotification] = useState<string | null>(null);
@@ -273,16 +304,32 @@ export default function DashboardPage() {
 
   // Active Project Data
   const currentProjectConfig = useMemo(() => {
-    return OFFICIAL_PROJECTS.find((p) => p.id === selectedProjectId) || OFFICIAL_PROJECTS[0];
-  }, [selectedProjectId]);
+    return (
+      authorizedProjectConfigs.find((p) => p.id === selectedProjectId) ||
+      authorizedProjectConfigs[0] ||
+      OFFICIAL_PROJECTS[0]
+    );
+  }, [authorizedProjectConfigs, selectedProjectId]);
 
   const currentBhuProject = useMemo(() => {
     return BHUNAKSHA_PROJECTS.find((p) => p.id === selectedProjectId) || BHUNAKSHA_PROJECTS[0];
   }, [selectedProjectId]);
 
-  const currentStageNumber = projectStages[selectedProjectId];
+  // Authorized Parcels strictly scoped to user jurisdiction
+  const authorizedParcels = useMemo(() => {
+    return filterBhuParcelsForUser(currentUser, scopedGrants, currentBhuProject.parcels);
+  }, [currentUser, scopedGrants, currentBhuProject]);
+
+  // Synchronize selectedParcelId when switching jurisdiction / projects
+  useEffect(() => {
+    if (authorizedParcels.length > 0 && !authorizedParcels.some((p) => p.khasraNumber === selectedParcelId)) {
+      setSelectedParcelId(authorizedParcels[0].khasraNumber);
+    }
+  }, [authorizedParcels, selectedParcelId]);
+
+  const currentStageNumber = projectStages[selectedProjectId] || 1;
   const currentStageInfo = useMemo(() => {
-    const stageGroup = STAGE_CONFIG[currentStageNumber];
+    const stageGroup = STAGE_CONFIG[currentStageNumber] || STAGE_CONFIG[1];
     return selectedProjectId === "DL-INFRA-001" ? stageGroup.delhi : stageGroup.ghaziabad;
   }, [currentStageNumber, selectedProjectId]);
 
@@ -305,7 +352,7 @@ export default function DashboardPage() {
     setTimeout(() => {
       setProjectStages((prev) => ({
         ...prev,
-        [selectedProjectId]: prev[selectedProjectId] + 1,
+        [selectedProjectId]: (prev[selectedProjectId] || 1) + 1,
       }));
       setIsTransitioning(false);
       setActionNotification(`Advanced to ${STAGE_CONFIG[currentStageNumber + 1].name}`);
@@ -329,54 +376,71 @@ export default function DashboardPage() {
     }, 400);
   };
 
-  // Connected Metrics based on current stage
+  // Connected Metrics based on current stage & authorized parcels
   const projectMetrics = useMemo(() => {
     const isDelhi = selectedProjectId === "DL-INFRA-001";
+    const parcelCount = authorizedParcels.length;
+    const totalLand = authorizedParcels.reduce((sum, p) => sum + p.affectedAreaHa, 0).toFixed(1) + " Ha";
+    const verifiedCount = authorizedParcels.filter((p) => p.rorVerification?.status === "Verified").length;
+    const rorText = `${verifiedCount} / ${parcelCount}`;
+
     if (isDelhi) {
       switch (currentStageNumber) {
         case 1:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "8 / 12", progress: 32, actions: 2, delays: 1 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 32, actions: 2, delays: 1 };
         case 2:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "8 / 12", progress: 48, actions: 2, delays: 1 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 48, actions: 2, delays: 1 };
         case 3:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "10 / 12", progress: 68, actions: 1, delays: 1 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 68, actions: 1, delays: 1 };
         case 4:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "11 / 12", progress: 82, actions: 1, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 82, actions: 1, delays: 0 };
         case 5:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "12 / 12", progress: 94, actions: 1, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 94, actions: 1, delays: 0 };
         case 6:
         default:
-          return { land: "18.4 Ha", parcels: 12, rorVerified: "12 / 12", progress: 100, actions: 0, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 100, actions: 0, delays: 0 };
       }
     } else {
       switch (currentStageNumber) {
         case 1:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "8 / 18", progress: 25, actions: 3, delays: 2 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 25, actions: 3, delays: 2 };
         case 2:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "11 / 18", progress: 41, actions: 3, delays: 2 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 41, actions: 3, delays: 2 };
         case 3:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "14 / 18", progress: 64, actions: 2, delays: 1 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 64, actions: 2, delays: 1 };
         case 4:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "16 / 18", progress: 80, actions: 1, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 80, actions: 1, delays: 0 };
         case 5:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "18 / 18", progress: 92, actions: 1, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 92, actions: 1, delays: 0 };
         case 6:
         default:
-          return { land: "26.8 Ha", parcels: 18, rorVerified: "18 / 18", progress: 100, actions: 0, delays: 0 };
+          return { land: totalLand, parcels: parcelCount, rorVerified: rorText, progress: 100, actions: 0, delays: 0 };
       }
     }
-  }, [selectedProjectId, currentStageNumber]);
+  }, [selectedProjectId, currentStageNumber, authorizedParcels]);
 
   // Selected Parcel lookup
   const selectedParcel = useMemo(() => {
     return (
-      currentBhuProject.parcels.find((p) => p.khasraNumber === selectedParcelId) ||
+      authorizedParcels.find((p) => p.khasraNumber === selectedParcelId) ||
+      authorizedParcels[0] ||
       currentBhuProject.parcels[0]
     );
-  }, [currentBhuProject, selectedParcelId]);
+  }, [authorizedParcels, currentBhuProject, selectedParcelId]);
 
   // Dynamic Delays List
   const delayItems = useMemo(() => {
+    if (currentUser?.jurisdiction.level === "tehsil") {
+      return [
+        {
+          id: "del-teh-1",
+          title: "Ground field verification pending (DEMO-105)",
+          detail: "3 days pending · Alipur Revenue Circle Field Survey",
+          parcelTarget: "DEMO-105",
+          level: "amber" as const,
+        },
+      ];
+    }
     if (selectedProjectId === "DL-INFRA-001") {
       if (currentStageNumber <= 2) {
         return [
@@ -456,10 +520,70 @@ export default function DashboardPage() {
         },
       ];
     }
-  }, [selectedProjectId, currentStageNumber]);
+  }, [currentUser, selectedProjectId, currentStageNumber]);
 
   // Dynamic Action Center Items
   const actionItems = useMemo(() => {
+    if (currentUser?.jurisdiction.level === "tehsil") {
+      return [
+        {
+          id: "act-teh-1",
+          title: "Physical field survey & ground-truthing (Khasra DEMO-105)",
+          project: "Delhi Land & Infrastructure Development Project",
+          priority: "High",
+          due: "1 day",
+          buttonText: "Open Field Dossier →",
+          action: () => {
+            setSelectedParcelId("DEMO-105");
+            setActionNotification("Focussed parcel DEMO-105 in Tehsil Verification Panel");
+            setTimeout(() => setActionNotification(null), 3000);
+          },
+        },
+        {
+          id: "act-teh-2",
+          title: "Authenticate digital Jamabandi mutations for Alipur circle",
+          project: "Delhi Land & Infrastructure Development Project",
+          priority: "Medium",
+          due: "2 days",
+          buttonText: "Verify Records →",
+          action: () => {
+            setSelectedParcelId("DEMO-482");
+            setActionNotification("Opened Alipur Tehsil digital Jamabandi mutation registry");
+            setTimeout(() => setActionNotification(null), 3000);
+          },
+        },
+      ];
+    }
+    if (currentUser?.jurisdiction.level === "project") {
+      return [
+        {
+          id: "act-prj-1",
+          title: "Approve right-of-way demarcation coordinates (DEMO-501)",
+          project: "Delhi–Ghaziabad Regional Connectivity Project",
+          priority: "High",
+          due: "1 day",
+          buttonText: "Review Alignment →",
+          action: () => {
+            setSelectedParcelId("DEMO-501");
+            setActionNotification("Opened corridor alignment coordinate verification");
+            setTimeout(() => setActionNotification(null), 3000);
+          },
+        },
+        {
+          id: "act-prj-2",
+          title: "Resolve survey boundary monumentation discrepancy",
+          project: "Delhi–Ghaziabad Regional Connectivity Project",
+          priority: "Medium",
+          due: "3 days",
+          buttonText: "View Survey Map →",
+          action: () => {
+            setSelectedParcelId("DEMO-506");
+            setActionNotification("Opened project corridor monumentation report");
+            setTimeout(() => setActionNotification(null), 3000);
+          },
+        },
+      ];
+    }
     if (selectedProjectId === "DL-INFRA-001") {
       return [
         {
@@ -519,7 +643,7 @@ export default function DashboardPage() {
         },
       ];
     }
-  }, [selectedProjectId, currentStageNumber]);
+  }, [currentUser, selectedProjectId, currentStageNumber]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-14 font-sans selection:bg-[#0B2740] selection:text-white">
@@ -562,9 +686,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Dual Project Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {OFFICIAL_PROJECTS.map((project) => {
+        {/* Project Selection Cards (Strictly Filtered by User Jurisdiction) */}
+        <div className={`grid grid-cols-1 ${authorizedProjectConfigs.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1"} gap-4`}>
+          {authorizedProjectConfigs.map((project) => {
             const isSelected = project.id === selectedProjectId;
             const stageNum = projectStages[project.id];
             const stageName = STAGE_CONFIG[stageNum].name;
@@ -610,6 +734,18 @@ export default function DashboardPage() {
                   <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                   <span>{project.location}</span>
                 </div>
+
+                {/* Cross-Jurisdiction Indicator for DL-GZB-002 */}
+                {project.id === "DL-GZB-002" && (
+                  <div className="mt-2 p-2 bg-slate-100/70 border border-slate-200 rounded-lg text-[10.5px] text-slate-600 flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">Cross-Jurisdiction Alignment:</span>
+                    <span className="font-mono text-slate-500">
+                      {currentUser?.jurisdiction.level === "national"
+                        ? "Delhi (6.2 Ha, 4 Plots) + Ghaziabad (20.6 Ha, 14 Plots)"
+                        : "Ghaziabad Jurisdiction Scope · 20.6 Ha · 14 Plots"}
+                    </span>
+                  </div>
+                )}
 
                 {/* Localities pill row */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-3">
@@ -896,7 +1032,7 @@ export default function DashboardPage() {
               {/* Cadastral Parcels Interactive Layer */}
               {layerCadastral && (
                 <div className="absolute inset-0">
-                  {currentBhuProject.parcels.map((parcel, idx) => {
+                  {authorizedParcels.map((parcel, idx) => {
                     const isSelected = parcel.khasraNumber === selectedParcelId;
                     const isAffected = parcel.isAffected;
 
@@ -992,7 +1128,7 @@ export default function DashboardPage() {
                 <div className="font-bold text-slate-800 mb-1">Spatial Analysis Legend</div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-xs border border-amber-600 bg-amber-500/20" />
-                  <span className="text-slate-600">Affected Cadastral Parcels ({currentProjectConfig.totalParcels})</span>
+                  <span className="text-slate-600">Affected Cadastral Parcels ({authorizedParcels.length})</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-xs border-2 border-[#0284C7] bg-[#0284C7]/30" />
@@ -1011,17 +1147,17 @@ export default function DashboardPage() {
             <div>
               <span className="font-bold text-slate-900 block">Spatial Affected Summary</span>
               <span className="text-slate-500 text-[11px]">
-                {currentProjectConfig.totalParcels} parcels intersecting the 60-meter right-of-way buffer.
+                {authorizedParcels.length} parcels intersecting the 60-meter right-of-way buffer in active jurisdiction.
               </span>
             </div>
             <div className="flex items-center gap-4 font-mono">
               <div>
                 <span className="text-slate-400 block text-[10px]">AFFECTED AREA</span>
-                <span className="font-bold text-slate-900">{currentProjectConfig.totalLandHa} Ha</span>
+                <span className="font-bold text-slate-900">{authorizedParcels.reduce((sum, p) => sum + p.affectedAreaHa, 0).toFixed(1)} Ha</span>
               </div>
               <div className="border-l border-slate-200 pl-4">
                 <span className="text-slate-400 block text-[10px]">LOCALITIES</span>
-                <span className="font-bold text-slate-900">{currentProjectConfig.localities.length} Localities</span>
+                <span className="font-bold text-slate-900">{Array.from(new Set(authorizedParcels.map((p) => p.village))).length} Localities</span>
               </div>
             </div>
           </div>

@@ -302,48 +302,8 @@ export default function LoginPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {/* Persona 1: District Magistrate CALA (Recommended) */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-DIS-DEL")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-DIS-DEL"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Ashwini Kumar</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-[#15803D] font-bold">
-                        District
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">DM & CALA, Delhi</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">North Delhi (12 Parcels)</div>
-                  </button>
-
-                  {/* Persona 2: State Admin */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectPersona("USR-STA-DL")}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-STA-DL"
-                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
-                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Naresh Kumar</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-[#0284C7] font-bold">
-                        State
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-600">Principal Secy (Rev)</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Govt of NCT of Delhi</div>
-                  </button>
-
-                  {/* Persona 3: National Super Admin */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+                  {/* Persona 1: National Administrator */}
                   <button
                     type="button"
                     onClick={() => handleSelectPersona("USR-NAT-01")}
@@ -359,28 +319,88 @@ export default function LoginPage() {
                         National
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600">Apex System Admin</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">MoRTH / Central Govt</div>
+                    <div className="text-[11px] text-slate-600 font-medium">Apex System Admin</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">All India (Delhi + Ghaziabad)</div>
                   </button>
 
-                  {/* Persona 4: Project Officer */}
+                  {/* Persona 2: Delhi State Administrator */}
                   <button
                     type="button"
-                    onClick={() => handleSelectPersona("USR-PRJ-01")}
+                    onClick={() => handleSelectPersona("USR-STA-DL")}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-PRJ-01"
+                      selectedPersonaId === "USR-STA-DL"
                         ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
                         : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Er. Rajiv Tyagi</span>
+                      <span className="font-bold text-slate-900">Shri Naresh Kumar</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-[#0284C7] font-bold">
+                        State
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-medium">Principal Secy (Rev)</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Delhi NCT (18.4 Ha Scope)</div>
+                  </button>
+
+                  {/* Persona 3: Ghaziabad District Officer */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-DIS-GZB")}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      selectedPersonaId === "USR-DIS-GZB"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Shri Rakesh K. Singh</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-[#15803D] font-bold">
+                        District
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-medium">DM & CALA, Ghaziabad</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Ghaziabad, UP (26.8 Ha)</div>
+                  </button>
+
+                  {/* Persona 4: Tehsil Officer (Alipur) */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-TEH-ALI")}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      selectedPersonaId === "USR-TEH-ALI"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Shri Vikas Sharma</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">
+                        Tehsil
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-medium">Tehsildar & Asst. CALA</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Alipur Sub-Division, Delhi</div>
+                  </button>
+
+                  {/* Persona 5: Project Officer (Ghaziabad Corridor) */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-PRJ-GZB")}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer sm:col-span-2 lg:col-span-2 ${
+                      selectedPersonaId === "USR-PRJ-GZB"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Er. Suresh Deshmukh</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-[#0284C7] font-bold">
                         Project
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600">Nodal Project Officer</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">DL-INFRA-001 (Delhi)</div>
+                    <div className="text-[11px] text-slate-600 font-medium">Field Nodal In-Charge</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Project DL-GZB-002 Corridor</div>
                   </button>
                 </div>
               </div>
