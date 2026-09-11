@@ -25,6 +25,7 @@ import {
   Copy,
   Check,
   Eye,
+  EyeOff,
   SlidersHorizontal,
   X,
   Code2,
@@ -41,6 +42,9 @@ import {
   ChevronDown,
   ChevronUp,
   Ruler,
+  Minimize2,
+  MessageSquare,
+  Tag,
 } from "lucide-react";
 import {
   BHUNAKSHA_PROJECTS,
@@ -55,55 +59,44 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BhuNakshaArchitectureModal } from "@/components/docs/bhunaksha-architecture-modal";
 
-// Centroid Plot Badge DivIcon for Khasra numbers
+// Minimalist, authentic Cadastral Plot Number Label (non-intrusive)
 function createKhasraBadgeIcon(
   khasraNumber: string,
   isSelected: boolean,
   isAffected: boolean,
-  status: string,
   stageIndex: number = 3
 ) {
-  let borderColor = "#16A34A";
-  let bgGradient = "background: #F0FDF4; color: #166534;";
-
-  if (stageIndex >= 10) {
-    borderColor = "#7C3AED";
-    bgGradient = "background: #FAF5FF; color: #6B21A8;";
-  } else if (stageIndex === 3 || (stageIndex >= 7 && stageIndex <= 9)) {
-    borderColor = "#DC2626";
-    bgGradient = "background: #FEF2F2; color: #991B1B;";
-  } else if (stageIndex >= 4 && stageIndex <= 6) {
-    borderColor = "#D97706";
-    bgGradient = "background: #FFFBEB; color: #92400E;";
-  }
-
-  const selectedRing = isSelected
-    ? "box-shadow: 0 0 0 3px #0F172A, 0 4px 12px rgba(0,0,0,0.3); font-weight: 800; transform: scale(1.15) translate(-50%, -50%);"
-    : "box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: translate(-50%, -50%);";
+  const bg = isSelected
+    ? "#0F172A"
+    : "rgba(255, 255, 255, 0.88)";
+  const color = isSelected ? "#FFFFFF" : "#1E293B";
+  const border = isSelected
+    ? "2px solid #0F172A"
+    : isAffected
+    ? "1px solid rgba(220, 38, 38, 0.5)"
+    : "1px solid rgba(22, 163, 74, 0.5)";
 
   return L.divIcon({
     className: "custom-khasra-badge",
     html: `
       <div style="
-        ${bgGradient}
-        border: 2px solid ${borderColor};
-        ${selectedRing}
         font-family: ui-monospace, SFMono-Regular, monospace;
-        font-size: 11px;
+        font-size: ${isSelected ? "11px" : "10px"};
+        font-weight: ${isSelected ? "800" : "700"};
         line-height: 1;
-        padding: 3px 7px;
-        border-radius: 6px;
+        padding: ${isSelected ? "2px 6px" : "1px 4px"};
+        border-radius: 4px;
+        background: ${bg};
+        color: ${color};
+        border: ${border};
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         white-space: nowrap;
         text-align: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
-        pointer-events: auto;
-        transition: all 0.2s ease;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        user-select: none;
       ">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: ${borderColor}; display: inline-block;"></span>
-        <span>KH-${khasraNumber}</span>
+        ${khasraNumber}
       </div>
     `,
     iconSize: [0, 0],
@@ -121,20 +114,25 @@ function MapCameraController({
 }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, zoom, { duration: 1.0 });
+    map.flyTo(center, zoom, { duration: 0.8 });
   }, [center, zoom, map]);
   return null;
 }
 
-// Telemetry tracker
+// Telemetry tracker & map click handler
 function MapTelemetryTracker({
   onMouseMove,
+  onMapClick,
 }: {
   onMouseMove: (latlng: { lat: number; lng: number }) => void;
+  onMapClick: () => void;
 }) {
   useMapEvents({
     mousemove(e) {
       onMouseMove({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+    click() {
+      onMapClick();
     },
   });
   return null;
@@ -151,15 +149,10 @@ export function BhuNakshaMapViewer({
   initialKhasraNumber,
   initialStageFilter,
 }: BhuNakshaMapViewerProps = {}) {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(initialProjectId);
-  const currentProject = useMemo(() => {
-    return (
-      BHUNAKSHA_PROJECTS.find((p) => p.id === selectedProjectId) ||
-      BHUNAKSHA_PROJECTS[0]
-    );
-  }, [selectedProjectId]);
+  const currentProject = BHUNAKSHA_PROJECTS[0];
 
-  const [selectedParcel, setSelectedParcel] = useState<BhuNakshaParcel>(() => {
+  // Selected Parcel state (defaults to null so map is completely clean and unencumbered)
+  const [selectedParcel, setSelectedParcel] = useState<BhuNakshaParcel | null>(() => {
     if (initialKhasraNumber) {
       const match = currentProject.parcels.find(
         (p) => p.khasraNumber === initialKhasraNumber
@@ -173,10 +166,10 @@ export function BhuNakshaMapViewer({
       });
       if (match) return match;
     }
-    return currentProject.parcels[0];
+    return null;
   });
 
-  // Sync selected parcel when project or initial props change
+  // Sync initial props
   useEffect(() => {
     if (initialKhasraNumber) {
       const match = currentProject.parcels.find(
@@ -197,7 +190,6 @@ export function BhuNakshaMapViewer({
         return;
       }
     }
-    setSelectedParcel(currentProject.parcels[0]);
   }, [currentProject, initialKhasraNumber, initialStageFilter]);
 
   // Display Mode: "cadastralSheet" (authentic Sajra) | "hybrid" (satellite + vectors) | "osm" (street map)
@@ -206,11 +198,12 @@ export function BhuNakshaMapViewer({
   // Layers & Overlay Toggles
   const [showCorridor, setShowCorridor] = useState<boolean>(true);
   const [showKhasraLabels, setShowKhasraLabels] = useState<boolean>(true);
+  const [showTooltips, setShowTooltips] = useState<boolean>(false); // Popups OFF by default to eliminate clutter!
+  const [zenMode, setZenMode] = useState<boolean>(false); // Zen / Focus GIS mode
   const [filterImpact, setFilterImpact] = useState<"all" | "affected" | "unaffected">("all");
 
-  // UI Panels
-  const [inspectorOpen, setInspectorOpen] = useState<boolean>(true);
-  const [isHudCollapsed, setIsHudCollapsed] = useState<boolean>(false);
+  // Panels
+  const [inspectorOpen, setInspectorOpen] = useState<boolean>(false); // Drawer CLOSED by default!
   const [dossierTab, setDossierTab] = useState<"details" | "ror" | "acquisition" | "possession">("details");
   const [apiDrawerOpen, setApiDrawerOpen] = useState<boolean>(false);
   const [architectureModalOpen, setArchitectureModalOpen] = useState<boolean>(false);
@@ -222,13 +215,10 @@ export function BhuNakshaMapViewer({
     lng: currentProject.parcels[0].coordinates[1],
   });
 
-  // Dynamic Camera coordinates based on project
+  // Camera coordinates
   const cameraConfig = useMemo(() => {
-    if (selectedProjectId === "PRJ-001") {
-      return { center: [19.856, 73.998] as [number, number], zoom: 16 };
-    }
-    return { center: [24.518, 81.344] as [number, number], zoom: 15 };
-  }, [selectedProjectId]);
+    return { center: [19.856, 73.998] as [number, number], zoom: 16 };
+  }, []);
 
   // Filtered parcels
   const visibleParcels = useMemo(() => {
@@ -252,181 +242,212 @@ export function BhuNakshaMapViewer({
     const enriched = getParcel12StageInfo(parcel);
     const stageColor = getParcelStageVisualColor(enriched);
 
-    // Sajra / Cadastral Sheet mode colors
     if (mapMode === "cadastralSheet") {
       return {
         color: isSelected ? "#0F172A" : stageColor.borderColor,
-        weight: isSelected ? 3.5 : 2,
+        weight: isSelected ? 3.5 : 1.8,
         fillColor: stageColor.borderColor,
-        fillOpacity: isSelected ? 0.65 : enriched.isAffected ? 0.35 : 0.15,
+        fillOpacity: isSelected ? 0.6 : enriched.isAffected ? 0.32 : 0.12,
         dashArray: enriched.acquisitionType === "partial" ? "6, 4" : undefined,
       };
     }
 
-    // Hybrid / Satellite mode colors
     if (mapMode === "hybrid") {
       return {
         color: isSelected ? "#FFFFFF" : stageColor.borderColor,
-        weight: isSelected ? 3.5 : 2,
+        weight: isSelected ? 3.5 : 1.8,
         fillColor: stageColor.borderColor,
-        fillOpacity: isSelected ? 0.6 : 0.35,
+        fillOpacity: isSelected ? 0.55 : 0.3,
         dashArray: enriched.acquisitionType === "partial" ? "6, 4" : undefined,
       };
     }
 
-    // Standard OSM mode
     return {
       color: isSelected ? "#0F172A" : stageColor.borderColor,
-      weight: isSelected ? 3.5 : 2,
+      weight: isSelected ? 3.5 : 1.8,
       fillColor: stageColor.borderColor,
-      fillOpacity: isSelected ? 0.6 : 0.35,
+      fillOpacity: isSelected ? 0.55 : 0.3,
     };
   };
 
-  // GeoJSON preview for API Inspector
+  // Active GeoJSON preview for API Inspector
   const activeGeoJsonPreview = useMemo(() => {
+    const p = selectedParcel || currentProject.parcels[0];
     return {
       type: "Feature",
-      id: selectedParcel.ulpin,
+      id: p.ulpin,
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            ...selectedParcel.polygon.map(([lat, lng]) => [lng, lat]),
-            [selectedParcel.polygon[0][1], selectedParcel.polygon[0][0]],
+            ...p.polygon.map(([lat, lng]) => [lng, lat]),
+            [p.polygon[0][1], p.polygon[0][0]],
           ],
         ],
       },
       properties: {
-        khasraNumber: selectedParcel.khasraNumber,
-        ulpin: selectedParcel.ulpin,
-        villageLgdCode: selectedParcel.villageLgdCode,
-        sheetNumber: selectedParcel.sheetNumber,
-        gisAreaHa: selectedParcel.gisCalculatedAreaHa,
-        recordedRoRAreaHa: selectedParcel.recordedRoRAreaHa,
-        isAffected: selectedParcel.isAffected,
-        affectedAreaHa: selectedParcel.affectedAreaHa,
-        acquisitionType: selectedParcel.acquisitionType,
-        owners: selectedParcel.owners.map((o) => ({
+        khasraNumber: p.khasraNumber,
+        ulpin: p.ulpin,
+        villageLgdCode: p.villageLgdCode,
+        sheetNumber: p.sheetNumber,
+        gisAreaHa: p.gisCalculatedAreaHa,
+        recordedRoRAreaHa: p.recordedRoRAreaHa,
+        isAffected: p.isAffected,
+        affectedAreaHa: p.affectedAreaHa,
+        acquisitionType: p.acquisitionType,
+        owners: p.owners.map((o) => ({
           name: o.name,
           share: `${o.sharePercentage}%`,
         })),
-        circleRateINR: selectedParcel.circleRatePerHa,
-        totalCompensationPayableINR: selectedParcel.valuation.totalCompensationPayable,
+        circleRateINR: p.circleRatePerHa,
+        totalCompensationPayableINR: p.valuation.totalCompensationPayable,
       },
     };
-  }, [selectedParcel]);
+  }, [selectedParcel, currentProject]);
 
   return (
     <div className="relative w-full h-[calc(100vh-115px)] min-h-[580px] flex-1 flex flex-col bg-[#FAF8F5] overflow-hidden rounded-3xl border border-[#E5E0D6] shadow-sm">
-      {/* ───── TOP CONTROLS BAR: Project Switcher & View Tools ───── */}
-      <div className="z-10 bg-white/95 backdrop-blur-md border-b border-[#E5E0D6] px-4 py-2.5 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 max-w-full">
-          {/* Left: Project Selector Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap hidden sm:inline">
-              Cadastral Sheet:
-            </span>
-            {BHUNAKSHA_PROJECTS.map((proj) => {
-              const isSelected = proj.id === selectedProjectId;
-              return (
+      {/* ───── STREAMLINED 1-ROW GIS TOOLBAR (NO DUPLICATE HEADERS) ───── */}
+      {!zenMode && (
+        <div className="z-10 bg-white/95 backdrop-blur-md border-b border-[#E5E0D6] px-3.5 py-2 shadow-xs shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            {/* Left: Base Map Switcher & Corridor Toggle */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-xs font-bold">
                 <button
-                  key={proj.id}
-                  onClick={() => setSelectedProjectId(proj.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-                    isSelected
-                      ? "bg-[#15803D] text-white shadow-xs"
-                      : "bg-[#FAF8F5] text-slate-700 hover:bg-[#F2EFE8] border border-[#E5E0D6]"
+                  onClick={() => setMapMode("cadastralSheet")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                    mapMode === "cadastralSheet"
+                      ? "bg-white text-[#15803D] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title="Authentic BhuNaksha Village Sajra Sheet Mode"
+                >
+                  📜 Sajra Sheet
+                </button>
+                <button
+                  onClick={() => setMapMode("hybrid")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                    mapMode === "hybrid"
+                      ? "bg-white text-[#0284C7] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title="High-Res Satellite Imagery with Cadastral Boundaries"
+                >
+                  🛰️ Satellite
+                </button>
+                <button
+                  onClick={() => setMapMode("osm")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                    mapMode === "osm"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  title="Street Map"
+                >
+                  🗺️ Streets
+                </button>
+              </div>
+
+              {/* Corridor Toggle */}
+              <button
+                onClick={() => setShowCorridor(!showCorridor)}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                  showCorridor
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-white text-slate-500 border-[#E5E0D6] hover:text-slate-800"
+                }`}
+                title="Toggle 60m Highway Corridor Right-of-Way"
+              >
+                <span className={`h-2 w-2 rounded-full ${showCorridor ? "bg-red-600 animate-pulse" : "bg-slate-300"}`} />
+                <span>60m Corridor</span>
+              </button>
+
+              {/* Parcel Filter Pills */}
+              <div className="hidden sm:flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-[11px] font-bold">
+                <button
+                  onClick={() => setFilterImpact("all")}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    filterImpact === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span>{proj.name}</span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
-                      isSelected ? "bg-white/20 text-white" : "bg-white text-slate-600 border border-[#E5E0D6]"
-                    }`}
-                  >
-                    {proj.parcels.length} Khasras
-                  </span>
+                  All ({currentProject.parcels.length})
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Right: Map Modes, Corridor Toggle & API Inspector Button */}
-          <div className="flex items-center gap-2 self-end lg:self-auto overflow-x-auto">
-            {/* Map Mode Selector */}
-            <div className="flex items-center bg-[#FAF8F5] p-1 rounded-xl border border-[#E5E0D6]">
-              <button
-                onClick={() => setMapMode("cadastralSheet")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  mapMode === "cadastralSheet"
-                    ? "bg-white text-[#15803D] shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Authentic BhuNaksha Village Sajra Sheet Mode"
-              >
-                📜 Sajra Sheet
-              </button>
-              <button
-                onClick={() => setMapMode("hybrid")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  mapMode === "hybrid"
-                    ? "bg-white text-[#0284C7] shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Satellite Imagery with BhuNaksha Cadastral Vectors"
-              >
-                🛰️ Satellite Hybrid
-              </button>
-              <button
-                onClick={() => setMapMode("osm")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  mapMode === "osm"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                🗺️ Standard
-              </button>
+                <button
+                  onClick={() => setFilterImpact("affected")}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    filterImpact === "affected" ? "bg-red-500 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  Affected ({currentProject.totalAffectedParcels})
+                </button>
+                <button
+                  onClick={() => setFilterImpact("unaffected")}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    filterImpact === "unaffected" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  Buffer ({currentProject.parcels.length - currentProject.totalAffectedParcels})
+                </button>
+              </div>
             </div>
 
-            {/* Corridor Overlay Toggle */}
-            <button
-              onClick={() => setShowCorridor(!showCorridor)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
-                showCorridor
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-white text-slate-600 border-[#E5E0D6]"
-              }`}
-              title="Toggle Project Alignment Right-of-Way Corridor"
-            >
-              <span className={`h-2 w-2 rounded-full ${showCorridor ? "bg-red-600 animate-pulse" : "bg-slate-300"}`} />
-              <span>Corridor Alignment</span>
-            </button>
+            {/* Right: GIS Toggles (Labels, Popups, Zen Mode, API) */}
+            <div className="flex items-center gap-1.5">
+              {/* Labels Toggle */}
+              <button
+                onClick={() => setShowKhasraLabels(!showKhasraLabels)}
+                className={`px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                  showKhasraLabels
+                    ? "bg-[#FAF8F5] text-slate-900 border-[#CBD5E1]"
+                    : "bg-white text-slate-400 border-[#E5E0D6]"
+                }`}
+                title="Toggle Khasra Plot Numbers"
+              >
+                <Tag className="h-3 w-3" />
+                <span className="hidden md:inline">Numbers</span>
+              </button>
 
-            {/* BhuNaksha API Inspector Button */}
-            <button
-              onClick={() => setApiDrawerOpen(!apiDrawerOpen)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FAF5FF] hover:bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF] flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Code2 className="h-3.5 w-3.5" />
-              <span>API Inspector</span>
-            </button>
+              {/* Tooltips / Popups Toggle */}
+              <button
+                onClick={() => setShowTooltips(!showTooltips)}
+                className={`px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                  showTooltips
+                    ? "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]"
+                    : "bg-white text-slate-400 border-[#E5E0D6]"
+                }`}
+                title={showTooltips ? "Hover tooltips enabled" : "Hover tooltips disabled for clean map inspection"}
+              >
+                <MessageSquare className="h-3 w-3" />
+                <span className="hidden md:inline">Popups</span>
+                <span className="text-[10px] font-mono">{showTooltips ? "ON" : "OFF"}</span>
+              </button>
 
-            {/* Architecture Dossier Modal Button */}
-            <button
-              onClick={() => setArchitectureModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#F0FDF4] hover:bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Info className="h-3.5 w-3.5" />
-              <span>Evaluation Dossier</span>
-            </button>
+              {/* Zen / Full Map Mode Toggle */}
+              <button
+                onClick={() => setZenMode(true)}
+                className="px-2 py-1 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-[#FAF8F5] border border-[#E5E0D6] flex items-center gap-1 cursor-pointer transition-colors"
+                title="Zen Focus Mode: Hide all overlays to inspect pure cadastral map"
+              >
+                <Maximize2 className="h-3 w-3 text-slate-500" />
+                <span className="hidden lg:inline">Zen View</span>
+              </button>
+
+              {/* Raw API Drawer Button */}
+              <button
+                onClick={() => setApiDrawerOpen(!apiDrawerOpen)}
+                className="px-2 py-1 rounded-xl text-xs font-bold bg-[#FAF5FF] hover:bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF] flex items-center gap-1 transition-colors cursor-pointer"
+                title="Inspect NIC BhuNaksha WFS 2.0 GeoJSON Endpoint"
+              >
+                <Code2 className="h-3 w-3" />
+                <span className="hidden lg:inline">API</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ───── MAIN INTERACTIVE MAP & FLOATING HUD ───── */}
+      {/* ───── MAIN INTERACTIVE MAP CANVAS ───── */}
       <div className="relative flex-1 w-full h-full isolate">
         <MapContainer
           center={cameraConfig.center}
@@ -438,11 +459,17 @@ export function BhuNakshaMapViewer({
           }}
         >
           <MapCameraController center={cameraConfig.center} zoom={cameraConfig.zoom} />
-          <MapTelemetryTracker onMouseMove={setCursorPos} />
+          <MapTelemetryTracker
+            onMouseMove={setCursorPos}
+            onMapClick={() => {
+              if (selectedParcel && !inspectorOpen) {
+                setSelectedParcel(null);
+              }
+            }}
+          />
 
           {/* Map Base Tile Layers */}
           {mapMode === "cadastralSheet" && (
-            // Clean parchment background overlay simulating traditional Sajra revenue sheet
             <TileLayer
               attribution='&copy; <a href="https://carto.com/">CARTO</a>'
               url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
@@ -451,7 +478,6 @@ export function BhuNakshaMapViewer({
           )}
 
           {mapMode === "hybrid" && (
-            // High-Resolution Satellite Tile Layer
             <TileLayer
               attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -466,10 +492,9 @@ export function BhuNakshaMapViewer({
             />
           )}
 
-          {/* Project Alignment Corridor Overlay (Line & Right-of-Way Buffer) */}
+          {/* 60m Highway Corridor Right-of-Way Buffer & Centerline */}
           {showCorridor && currentProject.corridorCenterline && (
             <>
-              {/* Corridor Right of Way (Outer Buffer Band) */}
               <Polyline
                 positions={currentProject.corridorCenterline}
                 pathOptions={{
@@ -478,30 +503,15 @@ export function BhuNakshaMapViewer({
                   opacity: 0.18,
                 }}
               />
-              {/* Corridor Centerline */}
               <Polyline
                 positions={currentProject.corridorCenterline}
                 pathOptions={{
                   color: "#B91C1C",
-                  weight: 3,
+                  weight: 2.5,
                   dashArray: "8, 6",
                 }}
               />
             </>
-          )}
-
-          {/* Zonal Project Boundary Polygon (e.g. Solar Park) */}
-          {showCorridor && currentProject.boundaryPolygon && (
-            <Polygon
-              positions={currentProject.boundaryPolygon}
-              pathOptions={{
-                color: "#7C3AED",
-                weight: 2.5,
-                dashArray: "6, 6",
-                fillColor: "#A855F7",
-                fillOpacity: 0.12,
-              }}
-            />
           )}
 
           {/* BhuNaksha Cadastral Khasra Vector Polygons */}
@@ -516,37 +526,23 @@ export function BhuNakshaMapViewer({
                   positions={parcel.polygon}
                   pathOptions={style}
                   eventHandlers={{
-                    click: () => {
+                    click: (e) => {
+                      L.DomEvent.stopPropagation(e);
                       setSelectedParcel(parcel);
-                      if (!inspectorOpen) setInspectorOpen(true);
                     },
                   }}
                 >
-                  <Tooltip sticky direction="top" opacity={0.95}>
-                    <div className="font-sans text-xs p-1 space-y-0.5">
-                      <div className="font-mono font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>Khasra {parcel.khasraNumber}</span>
-                        {parcel.isAffected ? (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-100 text-red-800 font-sans font-bold">
-                            {enriched.stageTitle}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-sans font-bold">
-                            Unaffected
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-slate-600">
-                        Area: {parcel.gisCalculatedAreaHa} Ha | Owner: {parcel.owners[0]?.name}
-                      </div>
-                      <div className="text-[10px] text-[#15803D] font-semibold">
-                        ULPIN: {parcel.ulpin}
-                      </div>
-                    </div>
-                  </Tooltip>
+                  {/* Subtle, non-sticky, clean 1-line tooltip ONLY when enabled */}
+                  {showTooltips && (
+                    <Tooltip direction="top" offset={[0, -8]} opacity={0.92}>
+                      <span className="font-mono text-xs font-semibold text-slate-900">
+                        Khasra {parcel.khasraNumber} &bull; {parcel.gisCalculatedAreaHa} Ha &bull; {parcel.isAffected ? "Affected" : "Buffer"}
+                      </span>
+                    </Tooltip>
+                  )}
                 </Polygon>
 
-                {/* Centroid Plot Number Label Badge */}
+                {/* Minimalist Centroid Plot Number Label */}
                 {showKhasraLabels && (
                   <Marker
                     position={parcel.coordinates}
@@ -554,15 +550,8 @@ export function BhuNakshaMapViewer({
                       parcel.khasraNumber,
                       isSelected,
                       parcel.isAffected,
-                      parcel.status,
                       enriched.stageIndex
                     )}
-                    eventHandlers={{
-                      click: () => {
-                        setSelectedParcel(parcel);
-                        if (!inspectorOpen) setInspectorOpen(true);
-                      },
-                    }}
                   />
                 )}
               </React.Fragment>
@@ -570,108 +559,97 @@ export function BhuNakshaMapViewer({
           })}
         </MapContainer>
 
-        {/* ───── HUD STRIP: Village Sajra Sheet Metadata & Filter ───── */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2 max-w-xs sm:max-w-sm pointer-events-none">
-          {isHudCollapsed ? (
-            <div className="bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-2xl px-3 py-1.5 shadow-md pointer-events-auto flex items-center gap-2 text-xs font-bold text-slate-800 animate-in fade-in duration-150">
-              <span className="text-[10px] uppercase font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-md border border-[#BBF7D0]">
-                NIC BhuNaksha
-              </span>
-              <span>{currentProject.village} Cadastre</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-red-700">{currentProject.totalAffectedParcels}/{currentProject.parcels.length}</span>
-              <button
-                onClick={() => setIsHudCollapsed(false)}
-                className="p-1 rounded-lg hover:bg-[#F2EFE8] text-slate-500 hover:text-slate-900 cursor-pointer transition-colors"
-                title="Expand Village Cadastre HUD"
-              >
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
+        {/* ───── ZEN MODE EXIT BUTTON ───── */}
+        {zenMode && (
+          <button
+            onClick={() => setZenMode(false)}
+            className="absolute top-3 right-3 z-30 bg-slate-900/90 text-white hover:bg-slate-900 px-3 py-1.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer backdrop-blur-md transition-all animate-in fade-in"
+          >
+            <Minimize2 className="h-3.5 w-3.5" />
+            <span>Exit Zen Mode</span>
+          </button>
+        )}
+
+        {/* ───── SLEEK MINIMAL TOP-LEFT BADGE (DOES NOT COVER PARCELS) ───── */}
+        {!zenMode && (
+          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+            <div className="bg-white/90 backdrop-blur-md border border-[#E5E0D6] rounded-xl px-2.5 py-1 shadow-xs pointer-events-auto flex items-center gap-2 text-[11px] font-semibold text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-[#15803D]" />
+              <span className="font-bold text-slate-900">{currentProject.village}</span>
+              <span className="text-slate-400">&bull;</span>
+              <span className="font-mono text-slate-600">{currentProject.sajraSheetNumber}</span>
+              <span className="text-slate-400">&bull;</span>
+              <span className="text-red-700 font-bold">{currentProject.totalAffectedParcels} Affected</span>
             </div>
-          ) : (
-            <div className="bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-2xl p-3 shadow-md pointer-events-auto space-y-1.5 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-md border border-[#BBF7D0]">
-                    NIC BhuNaksha GIS
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-500 font-semibold">
-                    LGD: {currentProject.villageLgdCode}
-                  </span>
+          </div>
+        )}
+
+        {/* ───── BOTTOM-LEFT TELEMETRY BADGE ───── */}
+        {!zenMode && (
+          <div className="absolute bottom-3 left-3 z-10 bg-white/85 backdrop-blur-md border border-[#E5E0D6] rounded-lg px-2 py-0.5 shadow-xs text-[10px] font-mono text-slate-500 flex items-center gap-2 pointer-events-none">
+            <span>{cursorPos.lat.toFixed(5)}°N, {cursorPos.lng.toFixed(5)}°E</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-[#15803D] font-bold">{currentProject.scaleRatio}</span>
+          </div>
+        )}
+
+        {/* ───── NON-INTRUSIVE BOTTOM SUMMARY CARD (WHEN PARCEL CLICKED) ───── */}
+        {selectedParcel && !inspectorOpen && !zenMode && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-2xl px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-150">
+            <div className="bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-2xl p-3 shadow-xl pointer-events-auto flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="font-mono text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#0284C7] text-white shrink-0 shadow-xs">
+                  KH-{selectedParcel.khasraNumber}
                 </div>
-                <button
-                  onClick={() => setIsHudCollapsed(true)}
-                  className="p-1 rounded-lg hover:bg-[#F2EFE8] text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                  title="Collapse HUD"
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900 truncate">
+                    <span>{selectedParcel.owners[0]?.name || "Gram Sabha"}</span>
+                    <span className="text-slate-400 font-normal">&bull;</span>
+                    <span className="font-mono text-slate-700">{selectedParcel.gisCalculatedAreaHa} Ha</span>
+                    <span className="text-slate-400 font-normal">&bull;</span>
+                    <span className={selectedParcel.isAffected ? "text-red-700" : "text-[#15803D]"}>
+                      {selectedParcel.isAffected ? `${selectedParcel.affectedAreaHa} Ha (${selectedParcel.acquisitionType})` : "Unaffected Buffer"}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-medium truncate flex items-center gap-2 mt-0.5">
+                    <span>{selectedParcel.surveyNumber}</span>
+                    <span>&bull;</span>
+                    <span className="capitalize">{selectedParcel.landClassification.replace(/_/g, " ")}</span>
+                    <span>&bull;</span>
+                    <span className="text-[#15803D] font-mono font-bold">
+                      ₹{(selectedParcel.valuation.totalCompensationPayable / 100000).toFixed(1)} L
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={() => setInspectorOpen(true)}
+                  className="h-8 px-3 text-xs font-bold bg-[#15803D] hover:bg-[#166534] text-white rounded-xl shadow-xs"
                 >
-                  <ChevronUp className="h-3.5 w-3.5" />
+                  <span>Full Dossier</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <button
+                  onClick={() => setSelectedParcel(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
+                  title="Close card"
+                >
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-              <h2 className="font-extrabold text-slate-900 text-xs sm:text-sm">
-                {currentProject.village} Village Cadastre
-              </h2>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Tehsil: {currentProject.tehsil} | District: {currentProject.district} ({currentProject.stateCode})
-              </p>
-              <div className="pt-2 border-t border-[#F2EFE8] flex items-center justify-between text-[11px]">
-                <span className="text-slate-600">
-                  Affected: <strong className="text-red-700">{currentProject.totalAffectedParcels}</strong> / {currentProject.parcels.length} Khasras
-                </span>
-                <span className="font-bold text-[#15803D]">{currentProject.totalAffectedAreaHa} Ha</span>
-              </div>
             </div>
-          )}
-
-          {/* Quick Filter Pill */}
-          {!isHudCollapsed && (
-            <div className="bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-xl p-1.5 shadow-sm pointer-events-auto flex items-center gap-1 text-[11px] font-bold">
-              <button
-                onClick={() => setFilterImpact("all")}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  filterImpact === "all" ? "bg-[#15803D] text-white" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                All ({currentProject.parcels.length})
-              </button>
-              <button
-                onClick={() => setFilterImpact("affected")}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  filterImpact === "affected" ? "bg-red-600 text-white" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Affected ({currentProject.totalAffectedParcels})
-              </button>
-              <button
-                onClick={() => setFilterImpact("unaffected")}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  filterImpact === "unaffected" ? "bg-sky-600 text-white" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Unaffected ({currentProject.parcels.length - currentProject.totalAffectedParcels})
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ───── BOTTOM TELEMETRY BAR ───── */}
-        <div className="absolute bottom-3 left-3 z-10 bg-white/90 backdrop-blur-md border border-[#E5E0D6] rounded-xl px-3 py-1.5 shadow-sm text-[10px] font-mono text-slate-600 flex items-center gap-3 pointer-events-none">
-          <div className="flex items-center gap-1.5">
-            <Compass className="h-3 w-3 text-[#0284C7]" />
-            <span>Lat: {cursorPos.lat.toFixed(5)}°N</span>
-            <span>Lng: {cursorPos.lng.toFixed(5)}°E</span>
           </div>
-          <span className="text-slate-300">|</span>
-          <span>Datum: WGS84 (EPSG:4326)</span>
-          <span className="text-slate-300">|</span>
-          <span className="text-[#15803D] font-bold">{currentProject.scaleRatio}</span>
-        </div>
+        )}
 
-        {/* ───── RIGHT SLIDE-OUT: 4-Section BhuNaksha Cadastral Parcel Dossier ───── */}
+        {/* ───── EXPANDED RIGHT SLIDE-OUT: 4-Section Cadastral Dossier (ONLY ON USER REQUEST) ───── */}
         {inspectorOpen && selectedParcel && (() => {
           const enriched = getParcel12StageInfo(selectedParcel);
 
           return (
-            <div className="absolute top-3 right-3 bottom-3 z-20 w-[420px] max-w-[calc(100vw-24px)] bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-3xl shadow-xl flex flex-col overflow-hidden animate-in slide-in-from-right-8 duration-200">
+            <div className="absolute top-3 right-3 bottom-3 z-20 w-[390px] max-w-[calc(100vw-24px)] bg-white/95 backdrop-blur-md border border-[#E5E0D6] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right-8 duration-200">
               {/* Dossier Header */}
               <div className="p-3.5 border-b border-[#E5E0D6] bg-gradient-to-r from-[#FAF8F5] to-white flex items-center justify-between shrink-0">
                 <div>
@@ -697,21 +675,34 @@ export function BhuNakshaMapViewer({
                   </h3>
                 </div>
 
-                <button
-                  onClick={() => setInspectorOpen(false)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setInspectorOpen(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
+                    title="Collapse to bottom bar"
+                  >
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setInspectorOpen(false);
+                      setSelectedParcel(null);
+                    }}
+                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
+                    title="Close dossier"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               {/* 12-Stage Visual Stepper Strip */}
               <div className="px-3.5 py-2 bg-[#FAF8F5] border-b border-[#E5E0D6] shrink-0">
                 <div className="flex items-center justify-between mb-1 text-[10px]">
-                  <span className="font-bold text-slate-500 uppercase tracking-wider">Statutory Journey</span>
+                  <span className="font-bold text-slate-500 uppercase tracking-wider">Statutory Milestone</span>
                   <span className="font-bold text-[#15803D]">{enriched.stageTitle}</span>
                 </div>
-                <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1">
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
                   {LAMS_12_STAGES.map((s) => {
                     const isDone = s.stageNumber <= (enriched.stageIndex ?? 3);
                     const isCurrent = s.stageNumber === (enriched.stageIndex ?? 3);
@@ -729,7 +720,6 @@ export function BhuNakshaMapViewer({
                         title={`${s.title}: ${s.description}`}
                       >
                         <span>{s.stageNumber}</span>
-                        <span className="hidden sm:inline">{s.shortTitle}</span>
                       </div>
                     );
                   })}
@@ -862,7 +852,6 @@ export function BhuNakshaMapViewer({
                 {/* ───── TAB 2: OWNERSHIP & ROR ───── */}
                 {dossierTab === "ror" && (
                   <div className="space-y-3">
-                    {/* RoR Status Banner */}
                     <div className="p-3 rounded-2xl bg-[#DCFCE7]/60 border border-[#BBF7D0] flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
@@ -920,7 +909,6 @@ export function BhuNakshaMapViewer({
                 {/* ───── TAB 3: ACQUISITION & VALUATION ───── */}
                 {dossierTab === "acquisition" && (
                   <div className="space-y-3">
-                    {/* Statutory Stage Pill */}
                     <div className="p-3 rounded-2xl bg-[#FAF8F5] border border-[#E5E0D6] flex items-center justify-between">
                       <span className="text-slate-500">Current Statutory Stage:</span>
                       <Badge className="bg-[#15803D] text-white text-[10px]">
@@ -928,7 +916,6 @@ export function BhuNakshaMapViewer({
                       </Badge>
                     </div>
 
-                    {/* RFCTLARR Valuation Card */}
                     {selectedParcel.isAffected ? (
                       <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#F0FDF4] to-[#DCFCE7]/40 border border-[#BBF7D0] space-y-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-[#15803D] block">
@@ -936,11 +923,11 @@ export function BhuNakshaMapViewer({
                         </span>
                         <div className="space-y-1 text-[11px]">
                           <div className="flex justify-between text-slate-600">
-                            <span>Base Market Rate (Circle Rate):</span>
+                            <span>Base Market Rate:</span>
                             <span className="font-mono">₹{(selectedParcel.circleRatePerHa / 100000).toFixed(1)} L / Ha</span>
                           </div>
                           <div className="flex justify-between text-slate-600">
-                            <span>Base Market Value ({selectedParcel.affectedAreaHa} Ha):</span>
+                            <span>Base Value ({selectedParcel.affectedAreaHa} Ha):</span>
                             <span className="font-mono">₹{(selectedParcel.valuation.baseMarketValue / 100000).toFixed(2)} L</span>
                           </div>
                           <div className="flex justify-between text-slate-600">
@@ -952,7 +939,7 @@ export function BhuNakshaMapViewer({
                             <span className="font-mono">₹{(selectedParcel.valuation.solatiumAmount / 100000).toFixed(2)} L</span>
                           </div>
                           <div className="flex justify-between text-slate-600">
-                            <span>Assets (Borewells/Trees):</span>
+                            <span>Attached Assets:</span>
                             <span className="font-mono">₹{(selectedParcel.valuation.assetsValue / 100000).toFixed(2)} L</span>
                           </div>
                           <div className="pt-1.5 border-t border-[#BBF7D0] flex justify-between font-bold text-slate-900 text-xs">
@@ -969,7 +956,6 @@ export function BhuNakshaMapViewer({
                       </div>
                     )}
 
-                    {/* Objection Card if exists */}
                     {selectedParcel.objections && selectedParcel.objections.length > 0 && (
                       <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-300 space-y-1 text-amber-950">
                         <div className="flex items-center gap-1.5 font-bold text-[11px] text-amber-900">
@@ -987,7 +973,6 @@ export function BhuNakshaMapViewer({
                 {/* ───── TAB 4: POSSESSION & R&R ───── */}
                 {dossierTab === "possession" && (
                   <div className="space-y-3">
-                    {/* Possession Details */}
                     <div className="p-3.5 rounded-2xl bg-white border border-[#E5E0D6] space-y-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                         Physical Possession (Section 38)
@@ -1014,7 +999,6 @@ export function BhuNakshaMapViewer({
                       </div>
                     </div>
 
-                    {/* Rehabilitation & Resettlement (R&R) */}
                     <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#FAF8F5] to-white border border-[#E5E0D6] space-y-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#0284C7] block">
                         Rehabilitation & Resettlement (Schedule II)
@@ -1029,12 +1013,6 @@ export function BhuNakshaMapViewer({
                         <div className="flex justify-between">
                           <span className="text-slate-500">Eligible Families:</span>
                           <span className="font-bold text-slate-900">{enriched.rrDetails?.eligibleFamiliesCount || 0}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Entitlement Package:</span>
-                          <span className="font-medium text-slate-700 text-right truncate max-w-[200px]">
-                            {enriched.rrDetails?.entitlementPackage || "Standard Sch II"}
-                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-500">Relocation Status:</span>
@@ -1066,7 +1044,7 @@ export function BhuNakshaMapViewer({
                   className="text-xs bg-[#15803D] hover:bg-[#166534] text-white font-bold gap-1.5"
                 >
                   <Code2 className="h-3.5 w-3.5" />
-                  <span>View Raw API</span>
+                  <span>Raw API</span>
                 </Button>
               </div>
             </div>
@@ -1084,7 +1062,7 @@ export function BhuNakshaMapViewer({
                     BhuNaksha OGC WFS 2.0 & Bhulekh RoR Live Inspector
                   </h3>
                   <span className="text-[10px] text-slate-500 font-mono">
-                    Endpoint: GET /api/bhunaksha/wfs?project={currentProject.id}&khasra={selectedParcel.khasraNumber}
+                    Endpoint: GET /api/bhunaksha/wfs?project={currentProject.id}&khasra={selectedParcel?.khasraNumber || "101"}
                   </span>
                 </div>
               </div>
@@ -1097,17 +1075,15 @@ export function BhuNakshaMapViewer({
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-xs">
-              {/* Simulated Curl Command */}
               <div className="bg-[#0F172A] text-slate-200 p-3 rounded-2xl overflow-x-auto space-y-1">
                 <span className="text-[10px] text-emerald-400 font-bold block"># Live Curl Request</span>
                 <code>
-                  curl -X GET &quot;https://bhoomidrishti.gov.in/api/bhunaksha/wfs?village={currentProject.villageLgdCode}&khasra={selectedParcel.khasraNumber}&quot; \<br />
+                  curl -X GET &quot;https://bhoomidrishti.gov.in/api/bhunaksha/wfs?village={currentProject.villageLgdCode}&khasra={selectedParcel?.khasraNumber || "101"}&quot; \<br />
                   &nbsp;&nbsp;-H &quot;Accept: application/geo+json&quot; \<br />
                   &nbsp;&nbsp;-H &quot;X-NIC-Auth-Token: STATE-REV-MH-2024-TOKEN&quot;
                 </code>
               </div>
 
-              {/* GeoJSON Payload */}
               <div className="bg-[#FAF8F5] border border-[#E5E0D6] p-3 rounded-2xl space-y-1">
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-[#E5E0D6]">
                   <span>Response: 200 OK &bull; Content-Type: application/geo+json</span>
