@@ -27,6 +27,9 @@ import {
   Compass,
 } from "lucide-react";
 import { MOCK_PROJECTS, MOCK_FAMILIES, getProjectWorkflow } from "@/lib/mock-data";
+import { BHUNAKSHA_PROJECTS } from "@/lib/bhunaksha-service";
+import { AcquisitionWorkflowStepper } from "@/components/workflow/acquisition-workflow-stepper";
+import { AffectedLandTable } from "@/components/workflow/affected-land-table";
 import { useApp } from "@/context/app-context";
 import { checkResourceAccess } from "@/lib/auth-store";
 import { RequestAccessModal } from "@/components/auth/request-access-modal";
@@ -46,6 +49,7 @@ export default function ProjectDetailPage({
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
   const project = MOCK_PROJECTS.find((p) => p.id === projectId) || MOCK_PROJECTS[0];
+  const bhuProject = BHUNAKSHA_PROJECTS.find((p) => p.id === projectId) || BHUNAKSHA_PROJECTS[0];
   const workflowStages = getProjectWorkflow(project);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -263,64 +267,7 @@ export default function ProjectDetailPage({
       </div>
 
       {/* RFCTLARR Act 2013 10-Stage Statutory Stepper */}
-      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
-        <CardHeader className="pb-3 border-b border-[#F2EFE8]">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#15803D]" />
-                <span>RFCTLARR Act 2013 — Statutory Lifecycle Stepper</span>
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Live monitoring of legal gates, gazette declarations, and Section 25 sunset timelines
-              </CardDescription>
-            </div>
-            <span className="text-[11px] font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#BBF7D0]">
-              Active Milestone: {project.status.replace(/_/g, " ").toUpperCase()}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 overflow-x-auto">
-          <div className="flex items-start justify-between min-w-[750px] relative">
-            {/* Connecting line */}
-            <div className="absolute top-4 left-4 right-4 h-0.5 bg-[#E5E0D6] z-0" />
-
-            {workflowStages.map((stage, idx) => (
-              <div
-                key={stage.id}
-                className="relative z-10 flex flex-col items-center text-center max-w-[70px]"
-              >
-                <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all ${
-                    stage.status === "completed"
-                      ? "bg-[#15803D] text-white border-[#15803D] shadow-xs"
-                      : stage.status === "current"
-                      ? "bg-[#FEF3C7] text-[#B45309] border-[#F59E0B] animate-pulse ring-4 ring-amber-100"
-                      : "bg-[#F5F2EB] text-slate-500 border-[#E5E0D6]"
-                  }`}
-                >
-                  {stage.status === "completed" ? (
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                  ) : (
-                    idx + 1
-                  )}
-                </div>
-                <span className="mt-2 text-[10px] font-bold text-slate-800 leading-tight">
-                  {stage.name}
-                </span>
-                <span className="text-[9px] font-mono font-semibold text-[#0284C7] mt-0.5">
-                  {stage.section}
-                </span>
-                {stage.completedDate && (
-                  <span className="text-[8px] text-slate-500 mt-0.5 font-mono">
-                    {stage.completedDate.slice(0, 7)}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <AcquisitionWorkflowStepper project={bhuProject} />
 
       {/* Main Tabbed Dossier Sections */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
@@ -409,101 +356,7 @@ export default function ProjectDetailPage({
 
         {/* Tab 2: Land Parcels */}
         <TabsContent value="parcels" className="space-y-4 mt-4">
-          <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-[#F2EFE8] pb-4">
-              <div>
-                <CardTitle className="text-sm font-extrabold text-slate-900">
-                  Cadastral Register of Notified Parcels
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
-                  Verified Gat/Survey numbers with 14-digit ULPIN (Bhu-Aadhaar)
-                </CardDescription>
-              </div>
-              <Link href="/map">
-                <Button variant="default" size="sm" className="text-xs gap-1.5 bg-[#15803D] hover:bg-[#166534] text-white">
-                  <Compass className="h-3.5 w-3.5" />
-                  <span>Inspect on Map</span>
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
-                    <TableHead className="text-slate-700 font-bold">ULPIN / Gat No</TableHead>
-                    <TableHead className="text-slate-700 font-bold">Village / Tehsil</TableHead>
-                    <TableHead className="text-slate-700 font-bold">Owner of Record</TableHead>
-                    <TableHead className="text-slate-700 font-bold">Land Category</TableHead>
-                    <TableHead className="text-slate-700 font-bold">Area (ha)</TableHead>
-                    <TableHead className="text-slate-700 font-bold">Acquisition Status</TableHead>
-                    <TableHead className="text-right text-slate-700 font-bold">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                    <TableCell className="font-mono text-xs">
-                      <div className="text-[#0284C7] font-extrabold">MH240019284712</div>
-                      <div className="text-slate-500 font-medium">Gat No. 42/1 (KH-892)</div>
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-bold text-slate-900">Ramesh Patil & Sons</TableCell>
-                    <TableCell className="text-xs text-slate-600">Agricultural (Irrigated)</TableCell>
-                    <TableCell className="text-xs font-mono font-bold text-slate-900">2.5 ha</TableCell>
-                    <TableCell>
-                      <Badge variant="success" className="bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Acquired</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
-                          Award Detail →
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                    <TableCell className="font-mono text-xs">
-                      <div className="text-[#0284C7] font-extrabold">MH240019284713</div>
-                      <div className="text-slate-500 font-medium">Gat No. 42/2 (KH-893)</div>
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-bold text-slate-900">Suresh Gaikwad</TableCell>
-                    <TableCell className="text-xs text-slate-600">Agricultural (Dry)</TableCell>
-                    <TableCell className="text-xs font-mono font-bold text-slate-900">1.8 ha</TableCell>
-                    <TableCell>
-                      <Badge variant="default" className="bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]">Possessed</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
-                          Award Detail →
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
-                    <TableCell className="font-mono text-xs">
-                      <div className="text-[#0284C7] font-extrabold">MH240019284714</div>
-                      <div className="text-slate-500 font-medium">Gat No. 43 (KH-901)</div>
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-bold text-slate-900">Priya Deshmukh</TableCell>
-                    <TableCell className="text-xs text-slate-600">Commercial / Highway Front</TableCell>
-                    <TableCell className="text-xs font-mono font-bold text-slate-900">3.2 ha</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="border-[#BAE6FD] text-[#0284C7] bg-[#F0F9FF]">Notified Sec 11</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
-                          Award Detail →
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <AffectedLandTable parcels={bhuProject.parcels} />
         </TabsContent>
 
         {/* Tab 3: Affected Families */}

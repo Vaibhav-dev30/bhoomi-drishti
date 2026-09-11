@@ -99,7 +99,7 @@ export function RequestAccessModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
       <div className="bg-white rounded-3xl border border-[#E5E0D6] shadow-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-start justify-between pb-3 border-b border-[#F2EFE8]">

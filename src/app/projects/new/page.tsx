@@ -34,6 +34,8 @@ export default function NewProjectProposalPage() {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [purposeDescription, setPurposeDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
+  const [sajraSheet, setSajraSheet] = useState("Sheet 02 - Musalgaon (552109)");
+  const [corridorWidth, setCorridorWidth] = useState("60m");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +246,37 @@ export default function NewProjectProposalPage() {
                       required
                     />
                   </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      BhuNaksha Cadastral Sheet (Sajra) *
+                    </label>
+                    <select
+                      value={sajraSheet}
+                      onChange={(e) => setSajraSheet(e.target.value)}
+                      className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs font-semibold text-slate-800 focus:border-[#0284C7] focus:outline-none cursor-pointer"
+                    >
+                      <option value="Sheet 02 - Musalgaon (552109)">Sheet No. 02 - Musalgaon (LGD: 552109) [14 Khasras]</option>
+                      <option value="Sheet 01 - Badwar (481920)">Sheet No. 01 - Badwar (LGD: 481920) [12 Khasras]</option>
+                      <option value="Sheet 04 - Sinnar Urban">Sheet No. 04 - Sinnar Urban Cadastre</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      Alignment Corridor Width (Right-of-Way) *
+                    </label>
+                    <select
+                      value={corridorWidth}
+                      onChange={(e) => setCorridorWidth(e.target.value)}
+                      className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs font-semibold text-slate-800 focus:border-[#0284C7] focus:outline-none cursor-pointer"
+                    >
+                      <option value="60m">60m (National Highway 4/6-lane ROW)</option>
+                      <option value="45m">45m (Expressway Greenfield Corridor)</option>
+                      <option value="30m">30m (State Highway / Canal Feeder)</option>
+                      <option value="zonal">Zonal Boundary Polygon (Solar / Industrial Park)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
@@ -353,13 +386,13 @@ export default function NewProjectProposalPage() {
 
           <div className="flex items-center justify-center gap-3">
             <Link href="/projects">
-              <Button size="sm" className="bg-[#15803D] hover:bg-[#16A34A] text-white">
+              <Button size="sm" variant="outline" className="text-xs font-bold">
                 Return to Projects Register
               </Button>
             </Link>
             <Link href="/map">
-              <Button variant="outline" size="sm">
-                View on Spatial Map
+              <Button size="sm" className="bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold">
+                Open in BhuNaksha Cadastral Map →
               </Button>
             </Link>
           </div>
