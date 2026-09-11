@@ -151,22 +151,33 @@ export interface Project {
 export interface LandParcel {
   id: string;
   projectId: string;
+  plotNumber: string; // e.g. "Plot 01"
   surveyNumber: string;
   khasraNumber: string;
+  ulpin: string; // 14-digit Bhu-Aadhaar
   village: string;
   tehsil: string;
   district: string;
   state: string;
   areaHectares: number;
+  areaSqMeters: number;
+  dimensions: string; // e.g. "125m × 200m"
   landType: LandType;
   ownershipType: "private" | "government" | "community" | "forest";
   status: ParcelStatus;
+  plotStatus: "acquired" | "available" | "disputed" | "reserved";
   ownerName: string;
   ownerContact?: string;
-  marketValue: number; // per hectare in ₹
-  // GIS coordinates [lat, lng]
+  marketValue: number; // total in ₹
+  marketRatePerHa?: number; // ₹ per hectare
+  pricePerSqM?: number; // ₹ per sq meter
+  solatiumAmount?: number;
+  khasraClassification?: string;
+  // GIS centroid coordinates [lat, lng]
   coordinates: [number, number];
-  // Polygon boundary [[lat, lng], ...]
+  centroid?: [number, number];
+  // Exact contiguous polygon boundary [[lat, lng], ...]
+  polygon: [number, number][];
   boundary?: [number, number][];
 }
 

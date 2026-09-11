@@ -66,21 +66,21 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <FileBarChart className="h-6 w-6 text-amber-400" />
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <FileBarChart className="h-6 w-6 text-[#0284C7]" />
             <span>Executive MIS & Statutory Compliance Reports</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
             Automated analytical dossiers for Central Ministries, PM PRAGATI review, NITI Aayog, and CAG Parliamentary Audits.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="default" size="sm" className="gap-1.5">
+          <Button variant="default" size="sm" className="gap-1.5 bg-[#15803D] hover:bg-[#166534] text-white">
             <Download className="h-4 w-4" />
             <span>Download Selected Report (PDF)</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 border-slate-800">
-            <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+          <Button variant="outline" size="sm" className="gap-1.5 border-[#E5E0D6] bg-white hover:bg-[#FAF8F5] text-slate-700">
+            <FileSpreadsheet className="h-4 w-4 text-[#15803D]" />
             <span>Export Raw Data (XLSX)</span>
           </Button>
         </div>
@@ -92,25 +92,25 @@ export default function ReportsPage() {
           <div
             key={rep.id}
             onClick={() => setSelectedReport(rep.id)}
-            className={`p-4 rounded-xl border text-xs cursor-pointer transition-all flex flex-col justify-between ${
+            className={`p-4 rounded-3xl border text-xs cursor-pointer transition-all flex flex-col justify-between shadow-xs ${
               selectedReport === rep.id
-                ? "bg-slate-900 border-amber-500/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/30"
-                : "bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-400"
+                ? "bg-[#F0FDF4] border-[#86EFAC] ring-2 ring-[#BBF7D0]"
+                : "bg-white border-[#E5E0D6] hover:border-[#CBD5E1] text-slate-600"
             }`}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-amber-400">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-[#FAF8F5] text-[#0284C7] font-bold border border-[#E5E0D6]">
                   {rep.category}
                 </span>
                 {selectedReport === rep.id && (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />
+                  <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
                 )}
               </div>
-              <h4 className="font-bold text-white text-xs">{rep.name}</h4>
-              <p className="mt-1 text-[11px] text-slate-400 leading-relaxed">{rep.desc}</p>
+              <h4 className="font-bold text-slate-900 text-xs">{rep.name}</h4>
+              <p className="mt-1 text-[11px] text-slate-500 leading-relaxed font-normal">{rep.desc}</p>
             </div>
-            <span className="mt-3 text-[10px] font-semibold text-amber-400">
+            <span className="mt-3 text-[10px] font-bold text-[#0284C7]">
               Generate Active Dossier →
             </span>
           </div>
@@ -118,44 +118,45 @@ export default function ReportsPage() {
       </div>
 
       {/* Comparative State Land Acquisition Chart */}
-      <Card className="border-slate-800 bg-slate-900/60">
-        <CardHeader>
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-[#F2EFE8] pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold text-white">
+              <CardTitle className="text-base font-extrabold text-slate-900">
                 State-wise Land Acquisition: Notified vs Possessed (Hectares)
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Comparison of statutory progress across top reporting States
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-xs font-mono">
+            <Badge variant="outline" className="text-xs font-mono border-[#E5E0D6] bg-[#FAF8F5] text-slate-700">
               FY 2025-26
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={STATE_METRICS.slice(0, 8)}
                 margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="stateCode" stroke="#64748b" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F2EFE8" />
+                <XAxis dataKey="stateCode" stroke="#64748B" tick={{ fontSize: 11 }} />
+                <YAxis stroke="#64748B" tick={{ fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0c152d",
-                    borderColor: "#1e293b",
-                    borderRadius: "8px",
-                    color: "#f8fafc",
+                    backgroundColor: "#FFFFFF",
+                    borderColor: "#E5E0D6",
+                    borderRadius: "12px",
+                    color: "#0F172A",
                     fontSize: "12px",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-                <Bar dataKey="areaNotified" name="Area Notified (ha)" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="areaAcquired" name="Area Acquired (ha)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="areaNotified" name="Area Notified (ha)" fill="#0284C7" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="areaAcquired" name="Area Acquired (ha)" fill="#15803D" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -163,81 +164,81 @@ export default function ReportsPage() {
       </Card>
 
       {/* Active Report Table View */}
-      <Card className="border-slate-800 bg-slate-900/60">
-        <CardHeader>
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-[#F2EFE8] pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold text-white">
+              <CardTitle className="text-base font-extrabold text-slate-900">
                 Statutory Audit Schedule: Active Projects
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Compliance status of mandatory Section 14 (SIA) & Section 25 (Award) statutory clocks
               </CardDescription>
             </div>
-            <span className="text-xs font-mono text-emerald-400">
+            <span className="text-xs font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#BBF7D0]">
               Audit Standard: CAG / RFCTLARR Sec 101
             </span>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Project Code</TableHead>
-                <TableHead>State / Agency</TableHead>
-                <TableHead>Sec 11 Preliminary Date</TableHead>
-                <TableHead>Sec 19 Declaration Date</TableHead>
-                <TableHead>Award Status (Sec 23)</TableHead>
-                <TableHead>Sunset Risk</TableHead>
+              <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                <TableHead className="text-slate-700 font-bold">Project Code</TableHead>
+                <TableHead className="text-slate-700 font-bold">State / Agency</TableHead>
+                <TableHead className="text-slate-700 font-bold">Sec 11 Preliminary Date</TableHead>
+                <TableHead className="text-slate-700 font-bold">Sec 19 Declaration Date</TableHead>
+                <TableHead className="text-slate-700 font-bold">Award Status (Sec 23)</TableHead>
+                <TableHead className="text-slate-700 font-bold">Sunset Risk</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-mono text-xs font-bold text-amber-400">
+              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
                   MH-HWY-2024-001
                 </TableCell>
-                <TableCell className="text-xs">Maharashtra (MSRDC)</TableCell>
-                <TableCell className="text-xs font-mono">10 Feb 2024</TableCell>
-                <TableCell className="text-xs font-mono">15 Aug 2024</TableCell>
-                <TableCell className="text-xs text-emerald-400 font-semibold">Award Declared (01 Mar 2025)</TableCell>
+                <TableCell className="text-xs text-slate-900 font-medium">Maharashtra (MSRDC)</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">10 Feb 2024</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">15 Aug 2024</TableCell>
+                <TableCell className="text-xs text-[#15803D] font-bold">Award Declared (01 Mar 2025)</TableCell>
                 <TableCell>
-                  <Badge variant="success" className="text-[10px]">Complied (No Lapse)</Badge>
+                  <Badge variant="success" className="text-[10px] bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Complied (No Lapse)</Badge>
                 </TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs font-bold text-amber-400">
+              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
                   UP-RLY-2024-002
                 </TableCell>
-                <TableCell className="text-xs">Uttar Pradesh (NHSRCL)</TableCell>
-                <TableCell className="text-xs font-mono">15 Jan 2024</TableCell>
-                <TableCell className="text-xs font-mono">10 Jan 2025</TableCell>
-                <TableCell className="text-xs text-amber-400 font-semibold">Enquiry Pending</TableCell>
+                <TableCell className="text-xs text-slate-900 font-medium">Uttar Pradesh (NHSRCL)</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">15 Jan 2024</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">10 Jan 2025</TableCell>
+                <TableCell className="text-xs text-[#D97706] font-bold">Enquiry Pending</TableCell>
                 <TableCell>
-                  <Badge variant="default" className="text-[10px]">Action Required (214d left)</Badge>
+                  <Badge variant="default" className="text-[10px] bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]">Action Required (214d left)</Badge>
                 </TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs font-bold text-amber-400">
+              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
                   MP-IRR-2024-003
                 </TableCell>
-                <TableCell className="text-xs">Madhya Pradesh (KBLPA)</TableCell>
-                <TableCell className="text-xs font-mono">15 Jun 2025</TableCell>
+                <TableCell className="text-xs text-slate-900 font-medium">Madhya Pradesh (KBLPA)</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">15 Jun 2025</TableCell>
                 <TableCell className="text-xs text-slate-500 font-mono">Pending Sec 15</TableCell>
-                <TableCell className="text-xs text-slate-400">Objection Window Open</TableCell>
+                <TableCell className="text-xs text-slate-600 font-medium">Objection Window Open</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="text-[10px]">On Schedule</Badge>
+                  <Badge variant="outline" className="text-[10px] border-[#E5E0D6] bg-[#FAF8F5] text-slate-700">On Schedule</Badge>
                 </TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs font-bold text-amber-400">
+              <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
                   GJ-IND-2024-004
                 </TableCell>
-                <TableCell className="text-xs">Gujarat (DICDL)</TableCell>
-                <TableCell className="text-xs font-mono">01 Jun 2023</TableCell>
-                <TableCell className="text-xs font-mono">15 Dec 2023</TableCell>
-                <TableCell className="text-xs text-emerald-400 font-semibold">Award Passed (30 Sep 2024)</TableCell>
+                <TableCell className="text-xs text-slate-900 font-medium">Gujarat (DICDL)</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">01 Jun 2023</TableCell>
+                <TableCell className="text-xs font-mono text-slate-600">15 Dec 2023</TableCell>
+                <TableCell className="text-xs text-[#15803D] font-bold">Award Passed (30 Sep 2024)</TableCell>
                 <TableCell>
-                  <Badge variant="success" className="text-[10px]">Complied</Badge>
+                  <Badge variant="success" className="text-[10px] bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Complied</Badge>
                 </TableCell>
               </TableRow>
             </TableBody>

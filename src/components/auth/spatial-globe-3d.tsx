@@ -52,12 +52,12 @@ export function SpatialGlobe3D({ mode, isSubmitting = false }: SpatialGlobe3DPro
     const rootGroup = new THREE.Group();
     scene.add(rootGroup);
 
-    // 1. Inner Luminous Core Sphere
+    // 1. Inner Luminous Core Sphere (Light Theme Aqua/Mint Gem)
     const coreGeo = new THREE.SphereGeometry(1.7, 32, 32);
     const coreMat = new THREE.MeshBasicMaterial({
-      color: 0x071e3d,
+      color: 0xe0f2fe,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.85,
       wireframe: false,
     });
     const coreMesh = new THREE.Mesh(coreGeo, coreMat);
@@ -66,10 +66,10 @@ export function SpatialGlobe3D({ mode, isSubmitting = false }: SpatialGlobe3DPro
     // 2. Wireframe Geodesic Icosahedron / Land Grid
     const geoIco = new THREE.IcosahedronGeometry(2.3, 2);
     const wireframeMat = new THREE.MeshBasicMaterial({
-      color: 0x0ea5e9,
+      color: 0x0284c7,
       wireframe: true,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
     });
     const wireframeMesh = new THREE.Mesh(geoIco, wireframeMat);
     rootGroup.add(wireframeMesh);
@@ -268,17 +268,17 @@ export function SpatialGlobe3D({ mode, isSubmitting = false }: SpatialGlobe3DPro
 
   return (
     <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-      <div ref={containerRef} className="w-full h-full min-h-[380px] lg:min-h-[520px]" />
+      <div ref={containerRef} className="w-full h-full min-h-[220px] max-h-[320px]" />
 
       {/* Floating Spatial HUD Badges */}
-      <div className="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-cyan-500/30 backdrop-blur-md text-[11px] font-mono text-cyan-300 shadow-lg">
-        <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
-        <span>NavIC • Bhuvan 3D Cadastre Active</span>
+      <div className="absolute top-3 left-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 border border-[#E5E0D6] shadow-sm text-[10px] font-mono text-[#0284C7]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#0284C7] animate-ping" />
+        <span className="font-bold">NavIC • Bhuvan 3D Cadastre</span>
       </div>
 
-      <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-500/30 backdrop-blur-md text-[11px] font-mono text-amber-300 shadow-lg">
-        <span className="h-2 w-2 rounded-full bg-amber-400" />
-        <span>RFCTLARR 2013 Statutory Node</span>
+      <div className="absolute bottom-3 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 border border-[#E5E0D6] shadow-sm text-[10px] font-mono text-[#15803D]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+        <span className="font-bold">RFCTLARR Statutory Node</span>
       </div>
     </div>
   );

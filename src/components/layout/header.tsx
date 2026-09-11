@@ -10,7 +10,7 @@ import {
   Building2,
   Clock,
   Layers,
-  Filter,
+  Check,
 } from "lucide-react";
 import { useApp, ROLE_CONFIGS } from "@/context/app-context";
 import { UserRole } from "@/types";
@@ -66,7 +66,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-20 flex flex-col border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md">
+    <header className="sticky top-0 z-20 flex flex-col border-b border-[#E5E0D6] bg-white/95 backdrop-blur-md shadow-xs">
       {/* Top Tricolor Brand Accent Line */}
       <div className="tricolor-stripe" />
 
@@ -75,7 +75,7 @@ export function Header() {
         {/* Left: Search input */}
         <div className="flex items-center gap-3 flex-1 max-w-md">
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0284C7]" />
             <input
               type="text"
               placeholder={
@@ -85,7 +85,7 @@ export function Header() {
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-slate-800 bg-slate-900/90 pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#0284C7] focus:outline-none focus:ring-1 focus:ring-[#0284C7] transition-all"
             />
           </div>
         </div>
@@ -93,18 +93,18 @@ export function Header() {
         {/* Center: Global State & Sector Filters */}
         <div className="hidden lg:flex items-center gap-2">
           {/* State selector */}
-          <div className="flex items-center gap-1.5 text-xs bg-slate-900/80 border border-slate-800 rounded-lg px-2 py-1">
-            <Building2 className="h-3.5 w-3.5 text-amber-400" />
+          <div className="flex items-center gap-1.5 text-xs bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl px-2.5 py-1">
+            <Building2 className="h-3.5 w-3.5 text-[#0284C7]" />
             <select
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
-              className="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-700 text-xs font-medium focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-slate-900 text-slate-200">
+              <option value="all">
                 {language === "hi" ? "सभी राज्य / केंद्र शासित" : "All States & UTs"}
               </option>
               {INDIAN_STATES.map((st) => (
-                <option key={st.code} value={st.code} className="bg-slate-900 text-slate-200">
+                <option key={st.code} value={st.code}>
                   {st.name}
                 </option>
               ))}
@@ -112,22 +112,22 @@ export function Header() {
           </div>
 
           {/* Sector selector */}
-          <div className="flex items-center gap-1.5 text-xs bg-slate-900/80 border border-slate-800 rounded-lg px-2 py-1">
-            <Layers className="h-3.5 w-3.5 text-amber-400" />
+          <div className="flex items-center gap-1.5 text-xs bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl px-2.5 py-1">
+            <Layers className="h-3.5 w-3.5 text-[#15803D]" />
             <select
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
-              className="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-700 text-xs font-medium focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-slate-900 text-slate-200">
+              <option value="all">
                 {language === "hi" ? "सभी क्षेत्र (Sectors)" : "All Sectors"}
               </option>
-              <option value="highway" className="bg-slate-900 text-slate-200">National Highways</option>
-              <option value="railway" className="bg-slate-900 text-slate-200">Railways & HSR</option>
-              <option value="irrigation" className="bg-slate-900 text-slate-200">River Linking & Irrigation</option>
-              <option value="industrial" className="bg-slate-900 text-slate-200">Industrial Corridors / Ports</option>
-              <option value="renewable_energy" className="bg-slate-900 text-slate-200">Solar & Renewable</option>
-              <option value="urban_development" className="bg-slate-900 text-slate-200">Urban Development</option>
+              <option value="highway">National Highways</option>
+              <option value="railway">Railways & HSR</option>
+              <option value="irrigation">River Linking & Irrigation</option>
+              <option value="industrial">Industrial Corridors / Ports</option>
+              <option value="renewable_energy">Solar & Renewable</option>
+              <option value="urban_development">Urban Development</option>
             </select>
           </div>
         </div>
@@ -135,76 +135,76 @@ export function Header() {
         {/* Right: Clock, Language, Notifications, Role Switcher */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live IST clock */}
-          <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-slate-400 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800/60">
-            <Clock className="h-3 w-3 text-emerald-400" />
+          <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-slate-600 font-mono bg-[#FAF8F5] px-2.5 py-1 rounded-lg border border-[#E5E0D6]">
+            <Clock className="h-3 w-3 text-[#15803D]" />
             <span>{timeStr}</span>
           </div>
 
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === "en" ? "hi" : "en")}
-            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] text-slate-700 hover:text-slate-900 hover:bg-[#F2EFE8] transition-colors"
             title="Toggle Language / भाषा बदलें"
           >
-            <Languages className="h-3.5 w-3.5 text-amber-400" />
-            <span className="font-semibold">{language === "en" ? "हिन्दी" : "EN"}</span>
+            <Languages className="h-3.5 w-3.5 text-[#0284C7]" />
+            <span className="font-bold">{language === "en" ? "हिन्दी" : "EN"}</span>
           </button>
 
           {/* Notifications Bell */}
           <div className="relative">
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+              className="relative p-1.5 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] text-slate-600 hover:text-slate-900 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
               title="Statutory Notifications & Alerts"
             >
               <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-slate-950">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#0284C7] text-[10px] font-bold text-white">
                 {MOCK_NOTIFICATIONS.length}
               </span>
             </button>
 
             {/* Notifications Popover */}
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-2xl z-50">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
-                    <Bell className="h-3.5 w-3.5 text-amber-400" />
-                    Statutory Gazette Alerts
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E5E0D6] bg-white p-4 shadow-2xl z-50">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                    <Bell className="h-3.5 w-3.5 text-[#0284C7]" />
+                    <span>Statutory Gazette Alerts</span>
                   </h4>
-                  <span className="text-[10px] text-amber-400 font-mono">
-                    {MOCK_NOTIFICATIONS.length} unread
+                  <span className="text-[10px] text-[#0284C7] font-mono font-bold">
+                    {MOCK_NOTIFICATIONS.length} active
                   </span>
                 </div>
                 <div className="max-h-72 overflow-y-auto space-y-2">
                   {MOCK_NOTIFICATIONS.slice(0, 5).map((notif) => (
                     <div
                       key={notif.id}
-                      className="rounded-lg border border-slate-800/80 bg-slate-900/60 p-2.5 text-xs hover:border-slate-700 transition-colors"
+                      className="rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] p-2.5 text-xs hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
                     >
                       <div className="flex items-center justify-between gap-1">
-                        <span className="font-semibold text-white truncate">
+                        <span className="font-bold text-slate-900 truncate">
                           {notif.title}
                         </span>
-                        <span className="text-[9px] font-mono text-emerald-400 uppercase">
+                        <span className="text-[9px] font-mono text-[#15803D] uppercase font-semibold">
                           {notif.issuedDate}
                         </span>
                       </div>
-                      <p className="mt-1 text-[11px] text-slate-400 line-clamp-2">
+                      <p className="mt-1 text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
                         {notif.description}
                       </p>
                       {notif.gazetteRef && (
-                        <p className="mt-1 text-[9px] font-mono text-amber-400/80">
+                        <p className="mt-1 text-[9px] font-mono text-[#0284C7] font-medium">
                           Ref: {notif.gazetteRef}
                         </p>
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 pt-2 border-t border-slate-800 text-center">
+                <div className="mt-3 pt-2 border-t border-slate-100 text-center">
                   <a
                     href="/notifications"
                     onClick={() => setNotificationsOpen(false)}
-                    className="text-[11px] font-medium text-amber-400 hover:underline"
+                    className="text-[11px] font-semibold text-[#0284C7] hover:underline"
                   >
                     View All Statutory Notifications →
                   </a>
@@ -217,30 +217,30 @@ export function Header() {
           <div className="relative">
             <button
               onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-850 border border-slate-700/80 px-2.5 py-1.5 text-xs hover:border-amber-500/60 transition-all cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] px-3 py-1.5 text-xs hover:border-[#0284C7] transition-all cursor-pointer shadow-xs"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs border border-amber-500/30">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E0F2FE] text-[#0284C7] font-bold text-xs">
                 <UserCheck className="h-3.5 w-3.5" />
               </div>
               <div className="hidden sm:flex flex-col text-left">
-                <span className="text-[10px] uppercase font-bold text-amber-400 leading-tight">
+                <span className="text-[10px] uppercase font-bold text-[#0284C7] leading-tight">
                   {ROLE_CONFIGS[role].badge}
                 </span>
-                <span className="text-[11px] text-slate-300 font-medium leading-tight truncate max-w-[120px]">
+                <span className="text-[11px] text-slate-800 font-semibold leading-tight truncate max-w-[120px]">
                   {ROLE_CONFIGS[role].name.split(" ")[0]}
                 </span>
               </div>
-              <ChevronDown className="h-3 w-3 text-slate-400" />
+              <ChevronDown className="h-3 w-3 text-slate-500" />
             </button>
 
             {roleDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl z-50">
-                <div className="p-2 border-b border-slate-800/80">
-                  <p className="text-[11px] font-semibold text-white">
-                    Switch Stakeholder Perspective
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl border border-[#E5E0D6] bg-white p-2 shadow-2xl z-50">
+                <div className="p-2 border-b border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-900">
+                    Switch Administrative Perspective
                   </p>
-                  <p className="text-[10px] text-slate-400">
-                    Test the system across administrative tiers
+                  <p className="text-[10px] text-slate-500">
+                    Live role-based view switcher
                   </p>
                 </div>
                 <div className="max-h-80 overflow-y-auto py-1 space-y-1">
@@ -251,19 +251,21 @@ export function Header() {
                         setRole(item.id);
                         setRoleDropdownOpen(false);
                       }}
-                      className={`w-full text-left p-2 rounded-lg text-xs transition-colors flex flex-col ${
+                      className={`w-full text-left p-2 rounded-xl text-xs transition-colors flex flex-col cursor-pointer ${
                         role === item.id
-                          ? "bg-amber-500/15 border border-amber-500/30 text-white"
-                          : "hover:bg-slate-900 text-slate-300"
+                          ? "bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1]"
+                          : "hover:bg-[#FAF8F5] text-slate-700"
                       }`}
                     >
-                      <span className="font-semibold flex items-center justify-between">
+                      <span className="font-bold flex items-center justify-between">
                         {item.label}
                         {role === item.id && (
-                          <span className="text-[10px] text-amber-400">✓ Active</span>
+                          <span className="text-[10px] text-[#0284C7] font-semibold flex items-center gap-0.5">
+                            <Check className="h-3 w-3" /> Active
+                          </span>
                         )}
                       </span>
-                      <span className="text-[10px] text-slate-400 mt-0.5">
+                      <span className="text-[10px] text-slate-500 mt-0.5">
                         {item.desc}
                       </span>
                     </button>

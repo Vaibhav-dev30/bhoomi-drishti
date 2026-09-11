@@ -6,21 +6,14 @@ import {
   FolderKanban,
   PlusCircle,
   Search,
-  Filter,
-  ArrowUpDown,
   Building,
   MapPin,
-  Calendar,
-  Layers,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
   ExternalLink,
 } from "lucide-react";
 import { useApp } from "@/context/app-context";
 import { MOCK_PROJECTS, INDIAN_STATES } from "@/lib/mock-data";
-import { Project, ProjectStatus, ProjectType } from "@/types";
-import { formatArea, formatCurrency, getPercentage } from "@/lib/utils";
+import { ProjectStatus } from "@/types";
+import { formatArea, getPercentage } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,45 +67,50 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <FolderKanban className="h-6 w-6 text-amber-400" />
-            <span>
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
+      {/* ───── 1. Top Executive Banner ───── */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#E5E0D6] bg-white p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
+                <FolderKanban className="h-3.5 w-3.5" />
+                <span>Central Requisition Registry</span>
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-2">
               {language === "hi" ? "राष्ट्रीय भू-अर्जन परियोजनाएं" : "National Land Acquisition Projects"}
-            </span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
-            {language === "hi"
-              ? "सभी केंद्रीय मंत्रालयों एवं राज्य सरकारों की अधियाचित अवसंरचना परियोजनाओं का केंद्रीय रजिस्टर।"
-              : "Central registry of infrastructure projects undergoing statutory land acquisition across India."}
-          </p>
-        </div>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              {language === "hi"
+                ? "सभी केंद्रीय मंत्रालयों एवं राज्य सरकारों की अधियाचित अवसंरचना परियोजनाओं का केंद्रीय रजिस्टर।"
+                : "Central registry of infrastructure projects undergoing statutory land acquisition across India."}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/projects/new">
-            <Button variant="default" size="sm" className="gap-1.5">
-              <PlusCircle className="h-4 w-4" />
-              <span>{language === "hi" ? "नया अधियाचन प्रस्ताव" : "Submit New Proposal"}</span>
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/projects/new">
+              <Button size="sm" className="h-9 gap-1.5 bg-[#15803D] hover:bg-[#16A34A] text-white font-bold shadow-xs">
+                <PlusCircle className="h-4 w-4" />
+                <span>{language === "hi" ? "नया अधियाचन प्रस्ताव" : "Submit New Proposal"}</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+      {/* ───── 2. Filter and Search Bar ───── */}
+      <div className="rounded-3xl border border-[#E5E0D6] bg-white p-5 space-y-3 shadow-sm">
         <div className="flex flex-col md:flex-row items-center gap-3">
           {/* Search box */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0284C7]" />
             <input
               type="text"
               placeholder="Search by project name, code, district, or state..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-950/80 pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] pl-10 pr-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#0284C7] focus:outline-none focus:ring-1 focus:ring-[#0284C7] transition-all"
             />
           </div>
 
@@ -120,7 +118,7 @@ export default function ProjectsPage() {
           <select
             value={filterSector}
             onChange={(e) => setFilterSector(e.target.value)}
-            className="w-full md:w-48 rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-1.5 text-xs text-slate-300 focus:border-amber-500 focus:outline-none cursor-pointer"
+            className="w-full md:w-48 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs text-slate-800 font-semibold focus:border-[#0284C7] focus:outline-none cursor-pointer"
           >
             <option value="all">All Sectors</option>
             <option value="highway">Highways</option>
@@ -135,7 +133,7 @@ export default function ProjectsPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full md:w-52 rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-1.5 text-xs text-slate-300 focus:border-amber-500 focus:outline-none cursor-pointer"
+            className="w-full md:w-52 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs text-slate-800 font-semibold focus:border-[#0284C7] focus:outline-none cursor-pointer"
           >
             <option value="all">All Lifecycle Stages</option>
             <option value="sia_in_progress">SIA In Progress</option>
@@ -151,7 +149,7 @@ export default function ProjectsPage() {
           <select
             value={filterState}
             onChange={(e) => setFilterState(e.target.value)}
-            className="w-full md:w-48 rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-1.5 text-xs text-slate-300 focus:border-amber-500 focus:outline-none cursor-pointer"
+            className="w-full md:w-48 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs text-slate-800 font-semibold focus:border-[#0284C7] focus:outline-none cursor-pointer"
           >
             <option value="all">All States</option>
             {INDIAN_STATES.map((st) => (
@@ -162,19 +160,19 @@ export default function ProjectsPage() {
           </select>
 
           {/* View mode buttons */}
-          <div className="flex items-center rounded-lg border border-slate-700 bg-slate-950 p-0.5 shrink-0">
+          <div className="flex items-center rounded-xl border border-[#E5E0D6] bg-[#F5F2EB] p-1 shrink-0">
             <button
               onClick={() => setViewMode("grid")}
-              className={`px-2.5 py-1 rounded text-xs font-medium ${
-                viewMode === "grid" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-400"
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === "grid" ? "bg-white text-[#0284C7] shadow-xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Grid
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`px-2.5 py-1 rounded text-xs font-medium ${
-                viewMode === "table" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-400"
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === "table" ? "bg-white text-[#0284C7] shadow-xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Table
@@ -182,9 +180,9 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+        <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
           <span>
-            Showing <strong className="text-white">{filteredProjects.length}</strong> of {MOCK_PROJECTS.length} projects
+            Showing <strong className="text-slate-900 font-bold">{filteredProjects.length}</strong> of {MOCK_PROJECTS.length} projects
           </span>
           {(filterSector !== "all" || filterStatus !== "all" || filterState !== "all" || searchQuery) && (
             <button
@@ -194,7 +192,7 @@ export default function ProjectsPage() {
                 setFilterState("all");
                 setSearchQuery("");
               }}
-              className="text-amber-400 hover:underline cursor-pointer"
+              className="text-[#0284C7] font-bold hover:underline cursor-pointer"
             >
               Clear Filters
             </button>
@@ -202,75 +200,75 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {/* Grid View */}
+      {/* ───── 3. Grid View ───── */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((proj) => {
             const percentAcquired = getPercentage(proj.areaAcquired, proj.totalAreaRequired);
             return (
               <Card
                 key={proj.id}
-                className="group border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900/90 transition-all flex flex-col justify-between"
+                className="group border-[#E5E0D6] bg-white hover:border-[#BAE6FD] hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-semibold border border-slate-700">
+                    <span className="font-mono text-[11px] px-2.5 py-0.5 rounded-lg bg-[#FAF8F5] text-slate-700 font-bold border border-[#E5E0D6]">
                       {proj.projectCode}
                     </span>
                     {getStatusBadge(proj.status)}
                   </div>
-                  <CardTitle className="text-base font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                  <CardTitle className="text-base font-extrabold text-slate-900 group-hover:text-[#0284C7] transition-colors line-clamp-1">
                     {proj.name}
                   </CardTitle>
-                  <CardDescription className="line-clamp-2 mt-1">
+                  <CardDescription className="line-clamp-2 mt-1 text-slate-600 leading-relaxed">
                     {proj.description}
                   </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   {/* Geographic & LRB Details */}
-                  <div className="space-y-1 text-xs text-slate-300">
+                  <div className="space-y-1.5 text-xs text-slate-700">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Requiring Agency:</span>
-                      <span className="font-medium text-white truncate max-w-[180px]">
+                      <span className="font-bold text-slate-900 truncate max-w-[180px]">
                         {proj.lrbName}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Jurisdiction:</span>
-                      <span>
+                      <span className="font-medium text-slate-800">
                         {proj.district}, {proj.state}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Villages Notified:</span>
-                      <span>{proj.villages.length} Villages ({proj.tehsil})</span>
+                      <span className="font-medium text-slate-800">{proj.villages.length} Villages ({proj.tehsil})</span>
                     </div>
                   </div>
 
                   {/* Acquisition Progress Bar */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Land Acquired</span>
-                      <span className="font-mono font-semibold text-white">
+                      <span className="text-slate-500 font-medium">Land Acquired</span>
+                      <span className="font-mono font-bold text-slate-900">
                         {formatArea(proj.areaAcquired)} / {formatArea(proj.totalAreaRequired)} ({percentAcquired}%)
                       </span>
                     </div>
-                    <Progress value={percentAcquired} />
+                    <Progress value={percentAcquired} className="h-2 bg-[#F2EFE8]" indicatorClassName="bg-[#0284C7]" />
                   </div>
 
                   {/* Financial & Social Metrics Grid */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 text-xs">
-                    <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
-                      <span className="text-[10px] text-slate-500 block">Compensation Disbursed</span>
-                      <span className="font-mono font-bold text-emerald-400">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F2EFE8] text-xs">
+                    <div className="bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#E5E0D6]">
+                      <span className="text-[10px] text-slate-500 block font-medium">Disbursed (PFMS)</span>
+                      <span className="font-mono font-extrabold text-[#15803D]">
                         ₹{proj.compensationDisbursed} L
                       </span>
                       <span className="text-[10px] text-slate-500 block">of ₹{proj.compensationAssessed || proj.estimatedCost} L</span>
                     </div>
-                    <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
-                      <span className="text-[10px] text-slate-500 block">Affected Families</span>
-                      <span className="font-mono font-bold text-purple-400">
+                    <div className="bg-[#FAF8F5] p-2.5 rounded-2xl border border-[#E5E0D6]">
+                      <span className="text-[10px] text-slate-500 block font-medium">Affected Families</span>
+                      <span className="font-mono font-extrabold text-[#0284C7]">
                         {proj.totalAffectedFamilies}
                       </span>
                       <span className="text-[10px] text-slate-500 block">R&R Done: {proj.rrCompletedFamilies}</span>
@@ -280,9 +278,9 @@ export default function ProjectsPage() {
                   {/* Action Link */}
                   <div className="pt-2">
                     <Link href={`/projects/${proj.id}`} className="w-full block">
-                      <Button variant="outline" size="sm" className="w-full text-xs gap-1 group-hover:border-amber-500/50">
+                      <Button variant="outline" size="sm" className="w-full text-xs font-bold gap-1 border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE]">
                         <span>Inspect Complete Statutory Dossier</span>
-                        <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
+                        <ExternalLink className="h-3.5 w-3.5 text-[#0284C7]" />
                       </Button>
                     </Link>
                   </div>
@@ -293,37 +291,37 @@ export default function ProjectsPage() {
         </div>
       ) : (
         /* Table View */
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-3xl border border-[#E5E0D6] bg-white overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Project Code & Name</TableHead>
-                <TableHead>Requiring Body</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Area Progress</TableHead>
-                <TableHead>Disbursed</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+              <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                <TableHead className="text-slate-700 font-bold">Project Code & Name</TableHead>
+                <TableHead className="text-slate-700 font-bold">Requiring Body</TableHead>
+                <TableHead className="text-slate-700 font-bold">Location</TableHead>
+                <TableHead className="text-slate-700 font-bold">Area Progress</TableHead>
+                <TableHead className="text-slate-700 font-bold">Disbursed</TableHead>
+                <TableHead className="text-slate-700 font-bold">Status</TableHead>
+                <TableHead className="text-right text-slate-700 font-bold">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredProjects.map((proj) => (
-                <TableRow key={proj.id}>
-                  <TableCell className="font-medium text-white max-w-xs">
-                    <div className="font-mono text-[10px] text-amber-400">{proj.projectCode}</div>
-                    <div className="font-semibold text-xs truncate">{proj.name}</div>
+                <TableRow key={proj.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                  <TableCell className="font-medium max-w-xs py-3">
+                    <div className="font-mono text-[10px] text-[#0284C7] font-bold">{proj.projectCode}</div>
+                    <div className="font-bold text-xs text-slate-900 truncate">{proj.name}</div>
                   </TableCell>
-                  <TableCell className="text-xs text-slate-300">
+                  <TableCell className="text-xs text-slate-700 font-medium">
                     {proj.lrbName}
                   </TableCell>
-                  <TableCell className="text-xs text-slate-300">
+                  <TableCell className="text-xs text-slate-700 font-medium">
                     {proj.district}, {proj.stateCode}
                   </TableCell>
                   <TableCell className="text-xs font-mono">
-                    <div>{formatArea(proj.areaAcquired)} / {formatArea(proj.totalAreaRequired)}</div>
+                    <div className="font-bold text-slate-900">{formatArea(proj.areaAcquired)} / {formatArea(proj.totalAreaRequired)}</div>
                     <div className="text-[10px] text-slate-500">{getPercentage(proj.areaAcquired, proj.totalAreaRequired)}%</div>
                   </TableCell>
-                  <TableCell className="text-xs font-mono text-emerald-400">
+                  <TableCell className="text-xs font-mono font-extrabold text-[#15803D]">
                     ₹{proj.compensationDisbursed} L
                   </TableCell>
                   <TableCell>
@@ -331,7 +329,7 @@ export default function ProjectsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Link href={`/projects/${proj.id}`}>
-                      <Button variant="ghost" size="sm" className="text-xs text-amber-400">
+                      <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]">
                         View →
                       </Button>
                     </Link>

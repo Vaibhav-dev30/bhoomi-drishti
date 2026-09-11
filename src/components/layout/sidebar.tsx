@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp, ROLE_CONFIGS } from "@/context/app-context";
-import { Badge } from "@/components/ui/badge";
 
 const NAVIGATION_ITEMS = [
   {
@@ -35,7 +34,7 @@ const NAVIGATION_ITEMS = [
     nameHi: "जीआईएस स्थानिक मानचित्र",
     href: "/map",
     icon: MapPin,
-    badge: "Live",
+    badge: "Live OGC",
   },
   {
     name: "Projects Management",
@@ -97,38 +96,38 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex flex-col border-r border-slate-800/80 bg-slate-950/95 transition-all duration-300 z-30",
+        "relative flex flex-col border-r border-[#E5E0D6] bg-[#FAF8F5] transition-all duration-300 z-30 shadow-xs",
         collapsed ? "w-20" : "w-72"
       )}
     >
       {/* Brand Header */}
-      <div className="flex h-16 items-center justify-between border-b border-slate-800/80 px-4">
+      <div className="flex h-16 items-center justify-between border-b border-[#E5E0D6] px-4 bg-white">
         {!collapsed ? (
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 shadow-md shadow-amber-900/30 text-slate-950 font-bold">
-              <Compass className="h-6 w-6" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] text-[#15803D] font-bold shadow-xs">
+              <Compass className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+              <span className="text-base font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
                 भूमिदृष्टि
-                <span className="text-xs font-normal px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
                   GOI
                 </span>
               </span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
+              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                 BhoomiDrishti Portal
               </span>
             </div>
           </div>
         ) : (
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold">
-            <Compass className="h-6 w-6" />
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-[#DCFCE7] text-[#15803D] font-bold">
+            <Compass className="h-5 w-5" />
           </div>
         )}
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+          className="rounded-xl p-1.5 text-slate-400 hover:bg-[#F2EFE8] hover:text-slate-800 transition-colors cursor-pointer"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -141,31 +140,31 @@ export function Sidebar() {
 
       {/* Role Profile Indicator */}
       {!collapsed && (
-        <div className="mx-3 mt-3 rounded-lg border border-slate-800/90 bg-slate-900/60 p-3">
+        <div className="mx-3 mt-3.5 rounded-2xl border border-[#E5E0D6] bg-white p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              {language === "hi" ? "सक्रिय भूमिका" : "Active Role View"}
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+              {language === "hi" ? "सक्रिय भूमिका" : "Active Perspective"}
             </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
               {currentRoleConfig.badge}
             </span>
           </div>
-          <p className="mt-1 text-xs font-semibold text-white truncate">
+          <p className="mt-1 text-xs font-bold text-slate-900 truncate">
             {currentRoleConfig.name}
           </p>
-          <p className="text-[11px] text-slate-400 truncate">
+          <p className="text-[11px] text-slate-500 truncate mt-0.5">
             {currentRoleConfig.dept}
           </p>
-          <p className="mt-0.5 text-[10px] text-emerald-400 font-mono">
-            📍 {currentRoleConfig.jurisdiction}
+          <p className="mt-1 text-[10px] text-[#0284C7] font-semibold flex items-center gap-1">
+            <span>📍</span> {currentRoleConfig.jurisdiction}
           </p>
         </div>
       )}
 
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <div className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-          {!collapsed && (language === "hi" ? "मुख्य मॉड्यूल" : "Core Modules")}
+        <div className="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+          {!collapsed && (language === "hi" ? "मुख्य मॉड्यूल" : "Navigation Modules")}
         </div>
         {NAVIGATION_ITEMS.map((item) => {
           const isActive =
@@ -178,10 +177,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-all",
+                "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer",
                 isActive
-                  ? "bg-gradient-to-r from-amber-500/20 to-amber-500/5 text-amber-400 border-l-2 border-amber-500 font-semibold"
-                  : "text-slate-300 hover:bg-slate-900 hover:text-white"
+                  ? "bg-[#E8F5E9] text-[#15803D] border-l-4 border-[#16A34A] shadow-xs"
+                  : "text-slate-600 hover:bg-[#F2EFE8] hover:text-slate-900"
               )}
               title={collapsed ? (language === "hi" ? item.nameHi : item.name) : undefined}
             >
@@ -189,8 +188,8 @@ export function Sidebar() {
                 className={cn(
                   "h-4 w-4 shrink-0 transition-colors",
                   isActive
-                    ? "text-amber-400"
-                    : "text-slate-400 group-hover:text-slate-200"
+                    ? "text-[#15803D]"
+                    : "text-slate-400 group-hover:text-slate-700"
                 )}
               />
               {!collapsed && (
@@ -201,10 +200,10 @@ export function Sidebar() {
                   {item.badge && (
                     <span
                       className={cn(
-                        "ml-auto text-[10px] px-1.5 py-0.2 rounded font-mono",
+                        "ml-auto text-[10px] px-2 py-0.5 rounded-full font-mono font-bold",
                         isActive
-                          ? "bg-amber-500/20 text-amber-300"
-                          : "bg-slate-800 text-slate-400"
+                          ? "bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]"
+                          : "bg-[#F2EFE8] text-slate-500 border border-[#E5E0D6]"
                       )}
                     >
                       {item.badge}
@@ -219,26 +218,26 @@ export function Sidebar() {
 
       {/* RFCTLARR Legal Compliance Alert Bar */}
       {!collapsed && (
-        <div className="m-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs">
-          <div className="flex items-center gap-2 text-amber-400 font-semibold mb-1">
-            <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+        <div className="m-3 rounded-2xl border border-[#FDE68A] bg-[#FEF9C3]/80 p-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2 text-[#92400E] font-bold mb-1">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600" />
             <span>RFCTLARR Act 2013</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Sec 11 to Sec 19 auto-lapse timer active. Strict adherence to statutory 12-month awards.
+          <p className="text-[11px] text-amber-900/80 leading-relaxed font-medium">
+            Sec 11 to Sec 19 auto-lapse tracking active. Strict 12-month statutory award compliance.
           </p>
         </div>
       )}
 
       {/* Bottom Footer Details */}
-      <div className="border-t border-slate-800/80 p-3 text-center">
+      <div className="border-t border-[#E5E0D6] p-3 text-center bg-white">
         {!collapsed ? (
-          <div className="text-[10px] text-slate-500 space-y-0.5">
-            <p className="font-medium text-slate-400">Department of Land Resources</p>
+          <div className="text-[10px] text-slate-500 space-y-0.5 font-medium">
+            <p className="font-bold text-slate-700">Department of Land Resources</p>
             <p>Ministry of Rural Development, GoI</p>
           </div>
         ) : (
-          <span className="text-[9px] text-slate-600 font-mono">v1.0</span>
+          <span className="text-[9px] text-slate-400 font-mono">v1.0</span>
         )}
       </div>
     </aside>

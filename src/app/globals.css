@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -8,91 +8,92 @@
 
 @layer base {
   :root {
-    --background: #070d1e;
-    --foreground: #f1f5f9;
-    --card: #0c152d;
-    --card-foreground: #f8fafc;
-    --popover: #0c152d;
-    --popover-foreground: #f8fafc;
-    --primary: #f59e0b;
-    --primary-foreground: #020617;
-    --secondary: #172554;
-    --secondary-foreground: #f8fafc;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --accent: #1e293b;
-    --accent-foreground: #f8fafc;
-    --destructive: #ef4444;
-    --destructive-foreground: #f8fafc;
-    --border: #1e293b;
-    --input: #1e293b;
-    --ring: #f59e0b;
+    --background: #FAF8F5;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --primary: #0284C7;
+    --primary-foreground: #FFFFFF;
+    --secondary: #E0F2FE;
+    --secondary-foreground: #0369A1;
+    --muted: #F2EFE8;
+    --muted-foreground: #64748B;
+    --accent: #DCFCE7;
+    --accent-foreground: #15803D;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: #E5E0D6;
+    --input: #E5E0D6;
+    --ring: #0284C7;
   }
 }
 
 body {
-  background-color: #070d1e;
-  color: #e2e8f0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #FAF8F5;
+  color: #0F172A;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
 }
 
-/* Custom modern scrollbar */
+/* Custom Executive Warm Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #070d1e;
+  background: #FAF8F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #D8D2C4;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #C4BCAC;
 }
 
-/* Leaflet map styles and fixes */
+/* Leaflet map styles and fixes for Light/Cream theme */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #0c152d !important;
+  background-color: #FAF8F5 !important;
   font-family: inherit;
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #0c152d !important;
-  color: #f8fafc !important;
-  border: 1px solid #1e293b !important;
-  border-radius: 10px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(12px) !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #E5E0D6 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.12) !important;
 }
 
 .leaflet-popup-tip {
-  background-color: #0c152d !important;
+  background-color: #FFFFFF !important;
 }
 
 .leaflet-control-zoom a {
-  background-color: #0c152d !important;
-  color: #f8fafc !important;
-  border: 1px solid #1e293b !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #E5E0D6 !important;
+  border-radius: 8px !important;
 }
 
 .leaflet-control-zoom a:hover {
-  background-color: #1e293b !important;
+  background-color: #F2EFE8 !important;
+  color: #0284C7 !important;
 }
 
-/* Tricolor subtle top glow */
+/* Tricolor Sovereign Top Glow */
 .tricolor-stripe {
-  background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%, #138808 100%);
+  background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #138808 66.6%, #138808 100%);
   height: 3px;
   width: 100%;
 }
 
 .glass-panel {
-  background: rgba(12, 21, 45, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 224, 214, 0.9);
 }

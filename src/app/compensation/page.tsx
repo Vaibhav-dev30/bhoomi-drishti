@@ -45,17 +45,17 @@ export default function CompensationPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Coins className="h-6 w-6 text-amber-400" />
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <Coins className="h-6 w-6 text-[#15803D]" />
             <span>Valuation & Compensation Engine</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
             Automated statutory determination and PFMS Direct Benefit Transfer (DBT) ledger under Sections 26 to 34 of RFCTLARR Act 2013.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-800">
-            <Printer className="h-3.5 w-3.5 text-amber-400" />
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-[#E5E0D6] bg-white hover:bg-[#FAF8F5] text-slate-700">
+            <Printer className="h-3.5 w-3.5 text-[#0284C7]" />
             <span>Export Award Schedule (PDF)</span>
           </Button>
         </div>
@@ -64,21 +64,21 @@ export default function CompensationPage() {
       {/* Main Interactive Valuation Calculator */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Input Parameters (7 cols) */}
-        <Card className="lg:col-span-7 border-slate-800 bg-slate-900/60 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-amber-400" />
+        <Card className="lg:col-span-7 border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+          <CardHeader className="border-b border-[#F2EFE8] pb-4">
+            <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <Calculator className="h-4 w-4 text-[#15803D]" />
               <span>Statutory Valuation Calculator (First Schedule)</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-slate-500">
               Configure market value, rural multiplier factor, attached assets, and Section 30 solatium
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Land Area */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700">
                   Acquired Area (Hectares)
                 </label>
                 <Input
@@ -86,12 +86,13 @@ export default function CompensationPage() {
                   step="0.05"
                   value={areaHectares}
                   onChange={(e) => setAreaHectares(parseFloat(e.target.value) || 0)}
+                  className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900 font-mono"
                 />
               </div>
 
               {/* Base Circle Rate / Market Value */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700">
                   Base Market Value (₹ / Hectare) - Sec 26
                 </label>
                 <Input
@@ -99,17 +100,18 @@ export default function CompensationPage() {
                   step="50000"
                   value={marketRate}
                   onChange={(e) => setMarketRate(parseFloat(e.target.value) || 0)}
+                  className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900 font-mono"
                 />
-                <span className="text-[10px] text-slate-500">Highest of Circle rate or 3-yr deed avg</span>
+                <span className="text-[10px] text-slate-500 block">Highest of Circle rate or 3-yr deed avg</span>
               </div>
 
               {/* Rural Multiplier Factor */}
               <div className="space-y-1.5 sm:col-span-2">
                 <div className="flex justify-between items-center text-xs">
-                  <label className="font-semibold text-slate-300">
-                    Multiplier Factor: <strong className="text-amber-400">{multiplier.toFixed(2)}x</strong>
+                  <label className="font-semibold text-slate-700">
+                    Multiplier Factor: <strong className="text-[#0284C7] font-bold">{multiplier.toFixed(2)}x</strong>
                   </label>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500 font-medium">
                     {multiplier === 1 ? "Urban Area (1.00x)" : `Rural (Distance Multiplier: ${multiplier}x)`}
                   </span>
                 </div>
@@ -120,7 +122,7 @@ export default function CompensationPage() {
                   step="0.05"
                   value={multiplier}
                   onChange={(e) => setMultiplier(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                  className="w-full accent-[#0284C7] h-2 bg-[#F5F2EB] rounded-lg cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
                   <span>1.0x (Urban)</span>
@@ -133,7 +135,7 @@ export default function CompensationPage() {
 
               {/* Attached Structures (PWD) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700">
                   Structures & Wells Value (₹) - Sec 29
                 </label>
                 <Input
@@ -141,13 +143,14 @@ export default function CompensationPage() {
                   step="10000"
                   value={structuresValue}
                   onChange={(e) => setStructuresValue(parseFloat(e.target.value) || 0)}
+                  className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900 font-mono"
                 />
-                <span className="text-[10px] text-slate-500">Evaluated by PWD / Civil Engineer</span>
+                <span className="text-[10px] text-slate-500 block">Evaluated by PWD / Civil Engineer</span>
               </div>
 
               {/* Trees & Standing Crops */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700">
                   Trees & Standing Crops (₹) - Sec 29
                 </label>
                 <Input
@@ -155,19 +158,21 @@ export default function CompensationPage() {
                   step="10000"
                   value={treesCropsValue}
                   onChange={(e) => setTreesCropsValue(parseFloat(e.target.value) || 0)}
+                  className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900 font-mono"
                 />
-                <span className="text-[10px] text-slate-500">Forest / Horticulture Dept evaluation</span>
+                <span className="text-[10px] text-slate-500 block">Forest / Horticulture Dept evaluation</span>
               </div>
 
               {/* Additional Statutory Interest Months */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-slate-300">
+                <label className="text-xs font-semibold text-slate-700">
                   Months Elapsed since Section 4 Notification (Sec 30(3) 12% p.a. Interest)
                 </label>
                 <Input
                   type="number"
                   value={interestMonths}
                   onChange={(e) => setInterestMonths(parseInt(e.target.value) || 0)}
+                  className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900 font-mono"
                 />
               </div>
             </div>
@@ -175,56 +180,56 @@ export default function CompensationPage() {
         </Card>
 
         {/* Right: Itemized Statutory Award Breakdown (5 cols) */}
-        <Card className="lg:col-span-5 border-amber-500/30 bg-gradient-to-b from-slate-900 to-slate-950 shadow-2xl flex flex-col justify-between">
-          <CardHeader className="pb-3 border-b border-slate-800">
-            <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase">
+        <Card className="lg:col-span-5 border-[#E5E0D6] bg-gradient-to-b from-white via-[#FAF8F5] to-[#F0FDF4]/50 rounded-3xl shadow-sm flex flex-col justify-between overflow-hidden">
+          <CardHeader className="pb-3 border-b border-[#F2EFE8]">
+            <span className="text-[10px] font-mono text-[#15803D] font-bold uppercase">
               Collector's Final Award (Form 11-C)
             </span>
-            <CardTitle className="text-lg font-bold text-white">
+            <CardTitle className="text-lg font-extrabold text-slate-900 mt-0.5">
               Compensation Breakdown
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-slate-500">
               Right to Fair Compensation Statutory Schedule
             </CardDescription>
           </CardHeader>
           <CardContent className="py-4 space-y-3 font-mono text-xs">
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">1. Base Land Value (Sec 26):</span>
-              <span className="text-slate-200">₹{baseLandValue.toLocaleString("en-IN")}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+              <span className="text-slate-600 font-sans">1. Base Land Value (Sec 26):</span>
+              <span className="text-slate-900 font-bold">₹{baseLandValue.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">2. Multiplier Factor ({multiplier}x):</span>
-              <span className="text-amber-400 font-bold">₹{multipliedLandValue.toLocaleString("en-IN")}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+              <span className="text-slate-600 font-sans">2. Multiplier Factor ({multiplier}x):</span>
+              <span className="text-[#0284C7] font-extrabold">₹{multipliedLandValue.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">3. Assets Attached (Sec 29):</span>
-              <span className="text-slate-200">₹{assetsTotal.toLocaleString("en-IN")}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+              <span className="text-slate-600 font-sans">3. Assets Attached (Sec 29):</span>
+              <span className="text-slate-900 font-bold">₹{assetsTotal.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-800 bg-amber-500/5 px-2 rounded">
-              <span className="text-amber-400 font-bold">4. Solatium @ 100% (Sec 30):</span>
-              <span className="text-amber-400 font-bold">₹{solatium.toLocaleString("en-IN")}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#F2EFE8] bg-[#FEF3C7]/40 px-2 rounded-xl">
+              <span className="text-[#B45309] font-sans font-bold">4. Solatium @ 100% (Sec 30):</span>
+              <span className="text-[#B45309] font-extrabold">₹{solatium.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">5. Statutory Interest (12% p.a.):</span>
-              <span className="text-slate-200">₹{Math.round(statutoryInterest).toLocaleString("en-IN")}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+              <span className="text-slate-600 font-sans">5. Statutory Interest (12% p.a.):</span>
+              <span className="text-slate-900 font-bold">₹{Math.round(statutoryInterest).toLocaleString("en-IN")}</span>
             </div>
 
             {/* Total Award Highlight */}
-            <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-950 border border-emerald-500/40 text-center">
-              <span className="text-[10px] text-slate-400 block uppercase font-sans font-semibold">
+            <div className="mt-4 p-4 rounded-2xl bg-[#DCFCE7]/70 border border-[#BBF7D0] text-center shadow-xs">
+              <span className="text-[10px] text-slate-600 block uppercase font-sans font-bold tracking-wide">
                 Total Statutory Award Payable
               </span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 block mt-1">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#15803D] block mt-1">
                 ₹{Math.round(totalAward).toLocaleString("en-IN")}
               </span>
-              <span className="text-[10px] text-slate-400 block mt-1 font-sans">
+              <span className="text-[10px] text-slate-600 block mt-1 font-sans font-medium">
                 (Approx ₹{(totalAward / 100000).toFixed(2)} Lakhs / ₹{(totalAward / 10000000).toFixed(3)} Crore)
               </span>
             </div>
           </CardContent>
 
-          <div className="p-4 border-t border-slate-800 flex gap-2">
-            <Button variant="default" size="sm" className="w-full text-xs gap-1">
+          <div className="p-4 border-t border-[#F2EFE8] flex gap-2 bg-white/60">
+            <Button variant="default" size="sm" className="w-full text-xs gap-1.5 bg-[#15803D] hover:bg-[#166534] text-white">
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Generate Collector's Award Order</span>
             </Button>
@@ -233,55 +238,55 @@ export default function CompensationPage() {
       </div>
 
       {/* Affected Families PFMS Disbursement Ledger */}
-      <Card className="border-slate-800 bg-slate-900/60 shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-[#F2EFE8] pb-4">
           <div>
-            <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-              <Coins className="h-4 w-4 text-emerald-400" />
+            <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <Coins className="h-4 w-4 text-[#15803D]" />
               <span>PFMS Direct Benefit Transfer (DBT) Disbursement Ledger</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-slate-500">
               Direct transfer status from Requiring Body Escrow to Beneficiary Aadhaar-seeded accounts
             </CardDescription>
           </div>
-          <Badge variant="success" className="text-xs">
+          <Badge variant="success" className="text-xs bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">
             PFMS Gateway Online
           </Badge>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Claimant Name & Village</TableHead>
-                <TableHead>Survey / Khasra No</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Total Award</TableHead>
-                <TableHead>Disbursed</TableHead>
-                <TableHead>PFMS Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+              <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                <TableHead className="text-slate-700 font-bold">Claimant Name & Village</TableHead>
+                <TableHead className="text-slate-700 font-bold">Survey / Khasra No</TableHead>
+                <TableHead className="text-slate-700 font-bold">Category</TableHead>
+                <TableHead className="text-slate-700 font-bold">Total Award</TableHead>
+                <TableHead className="text-slate-700 font-bold">Disbursed</TableHead>
+                <TableHead className="text-slate-700 font-bold">PFMS Status</TableHead>
+                <TableHead className="text-right text-slate-700 font-bold">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {MOCK_FAMILIES.map((fam) => (
-                <TableRow key={fam.id}>
-                  <TableCell className="text-xs font-semibold text-white">
+                <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                  <TableCell className="text-xs font-bold text-slate-900 py-3">
                     <div>{fam.familyHeadName}</div>
                     <div className="text-[10px] text-slate-500 font-normal">
                       {fam.village}, Nashik
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs font-mono text-amber-400">
+                  <TableCell className="text-xs font-mono text-[#0284C7] font-bold">
                     Gat No. 42 ({fam.landLost} ha)
                   </TableCell>
                   <TableCell className="text-xs uppercase font-mono">
-                    <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                    <span className="px-2 py-0.5 rounded-lg bg-[#FAF8F5] text-slate-700 font-semibold border border-[#E5E0D6]">
                       {fam.category}
                     </span>
                   </TableCell>
-                  <TableCell className="text-xs font-mono">
+                  <TableCell className="text-xs font-mono font-bold text-slate-900">
                     ₹{fam.totalCompensation.toLocaleString("en-IN")}
                   </TableCell>
-                  <TableCell className="text-xs font-mono text-emerald-400">
+                  <TableCell className="text-xs font-mono text-[#15803D] font-extrabold">
                     ₹{fam.compensationPaid.toLocaleString("en-IN")}
                   </TableCell>
                   <TableCell>
@@ -295,13 +300,19 @@ export default function CompensationPage() {
                           ? "destructive"
                           : "info"
                       }
-                      className="text-[10px]"
+                      className={`text-[10px] ${
+                        fam.compensationStatus === "fully_paid"
+                          ? "bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]"
+                          : fam.compensationStatus === "partially_paid"
+                          ? "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]"
+                          : ""
+                      }`}
                     >
                       {fam.compensationStatus === "fully_paid" ? "DBT Credited" : fam.compensationStatus.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="text-xs text-amber-400">
+                    <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
                       Transfer Receipt →
                     </Button>
                   </TableCell>

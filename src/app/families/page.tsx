@@ -7,12 +7,12 @@ import {
   Search,
   Filter,
   Download,
-  Printer,
-  Home,
   Coins,
   ShieldCheck,
   AlertTriangle,
+  Home,
   UserCheck,
+  ArrowRight,
 } from "lucide-react";
 import { MOCK_FAMILIES } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,65 +47,128 @@ export default function FamiliesPage() {
   const totalPaid = MOCK_FAMILIES.reduce((acc, f) => acc + f.compensationPaid, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Users className="h-6 w-6 text-purple-400" />
-            <span>Affected & Displaced Families Register</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Comprehensive census of titleholders, tenants, and agricultural workers entitled to compensation and R&R.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-800">
-            <Download className="h-3.5 w-3.5" />
-            <span>Export Census CSV</span>
-          </Button>
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
+      {/* ───── 1. Top Header Banner ───── */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#E5E0D6] bg-white p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
+                <Users className="h-3.5 w-3.5" />
+                <span>RFCTLARR Act 2013 • Social Impact Census</span>
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-2">
+              Affected & Displaced Families Register
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              Comprehensive statutory census of titleholders, tenants, and agricultural workers entitled to direct compensation and Second Schedule R&R entitlements.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const csvHeader = "ID,FamilyHead,FatherHusband,Village,District,Category,BPL,LandLostHa,CompensationPaid,RRStatus\n";
+                const csvRows = filteredFamilies
+                  .map(
+                    (f) =>
+                      `${f.id},"${f.familyHeadName}","${f.fatherHusbandName}","${f.village}","${f.district}",${f.category},${f.isBPL},${f.landLost},${f.compensationPaid},${f.rrStatus}`
+                  )
+                  .join("\n");
+                const blob = new Blob([csvHeader + csvRows], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `BhoomiDrishti_Affected_Families_${Date.now()}.csv`;
+                a.click();
+              }}
+              className="h-9 text-xs font-bold gap-1.5 border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE] shadow-xs cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Export Census CSV</span>
+            </Button>
+            <Link href="/rr">
+              <Button size="sm" className="h-9 text-xs font-bold gap-1.5 bg-[#15803D] hover:bg-[#16A34A] text-white shadow-xs cursor-pointer">
+                <span>R&R Monitoring →</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Metric summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Sampled Families</span>
-          <span className="text-xl font-bold text-white font-mono">{totalFamilies}</span>
+      {/* ───── 2. Metric Summary Strip ───── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        {/* Metric 1 */}
+        <div className="p-5 rounded-3xl border border-[#E5E0D6] bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase font-bold text-slate-500">Sampled Families</span>
+            <div className="p-2 rounded-xl bg-[#E0F2FE] text-[#0284C7]">
+              <Users className="h-4 w-4" />
+            </div>
+          </div>
+          <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">{totalFamilies}</span>
+          <span className="text-xs text-slate-500 block mt-1">Surveyed across 12 projects</span>
         </div>
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Physically Displaced</span>
-          <span className="text-xl font-bold text-red-400 font-mono">{displacedCount}</span>
+
+        {/* Metric 2 */}
+        <div className="p-5 rounded-3xl border border-[#E5E0D6] bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase font-bold text-slate-500">Physically Displaced</span>
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
+              <Home className="h-4 w-4" />
+            </div>
+          </div>
+          <span className="text-2xl sm:text-3xl font-extrabold text-amber-700 font-mono">{displacedCount}</span>
+          <span className="text-xs text-amber-800/80 block mt-1">Sch II Resettlement Active</span>
         </div>
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">BPL Card Holders</span>
-          <span className="text-xl font-bold text-amber-400 font-mono">{bplCount}</span>
+
+        {/* Metric 3 */}
+        <div className="p-5 rounded-3xl border border-[#E5E0D6] bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase font-bold text-slate-500">BPL Card Holders</span>
+            <div className="p-2 rounded-xl bg-[#FEF3C7] text-amber-700">
+              <UserCheck className="h-4 w-4" />
+            </div>
+          </div>
+          <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">{bplCount}</span>
+          <span className="text-xs text-slate-500 block mt-1">Subsistence Allowance Priority</span>
         </div>
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Compensation Paid</span>
-          <span className="text-xl font-bold text-emerald-400 font-mono">
+
+        {/* Metric 4 */}
+        <div className="p-5 rounded-3xl border border-[#E5E0D6] bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase font-bold text-slate-500">Compensation Paid</span>
+            <div className="p-2.5 rounded-xl bg-[#DCFCE7] text-[#15803D]">
+              <Coins className="h-4 w-4" />
+            </div>
+          </div>
+          <span className="text-2xl sm:text-3xl font-extrabold text-[#15803D] font-mono">
             ₹{(totalPaid / 10000000).toFixed(2)} Cr
           </span>
+          <span className="text-xs text-[#15803D] font-medium block mt-1">100% PFMS DBT Disbursed</span>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
+      {/* ───── 3. Filter Controls Bar ───── */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-2xl bg-white border border-[#E5E0D6] shadow-sm">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0284C7]" />
           <input
             type="text"
-            placeholder="Search by family head name, father's name, or village..."
+            placeholder="Search by family head, relative name, or village..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none"
+            className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] pl-10 pr-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#0284C7] focus:outline-none focus:ring-1 focus:ring-[#0284C7] transition-all"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="w-full sm:w-44 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300 focus:border-amber-500 focus:outline-none cursor-pointer"
+          className="w-full sm:w-48 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs text-slate-800 font-semibold focus:border-[#0284C7] focus:outline-none cursor-pointer"
         >
           <option value="all">All Social Categories</option>
           <option value="general">General</option>
@@ -117,7 +180,7 @@ export default function FamiliesPage() {
         <select
           value={displacementFilter}
           onChange={(e) => setDisplacementFilter(e.target.value)}
-          className="w-full sm:w-48 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300 focus:border-amber-500 focus:outline-none cursor-pointer"
+          className="w-full sm:w-48 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs text-slate-800 font-semibold focus:border-[#0284C7] focus:outline-none cursor-pointer"
         >
           <option value="all">All Displacements</option>
           <option value="displaced">Physically Displaced</option>
@@ -125,74 +188,86 @@ export default function FamiliesPage() {
         </select>
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+      {/* ───── 4. Main Census Table ───── */}
+      <div className="rounded-3xl border border-[#E5E0D6] bg-white overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Family Head / Relative</TableHead>
-              <TableHead>Village / District</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Land Lost</TableHead>
-              <TableHead>Structure Lost</TableHead>
-              <TableHead>Compensation Status</TableHead>
-              <TableHead>R&R Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+            <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+              <TableHead className="text-slate-700 font-bold py-3.5">Family Head / Relative</TableHead>
+              <TableHead className="text-slate-700 font-bold">Village / District</TableHead>
+              <TableHead className="text-slate-700 font-bold">Category</TableHead>
+              <TableHead className="text-slate-700 font-bold">Land Lost</TableHead>
+              <TableHead className="text-slate-700 font-bold">Structure Status</TableHead>
+              <TableHead className="text-slate-700 font-bold">Compensation (PFMS)</TableHead>
+              <TableHead className="text-slate-700 font-bold">R&R Entitlement</TableHead>
+              <TableHead className="text-right text-slate-700 font-bold">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredFamilies.map((fam) => (
-              <TableRow key={fam.id}>
-                <TableCell className="text-xs font-semibold text-white">
-                  <div>{fam.familyHeadName}</div>
-                  <div className="text-[10px] text-slate-500 font-normal">
-                    Father/Husband: {fam.fatherHusbandName} ({fam.familyMembers} Persons)
+              <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                <TableCell className="text-xs py-4">
+                  <div className="font-bold text-slate-900 text-sm">{fam.familyHeadName}</div>
+                  <div className="text-[11px] text-slate-500">
+                    S/o {fam.fatherHusbandName} • <span className="font-medium text-slate-700">{fam.familyMembers} members</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-xs text-slate-300">
+                <TableCell className="text-xs text-slate-700 font-medium">
                   {fam.village}, {fam.district}
                 </TableCell>
                 <TableCell className="text-xs uppercase font-mono">
-                  <span className={`px-2 py-0.5 rounded text-[10px] ${
-                    fam.isBPL ? "bg-red-500/20 text-red-300 font-bold" : "bg-slate-800 text-slate-300"
-                  }`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      fam.isBPL
+                        ? "bg-red-100 text-red-700 border border-red-200"
+                        : "bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]"
+                    }`}
+                  >
                     {fam.category} {fam.isBPL ? "• BPL" : ""}
                   </span>
                 </TableCell>
-                <TableCell className="text-xs font-mono">{fam.landLost} ha</TableCell>
+                <TableCell className="text-xs font-mono font-bold text-slate-900">
+                  {fam.landLost} ha
+                </TableCell>
                 <TableCell className="text-xs">
                   {fam.structureLost ? (
-                    <span className="text-red-400 font-semibold">Pucca House</span>
+                    <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
+                      <Home className="h-3 w-3" /> Pucca House
+                    </span>
                   ) : (
-                    <span className="text-slate-500">None</span>
+                    <span className="text-slate-400 text-xs">Land Only</span>
                   )}
                 </TableCell>
                 <TableCell className="text-xs font-mono">
-                  <div className="text-emerald-400">
+                  <div className="text-[#15803D] font-extrabold text-sm">
                     ₹{(fam.compensationPaid / 100000).toFixed(1)} L paid
                   </div>
-                  <div className="text-[10px] text-slate-500">
-                    of ₹{(fam.totalCompensation / 100000).toFixed(1)} L
+                  <div className="text-[11px] text-slate-500 font-medium">
+                    of ₹{(fam.totalCompensation / 100000).toFixed(1)} L assessed
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
+                  <span
+                    className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${
                       fam.rrStatus === "completed"
-                        ? "success"
+                        ? "bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]"
                         : fam.rrStatus === "monetary_paid"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="text-[10px]"
+                        ? "bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]"
+                        : "bg-[#FEF3C7] text-amber-800 border border-amber-200"
+                    }`}
                   >
                     {fam.rrStatus.replace(/_/g, " ")}
-                  </Badge>
+                  </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href="/compensation">
-                    <Button variant="ghost" size="sm" className="text-xs text-amber-400">
-                      Ledger →
+                  <Link href={`/compensation?familyId=${fam.id}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]"
+                    >
+                      <span>Ledger</span>
+                      <ArrowRight className="h-3 w-3 ml-1" />
                     </Button>
                   </Link>
                 </TableCell>

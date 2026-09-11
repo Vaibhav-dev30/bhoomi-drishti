@@ -54,27 +54,27 @@ export default function RRPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <HeartHandshake className="h-6 w-6 text-purple-400" />
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <HeartHandshake className="h-6 w-6 text-purple-600" />
             <span>Rehabilitation & Resettlement (R&R) Monitoring</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
             Mandatory compliance monitoring for Second Schedule entitlements and Third Schedule 25 civic amenities under Sections 31 to 50.
           </p>
         </div>
-        <Badge variant="purple" className="text-xs self-start sm:self-auto">
+        <Badge variant="purple" className="text-xs self-start sm:self-auto bg-purple-100 text-purple-800 border-purple-200 font-semibold">
           Section 38 Possession Gate Enforced
         </Badge>
       </div>
 
       {/* Statutory Section 38 Gate Notice */}
-      <div className="rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-950 p-4 shadow-lg flex items-start gap-3">
-        <ShieldAlert className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
-        <div className="text-xs text-slate-300">
-          <p className="font-bold text-white">
+      <div className="rounded-2xl border border-purple-200 bg-[#FAF5FF] p-4 shadow-xs flex items-start gap-3">
+        <ShieldAlert className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+        <div className="text-xs text-purple-900">
+          <p className="font-bold text-purple-950">
             Section 38 Statutory Pre-condition:
           </p>
-          <p className="mt-0.5 text-slate-400 leading-relaxed">
+          <p className="mt-0.5 text-purple-800/90 leading-relaxed font-normal">
             The Collector cannot take physical possession of acquired land until full monetary compensation is disbursed (within 3 months of award) and Second Schedule R&R entitlements (housing, subsistence grant, employment/annuity) are secured.
           </p>
         </div>
@@ -82,61 +82,61 @@ export default function RRPage() {
 
       {/* Second Schedule Statutory Entitlements Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-800 bg-slate-900/60">
+        <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase text-slate-400 flex items-center justify-between">
+            <CardTitle className="text-xs font-bold uppercase text-slate-500 flex items-center justify-between">
               <span>Housing Allotment</span>
-              <Home className="h-4 w-4 text-amber-400" />
+              <Home className="h-4 w-4 text-[#D97706]" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold text-white">PMAY Rural / Urban</div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <div className="text-xl font-extrabold text-slate-900">PMAY Rural / Urban</div>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">
               Min 50 sq.m. carpet area constructed house or equivalent cash grant
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-900/60">
+        <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase text-slate-400 flex items-center justify-between">
+            <CardTitle className="text-xs font-bold uppercase text-slate-500 flex items-center justify-between">
               <span>Livelihood Guarantee</span>
-              <Briefcase className="h-4 w-4 text-emerald-400" />
+              <Briefcase className="h-4 w-4 text-[#15803D]" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold text-white">₹5 Lakhs OR Job</div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <div className="text-xl font-extrabold text-slate-900">₹5 Lakhs OR Job</div>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">
               Choice of: 1) Job, 2) ₹5L lump sum, or 3) ₹2,000/mo annuity for 20 yrs
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-900/60">
+        <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase text-slate-400 flex items-center justify-between">
+            <CardTitle className="text-xs font-bold uppercase text-slate-500 flex items-center justify-between">
               <span>Subsistence Grant</span>
-              <Coins className="h-4 w-4 text-cyan-400" />
+              <Coins className="h-4 w-4 text-[#0284C7]" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold text-white">₹3,000 / month</div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <div className="text-xl font-extrabold text-slate-900">₹3,000 / month</div>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">
               Paid for 12 months (+₹50,000 lump sum for SC/ST displaced families)
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-900/60">
+        <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase text-slate-400 flex items-center justify-between">
+            <CardTitle className="text-xs font-bold uppercase text-slate-500 flex items-center justify-between">
               <span>Shifting & Setup Grant</span>
-              <Truck className="h-4 w-4 text-purple-400" />
+              <Truck className="h-4 w-4 text-purple-600" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold text-white">₹50,000 Transport</div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <div className="text-xl font-extrabold text-slate-900">₹50,000 Transport</div>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">
               Plus ₹25,000 cattle shed / petty shop grant + stamp duty exemption
             </p>
           </CardContent>
@@ -144,40 +144,40 @@ export default function RRPage() {
       </div>
 
       {/* Third Schedule 25 Civic Amenities Checklist */}
-      <Card className="border-slate-800 bg-slate-900/60 shadow-xl">
-        <CardHeader>
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-[#F2EFE8] pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                <ListChecks className="h-5 w-5 text-amber-400" />
+              <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <ListChecks className="h-5 w-5 text-[#0284C7]" />
                 <span>Third Schedule: 25 Civic Infrastructure Amenities in Resettlement Township</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Statutory physical infrastructure required before family relocation (Interactive Progress Tracker)
               </CardDescription>
             </div>
             <div className="text-right">
-              <span className="text-xs font-mono font-bold text-emerald-400">
+              <span className="text-xs font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#BBF7D0]">
                 {completedCount} of {amenities.length} Completed ({amenitiesPercentage}%)
               </span>
             </div>
           </div>
-          <Progress value={amenitiesPercentage} className="mt-2" />
+          <Progress value={amenitiesPercentage} className="mt-3 bg-[#F5F2EB]" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {amenities.map((item) => (
               <div
                 key={item.id}
                 onClick={() => toggleAmenity(item.id)}
-                className={`flex items-start gap-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                className={`flex items-start gap-2.5 p-3 rounded-2xl border text-xs cursor-pointer transition-all ${
                   item.completed
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-white"
-                    : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                    ? "bg-[#DCFCE7]/70 border-[#BBF7D0] text-[#15803D] font-medium"
+                    : "bg-[#FAF8F5] border-[#E5E0D6] text-slate-600 hover:border-[#CBD5E1]"
                 }`}
               >
-                <div className={`mt-0.5 h-4 w-4 rounded flex items-center justify-center shrink-0 ${
-                  item.completed ? "bg-emerald-500 text-slate-950 font-bold" : "border border-slate-700"
+                <div className={`mt-0.5 h-4 w-4 rounded-md flex items-center justify-center shrink-0 ${
+                  item.completed ? "bg-[#15803D] text-white" : "border border-[#CBD5E1] bg-white"
                 }`}>
                   {item.completed && <CheckCircle2 className="h-3.5 w-3.5" />}
                 </div>
@@ -189,31 +189,31 @@ export default function RRPage() {
       </Card>
 
       {/* Family-wise R&R Status Table */}
-      <Card className="border-slate-800 bg-slate-900/60 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-base font-bold text-white">
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-[#F2EFE8] pb-4">
+          <CardTitle className="text-base font-extrabold text-slate-900">
             Family-wise Rehabilitation Entitlement Ledger
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs text-slate-500">
             Individual tracking of housing allotment, subsistence grants, and livelihood rehabilitation
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Family Head</TableHead>
-                <TableHead>Displacement</TableHead>
-                <TableHead>Housing Allotment</TableHead>
-                <TableHead>Livelihood Choice</TableHead>
-                <TableHead>Subsistence Grant</TableHead>
-                <TableHead>Overall R&R Status</TableHead>
+              <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                <TableHead className="text-slate-700 font-bold">Family Head</TableHead>
+                <TableHead className="text-slate-700 font-bold">Displacement</TableHead>
+                <TableHead className="text-slate-700 font-bold">Housing Allotment</TableHead>
+                <TableHead className="text-slate-700 font-bold">Livelihood Choice</TableHead>
+                <TableHead className="text-slate-700 font-bold">Subsistence Grant</TableHead>
+                <TableHead className="text-slate-700 font-bold">Overall R&R Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {MOCK_FAMILIES.map((fam) => (
-                <TableRow key={fam.id}>
-                  <TableCell className="text-xs font-semibold text-white">
+                <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                  <TableCell className="text-xs font-bold text-slate-900 py-3">
                     <div>{fam.familyHeadName}</div>
                     <div className="text-[10px] text-slate-500 font-normal">
                       {fam.village} ({fam.category.toUpperCase()})
@@ -221,18 +221,18 @@ export default function RRPage() {
                   </TableCell>
                   <TableCell className="text-xs">
                     {fam.isDisplaced ? (
-                      <span className="text-red-400 font-semibold">Yes (Physically Displaced)</span>
+                      <span className="text-rose-600 font-bold">Yes (Physically Displaced)</span>
                     ) : (
-                      <span className="text-slate-400">Land Loss Only</span>
+                      <span className="text-slate-500 font-medium">Land Loss Only</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs font-mono">
+                  <TableCell className="text-xs font-mono font-medium text-slate-700">
                     {fam.isDisplaced ? "Plot #42, Sinnar Layout" : "N/A"}
                   </TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className="text-xs text-slate-700 font-medium">
                     {fam.isDisplaced ? "₹5,00,000 Lump Sum" : "N/A"}
                   </TableCell>
-                  <TableCell className="text-xs font-mono text-emerald-400">
+                  <TableCell className="text-xs font-mono font-bold text-[#15803D]">
                     {fam.isDisplaced ? "₹36,000 (12 Mos)" : "N/A"}
                   </TableCell>
                   <TableCell>
@@ -244,7 +244,13 @@ export default function RRPage() {
                           ? "default"
                           : "outline"
                       }
-                      className="text-[10px]"
+                      className={`text-[10px] ${
+                        fam.rrStatus === "completed"
+                          ? "bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]"
+                          : fam.rrStatus === "monetary_paid"
+                          ? "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]"
+                          : "border-[#E5E0D6] text-slate-600 bg-[#FAF8F5]"
+                      }`}
                     >
                       {fam.rrStatus.replace(/_/g, " ")}
                     </Badge>

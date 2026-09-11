@@ -46,103 +46,103 @@ export default function ProjectDetailPage({
   return (
     <div className="space-y-6">
       {/* Top back bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E0D6] pb-4">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to All Projects</span>
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/map">
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-800">
-              <Compass className="h-3.5 w-3.5 text-amber-400" />
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE]">
+              <Compass className="h-3.5 w-3.5 text-[#0284C7]" />
               <span>Locate on GIS Map</span>
             </Button>
           </Link>
-          <Button variant="secondary" size="sm" className="h-8 text-xs gap-1.5">
-            <Printer className="h-3.5 w-3.5 text-slate-400" />
+          <Button variant="secondary" size="sm" className="h-8 text-xs gap-1.5 border border-[#E5E0D6] bg-white hover:bg-[#FAF8F5] text-slate-700">
+            <Printer className="h-3.5 w-3.5 text-slate-500" />
             <span>Print Dossier</span>
           </Button>
         </div>
       </div>
 
       {/* Project Hero Dossier Header */}
-      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 p-6 shadow-2xl">
+      <div className="rounded-3xl border border-[#E5E0D6] bg-gradient-to-br from-white via-[#FAF8F5] to-[#F0FDF4]/50 p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-slate-800 text-amber-400 font-bold border border-slate-700">
+              <span className="font-mono text-xs px-2.5 py-0.5 rounded-lg bg-[#FEF3C7] text-[#B45309] font-bold border border-[#FDE68A]">
                 {project.projectCode}
               </span>
-              <Badge variant="default" className="capitalize">
+              <Badge variant="default" className="capitalize bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]">
                 {project.type}
               </Badge>
-              <Badge variant="success" className="capitalize">
+              <Badge variant="success" className="capitalize bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">
                 {project.status.replace(/_/g, " ")}
               </Badge>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-500 font-mono">
                 Requisition Date: {formatDate(project.proposalDate)}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
               {project.name}
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-slate-400 max-w-3xl leading-relaxed">
+            <p className="mt-1 text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed font-normal">
               {project.description}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0 text-xs">
-            <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
-              <span className="text-[10px] text-slate-500 block">Land Requiring Agency (LRB)</span>
-              <span className="font-semibold text-white">{project.lrbName}</span>
-              <span className="text-[10px] text-slate-400 block">{project.lrbType}</span>
+            <div className="bg-white p-3 rounded-2xl border border-[#E5E0D6] shadow-xs">
+              <span className="text-[10px] text-slate-500 block font-semibold">Land Requiring Agency (LRB)</span>
+              <span className="font-bold text-slate-900 block mt-0.5">{project.lrbName}</span>
+              <span className="text-[10px] text-slate-500 block">{project.lrbType}</span>
             </div>
-            <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
-              <span className="text-[10px] text-slate-500 block">Competent Authority (CALA)</span>
-              <span className="font-semibold text-white">Collector, {project.district}</span>
-              <span className="text-[10px] text-slate-400 block">State of {project.state}</span>
+            <div className="bg-white p-3 rounded-2xl border border-[#E5E0D6] shadow-xs">
+              <span className="text-[10px] text-slate-500 block font-semibold">Competent Authority (CALA)</span>
+              <span className="font-bold text-slate-900 block mt-0.5">Collector, {project.district}</span>
+              <span className="text-[10px] text-slate-500 block">State of {project.state}</span>
             </div>
           </div>
         </div>
 
         {/* Quick KPI Strip */}
-        <div className="mt-6 pt-6 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="mt-6 pt-6 border-t border-[#E5E0D6] grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <span className="text-[10px] uppercase font-semibold text-slate-400 block">Land Required</span>
-            <span className="text-lg sm:text-xl font-bold text-white font-mono">
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">Land Required</span>
+            <span className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
               {formatArea(project.totalAreaRequired)}
             </span>
-            <span className="text-[10px] text-emerald-400 block">
+            <span className="text-[10px] text-[#15803D] font-bold block">
               {formatArea(project.areaAcquired)} acquired ({getPercentage(project.areaAcquired, project.totalAreaRequired)}%)
             </span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-semibold text-slate-400 block">Compensation Assessed</span>
-            <span className="text-lg sm:text-xl font-bold text-white font-mono">
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">Compensation Assessed</span>
+            <span className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
               ₹{(project.compensationAssessed / 100).toFixed(1)} Cr
             </span>
-            <span className="text-[10px] text-emerald-400 block">
+            <span className="text-[10px] text-[#15803D] font-bold block">
               ₹{(project.compensationDisbursed / 100).toFixed(1)} Cr paid
             </span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-semibold text-slate-400 block">Affected Families</span>
-            <span className="text-lg sm:text-xl font-bold text-white font-mono">
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">Affected Families</span>
+            <span className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
               {project.totalAffectedFamilies}
             </span>
-            <span className="text-[10px] text-purple-400 block">
+            <span className="text-[10px] text-purple-700 font-bold block">
               {project.displacedFamilies} displaced
             </span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-semibold text-slate-400 block">R&R Entitlements</span>
-            <span className="text-lg sm:text-xl font-bold text-white font-mono">
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">R&R Entitlements</span>
+            <span className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
               {project.rrCompletedFamilies} / {project.displacedFamilies}
             </span>
-            <span className="text-[10px] text-cyan-400 block">
+            <span className="text-[10px] text-[#0284C7] font-bold block">
               {getPercentage(project.rrCompletedFamilies, project.displacedFamilies)}% completed
             </span>
           </div>
@@ -150,19 +150,19 @@ export default function ProjectDetailPage({
       </div>
 
       {/* RFCTLARR Act 2013 10-Stage Statutory Stepper */}
-      <Card className="border-slate-800 bg-slate-900/60 shadow-xl overflow-hidden">
-        <CardHeader className="pb-3 border-b border-slate-800/80">
+      <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 border-b border-[#F2EFE8]">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-amber-400" />
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[#15803D]" />
                 <span>RFCTLARR Act 2013 — Statutory Lifecycle Stepper</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Live monitoring of legal gates, gazette declarations, and Section 25 sunset timelines
               </CardDescription>
             </div>
-            <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className="text-[11px] font-mono font-bold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#BBF7D0]">
               Active Milestone: {project.status.replace(/_/g, " ").toUpperCase()}
             </span>
           </div>
@@ -170,7 +170,7 @@ export default function ProjectDetailPage({
         <CardContent className="p-4 sm:p-6 overflow-x-auto">
           <div className="flex items-start justify-between min-w-[750px] relative">
             {/* Connecting line */}
-            <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-800 z-0" />
+            <div className="absolute top-4 left-4 right-4 h-0.5 bg-[#E5E0D6] z-0" />
 
             {workflowStages.map((stage, idx) => (
               <div
@@ -180,26 +180,26 @@ export default function ProjectDetailPage({
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all ${
                     stage.status === "completed"
-                      ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20"
+                      ? "bg-[#15803D] text-white border-[#15803D] shadow-xs"
                       : stage.status === "current"
-                      ? "bg-amber-500 text-slate-950 border-amber-300 animate-pulse shadow-lg shadow-amber-500/30 ring-4 ring-amber-500/20"
-                      : "bg-slate-900 text-slate-500 border-slate-700"
+                      ? "bg-[#FEF3C7] text-[#B45309] border-[#F59E0B] animate-pulse ring-4 ring-amber-100"
+                      : "bg-[#F5F2EB] text-slate-500 border-[#E5E0D6]"
                   }`}
                 >
                   {stage.status === "completed" ? (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-4 w-4 text-white" />
                   ) : (
                     idx + 1
                   )}
                 </div>
-                <span className="mt-2 text-[10px] font-bold text-white leading-tight">
+                <span className="mt-2 text-[10px] font-bold text-slate-800 leading-tight">
                   {stage.name}
                 </span>
-                <span className="text-[9px] font-mono text-amber-400 mt-0.5">
+                <span className="text-[9px] font-mono font-semibold text-[#0284C7] mt-0.5">
                   {stage.section}
                 </span>
                 {stage.completedDate && (
-                  <span className="text-[8px] text-slate-400 mt-0.5 font-mono">
+                  <span className="text-[8px] text-slate-500 mt-0.5 font-mono">
                     {stage.completedDate.slice(0, 7)}
                   </span>
                 )}
@@ -211,7 +211,7 @@ export default function ProjectDetailPage({
 
       {/* Main Tabbed Dossier Sections */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-slate-900 border border-slate-800 w-full justify-start overflow-x-auto">
+        <TabsList className="bg-[#F5F2EB] border border-[#E5E0D6] w-full justify-start overflow-x-auto p-1 rounded-2xl">
           <TabsTrigger value="overview">Overview & Scope</TabsTrigger>
           <TabsTrigger value="parcels">Land Parcels (Khasra)</TabsTrigger>
           <TabsTrigger value="families">Affected Families ({MOCK_FAMILIES.length})</TabsTrigger>
@@ -222,30 +222,30 @@ export default function ProjectDetailPage({
         {/* Tab 1: Overview */}
         <TabsContent value="overview" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="border-slate-800 bg-slate-900/60">
-              <CardHeader>
-                <CardTitle className="text-sm font-bold text-white">
+            <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+              <CardHeader className="pb-3 border-b border-[#F2EFE8]">
+                <CardTitle className="text-sm font-extrabold text-slate-900">
                   Notified Revenue Villages & Administrative Scope
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">State:</span>
-                  <span className="font-semibold text-white">{project.state} ({project.stateCode})</span>
+              <CardContent className="space-y-3 text-xs pt-4">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">State:</span>
+                  <span className="font-bold text-slate-900">{project.state} ({project.stateCode})</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">District:</span>
-                  <span className="font-semibold text-white">{project.district}</span>
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">District:</span>
+                  <span className="font-bold text-slate-900">{project.district}</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">Tehsil / Taluk:</span>
-                  <span className="font-semibold text-white">{project.tehsil}</span>
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">Tehsil / Taluk:</span>
+                  <span className="font-bold text-slate-900">{project.tehsil}</span>
                 </div>
-                <div>
-                  <span className="text-slate-400 block mb-1">Notified Villages:</span>
+                <div className="pt-1">
+                  <span className="text-slate-500 font-medium block mb-1.5">Notified Villages:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {project.villages.map((v) => (
-                      <span key={v} className="px-2 py-0.5 rounded bg-slate-800 text-slate-200 text-xs font-mono">
+                      <span key={v} className="px-2.5 py-1 rounded-lg bg-[#FAF8F5] text-slate-700 text-xs font-mono font-semibold border border-[#E5E0D6]">
                         {v}
                       </span>
                     ))}
@@ -254,38 +254,38 @@ export default function ProjectDetailPage({
               </CardContent>
             </Card>
 
-            <Card className="border-slate-800 bg-slate-900/60">
-              <CardHeader>
-                <CardTitle className="text-sm font-bold text-white">
+            <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+              <CardHeader className="pb-3 border-b border-[#F2EFE8]">
+                <CardTitle className="text-sm font-extrabold text-slate-900">
                   Key Statutory Timelines & Sunsets
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">Proposal Date:</span>
-                  <span className="font-mono text-white">{formatDate(project.proposalDate)}</span>
+              <CardContent className="space-y-3 text-xs pt-4">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">Proposal Date:</span>
+                  <span className="font-mono font-bold text-slate-900">{formatDate(project.proposalDate)}</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">SIA Completed (Sec 6):</span>
-                  <span className="font-mono text-white">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">SIA Completed (Sec 6):</span>
+                  <span className="font-mono font-bold text-slate-900">
                     {project.siaCompletionDate ? formatDate(project.siaCompletionDate) : "In Progress"}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">Sec 11 Preliminary Notification:</span>
-                  <span className="font-mono text-white">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">Sec 11 Preliminary Notification:</span>
+                  <span className="font-mono font-bold text-slate-900">
                     {project.sec11Date ? formatDate(project.sec11Date) : "Pending"}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">Sec 19 Declaration:</span>
-                  <span className="font-mono text-white">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">Sec 19 Declaration:</span>
+                  <span className="font-mono font-bold text-slate-900">
                     {project.sec19Date ? formatDate(project.sec19Date) : "Pending"}
                   </span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-800">
-                  <span className="text-slate-400">Collector's Award (Sec 23):</span>
-                  <span className="font-mono text-emerald-400">
+                <div className="flex justify-between py-1.5 border-b border-[#F2EFE8]">
+                  <span className="text-slate-500 font-medium">Collector's Award (Sec 23):</span>
+                  <span className="font-mono font-bold text-[#15803D]">
                     {project.awardDate ? formatDate(project.awardDate) : "Within 12 Months"}
                   </span>
                 </div>
@@ -296,92 +296,92 @@ export default function ProjectDetailPage({
 
         {/* Tab 2: Land Parcels */}
         <TabsContent value="parcels" className="space-y-4 mt-4">
-          <Card className="border-slate-800 bg-slate-900/60">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#F2EFE8] pb-4">
               <div>
-                <CardTitle className="text-sm font-bold text-white">
+                <CardTitle className="text-sm font-extrabold text-slate-900">
                   Cadastral Register of Notified Parcels
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs text-slate-500">
                   Verified Gat/Survey numbers with 14-digit ULPIN (Bhu-Aadhaar)
                 </CardDescription>
               </div>
               <Link href="/map">
-                <Button variant="default" size="sm" className="text-xs gap-1">
+                <Button variant="default" size="sm" className="text-xs gap-1.5 bg-[#15803D] hover:bg-[#166534] text-white">
                   <Compass className="h-3.5 w-3.5" />
                   <span>Inspect on Map</span>
                 </Button>
               </Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>ULPIN / Gat No</TableHead>
-                    <TableHead>Village / Tehsil</TableHead>
-                    <TableHead>Owner of Record</TableHead>
-                    <TableHead>Land Category</TableHead>
-                    <TableHead>Area (ha)</TableHead>
-                    <TableHead>Acquisition Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                  <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                    <TableHead className="text-slate-700 font-bold">ULPIN / Gat No</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Village / Tehsil</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Owner of Record</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Land Category</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Area (ha)</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Acquisition Status</TableHead>
+                    <TableHead className="text-right text-slate-700 font-bold">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
+                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                     <TableCell className="font-mono text-xs">
-                      <div className="text-amber-400 font-bold">MH240019284712</div>
-                      <div className="text-slate-400">Gat No. 42/1 (KH-892)</div>
+                      <div className="text-[#0284C7] font-extrabold">MH240019284712</div>
+                      <div className="text-slate-500 font-medium">Gat No. 42/1 (KH-892)</div>
                     </TableCell>
-                    <TableCell className="text-xs">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-semibold text-white">Ramesh Patil & Sons</TableCell>
-                    <TableCell className="text-xs">Agricultural (Irrigated)</TableCell>
-                    <TableCell className="text-xs font-mono">2.5 ha</TableCell>
+                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
+                    <TableCell className="text-xs font-bold text-slate-900">Ramesh Patil & Sons</TableCell>
+                    <TableCell className="text-xs text-slate-600">Agricultural (Irrigated)</TableCell>
+                    <TableCell className="text-xs font-mono font-bold text-slate-900">2.5 ha</TableCell>
                     <TableCell>
-                      <Badge variant="success">Acquired</Badge>
+                      <Badge variant="success" className="bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">Acquired</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs text-amber-400">
+                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
                           Award Detail →
                         </Button>
                       </Link>
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                     <TableCell className="font-mono text-xs">
-                      <div className="text-amber-400 font-bold">MH240019284713</div>
-                      <div className="text-slate-400">Gat No. 42/2 (KH-893)</div>
+                      <div className="text-[#0284C7] font-extrabold">MH240019284713</div>
+                      <div className="text-slate-500 font-medium">Gat No. 42/2 (KH-893)</div>
                     </TableCell>
-                    <TableCell className="text-xs">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-semibold text-white">Suresh Gaikwad</TableCell>
-                    <TableCell className="text-xs">Agricultural (Dry)</TableCell>
-                    <TableCell className="text-xs font-mono">1.8 ha</TableCell>
+                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
+                    <TableCell className="text-xs font-bold text-slate-900">Suresh Gaikwad</TableCell>
+                    <TableCell className="text-xs text-slate-600">Agricultural (Dry)</TableCell>
+                    <TableCell className="text-xs font-mono font-bold text-slate-900">1.8 ha</TableCell>
                     <TableCell>
-                      <Badge variant="default">Possessed</Badge>
+                      <Badge variant="default" className="bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]">Possessed</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs text-amber-400">
+                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
                           Award Detail →
                         </Button>
                       </Link>
                     </TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                     <TableCell className="font-mono text-xs">
-                      <div className="text-amber-400 font-bold">MH240019284714</div>
-                      <div className="text-slate-400">Gat No. 43 (KH-901)</div>
+                      <div className="text-[#0284C7] font-extrabold">MH240019284714</div>
+                      <div className="text-slate-500 font-medium">Gat No. 43 (KH-901)</div>
                     </TableCell>
-                    <TableCell className="text-xs">Sinnar, Nashik</TableCell>
-                    <TableCell className="text-xs font-semibold text-white">Priya Deshmukh</TableCell>
-                    <TableCell className="text-xs">Commercial / Highway Front</TableCell>
-                    <TableCell className="text-xs font-mono">3.2 ha</TableCell>
+                    <TableCell className="text-xs text-slate-700">Sinnar, Nashik</TableCell>
+                    <TableCell className="text-xs font-bold text-slate-900">Priya Deshmukh</TableCell>
+                    <TableCell className="text-xs text-slate-600">Commercial / Highway Front</TableCell>
+                    <TableCell className="text-xs font-mono font-bold text-slate-900">3.2 ha</TableCell>
                     <TableCell>
-                      <Badge variant="outline">Notified Sec 11</Badge>
+                      <Badge variant="outline" className="border-[#BAE6FD] text-[#0284C7] bg-[#F0F9FF]">Notified Sec 11</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Link href="/compensation">
-                        <Button variant="ghost" size="sm" className="text-xs text-amber-400">
+                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE]">
                           Award Detail →
                         </Button>
                       </Link>
@@ -395,56 +395,56 @@ export default function ProjectDetailPage({
 
         {/* Tab 3: Affected Families */}
         <TabsContent value="families" className="space-y-4 mt-4">
-          <Card className="border-slate-800 bg-slate-900/60">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#F2EFE8] pb-4">
               <div>
-                <CardTitle className="text-sm font-bold text-white">
+                <CardTitle className="text-sm font-extrabold text-slate-900">
                   Affected Families Register & Rehabilitation Status
                 </CardTitle>
-                <CardDescription>
-                  Surveyed families entitled to compensation and Second Schedule R&R grants
+                <CardDescription className="text-xs text-slate-500">
+                  Surveyed families entitled to statutory compensation and Second Schedule R&R grants
                 </CardDescription>
               </div>
               <Link href="/rr">
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-xs font-bold border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE]">
                   Schedule II/III Checker →
                 </Button>
               </Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Family Head & Father</TableHead>
-                    <TableHead>Village</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Land Lost</TableHead>
-                    <TableHead>Compensation</TableHead>
-                    <TableHead>R&R Status</TableHead>
+                  <TableRow className="border-[#E5E0D6] bg-[#FAF8F5]">
+                    <TableHead className="text-slate-700 font-bold">Family Head & Kin</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Village</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Category</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Land Lost</TableHead>
+                    <TableHead className="text-slate-700 font-bold">Compensation</TableHead>
+                    <TableHead className="text-slate-700 font-bold">R&R Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {MOCK_FAMILIES.map((fam) => (
-                    <TableRow key={fam.id}>
-                      <TableCell className="text-xs font-medium text-white">
+                    <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
+                      <TableCell className="text-xs font-bold text-slate-900 py-3">
                         <div>{fam.familyHeadName}</div>
-                        <div className="text-[10px] text-slate-500">S/o {fam.fatherHusbandName} ({fam.familyMembers} members)</div>
+                        <div className="text-[10px] text-slate-500 font-normal">S/o {fam.fatherHusbandName} ({fam.familyMembers} members)</div>
                       </TableCell>
-                      <TableCell className="text-xs text-slate-300">{fam.village}</TableCell>
+                      <TableCell className="text-xs text-slate-600 font-medium">{fam.village}</TableCell>
                       <TableCell className="text-xs uppercase font-mono">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${fam.isBPL ? "bg-red-500/20 text-red-300" : "bg-slate-800 text-slate-300"}`}>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${fam.isBPL ? "bg-red-100 text-red-700 border border-red-200" : "bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]"}`}>
                           {fam.category} {fam.isBPL ? "• BPL" : ""}
                         </span>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">{fam.landLost} ha</TableCell>
+                      <TableCell className="text-xs font-mono font-bold text-slate-900">{fam.landLost} ha</TableCell>
                       <TableCell className="text-xs font-mono">
-                        <div className="text-emerald-400">₹{(fam.compensationPaid / 100000).toFixed(1)} L paid</div>
-                        <div className="text-[10px] text-slate-500">of ₹{(fam.totalCompensation / 100000).toFixed(1)} L</div>
+                        <div className="text-[#15803D] font-extrabold">₹{(fam.compensationPaid / 100000).toFixed(1)} L paid</div>
+                        <div className="text-[10px] text-slate-500 font-medium">of ₹{(fam.totalCompensation / 100000).toFixed(1)} L</div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={fam.rrStatus === "completed" ? "success" : "outline"} className="text-[10px]">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${fam.rrStatus === "completed" ? "bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]" : "bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]"}`}>
                           {fam.rrStatus.replace(/_/g, " ")}
-                        </Badge>
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -456,30 +456,30 @@ export default function ProjectDetailPage({
 
         {/* Tab 4: Compensation */}
         <TabsContent value="compensation" className="space-y-4 mt-4">
-          <Card className="border-slate-800 bg-slate-900/60">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-white">
+          <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+            <CardHeader className="border-b border-[#F2EFE8] pb-4">
+              <CardTitle className="text-sm font-extrabold text-slate-900">
                 Statutory Compensation Formula Engine (RFCTLARR Sec 26–30)
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Calculated per First Schedule: Market Value + Rural Multiplier + 100% Solatium
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-2">
-                <p className="text-amber-400 font-bold">
+            <CardContent className="space-y-4 pt-4">
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E5E0D6] font-mono text-xs space-y-2">
+                <p className="text-[#0369A1] font-bold">
                   Formula: Total Award = [(Base Market Value × Multiplier) + Attached Assets] × 2.0 (Solatium)
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-slate-300">
-                  <div>• Rural Multiplier: <strong>1.50x</strong> (Distance 10-20km)</div>
-                  <div>• Solatium: <strong>100% (Sec 30)</strong></div>
-                  <div>• Additional Interest: <strong>12% p.a. (Sec 30(3))</strong></div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-slate-700">
+                  <div>• Rural Multiplier: <strong className="text-slate-900">1.50x</strong> (Distance 10-20km)</div>
+                  <div>• Solatium: <strong className="text-slate-900">100% (Sec 30)</strong></div>
+                  <div>• Additional Interest: <strong className="text-slate-900">12% p.a. (Sec 30(3))</strong></div>
                 </div>
               </div>
 
               <div className="flex justify-end">
                 <Link href="/compensation">
-                  <Button variant="default" size="sm">
+                  <Button variant="default" size="sm" className="bg-[#15803D] hover:bg-[#166534] text-white">
                     Open Full Compensation Valuation Calculator →
                   </Button>
                 </Link>
@@ -490,16 +490,16 @@ export default function ProjectDetailPage({
 
         {/* Tab 5: Documents */}
         <TabsContent value="documents" className="space-y-4 mt-4">
-          <Card className="border-slate-800 bg-slate-900/60">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-white">
+          <Card className="border-[#E5E0D6] bg-white rounded-3xl shadow-sm">
+            <CardHeader className="border-b border-[#F2EFE8] pb-4">
+              <CardTitle className="text-sm font-extrabold text-slate-900">
                 Statutory Document Repository & Gazette Publications
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs text-slate-500">
                 Digitally signed government orders, e-Gazette notifications, and SIA evaluations
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="space-y-2">
                 {[
                   { title: "Gazette Notification under Section 11(1)", date: "10 Feb 2024", size: "2.4 MB", ref: "GZ/MH/2024/1234" },
@@ -510,18 +510,20 @@ export default function ProjectDetailPage({
                 ].map((doc, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-lg border border-slate-800 bg-slate-950/60 hover:border-slate-700 text-xs"
+                    className="flex items-center justify-between p-3 rounded-2xl border border-[#E5E0D6] bg-[#FAF8F5] hover:bg-white hover:border-[#CBD5E1] transition-all text-xs"
                   >
                     <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-amber-400 shrink-0" />
+                      <div className="p-2 rounded-xl bg-[#FEF3C7] text-[#B45309]">
+                        <FileText className="h-4 w-4 shrink-0" />
+                      </div>
                       <div>
-                        <p className="font-semibold text-white">{doc.title}</p>
+                        <p className="font-bold text-slate-900">{doc.title}</p>
                         <p className="text-[10px] text-slate-500 font-mono">
                           Ref: {doc.ref} • Published: {doc.date} • {doc.size}
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-xs text-amber-400 gap-1">
+                    <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE] gap-1">
                       <Download className="h-3.5 w-3.5" />
                       <span>Download PDF</span>
                     </Button>
