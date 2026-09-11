@@ -922,32 +922,90 @@ export default function LandingPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          10. OFFICIAL GOVERNMENT FOOTER
+          10. SOFT TRANSITION TO DARK PANORAMIC FOOTER
       ───────────────────────────────────────────────────────────── */}
-      <footer className="mt-auto bg-[#F1F5F9] border-t border-slate-200 py-10 px-4 sm:px-8 text-xs text-slate-600">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <div className="font-bold text-slate-900 text-sm">BhoomiDrishti</div>
-              <div className="text-[11px] text-slate-500 font-medium">
+      <div className="h-12 sm:h-16 w-full bg-gradient-to-b from-[#FAF9F6] via-[#E8EEF5] to-[#0B2740] pointer-events-none" />
+
+      {/* ─────────────────────────────────────────────────────────────
+          11. OFFICIAL GOVERNMENT FOOTER (PANORAMIC BACKDROP)
+      ───────────────────────────────────────────────────────────── */}
+      <footer className="relative mt-auto overflow-hidden text-xs text-slate-300">
+        {/* Full-width Panoramic Aerial Land & Corridor Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('/footer_panoramic_land.jpg')",
+            backgroundPosition: "center 45%",
+          }}
+        />
+
+        {/* Strong & Elegant Dark Navy Overlay (#0B2740 at ~82-88% Opacity) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B2740]/85 via-[#0B2740]/88 to-[#061828]/95" />
+
+        {/* Subtle Transparent Geospatial / Cadastral Linework Layer (~6% opacity) */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern id="footer-cadastral-grid" width="140" height="140" patternUnits="userSpaceOnUse">
+              <path d="M 140 0 L 0 0 0 140" fill="none" stroke="#FFFFFF" strokeWidth="0.7" />
+              <line x1="35" y1="0" x2="35" y2="140" stroke="#FFFFFF" strokeWidth="0.3" strokeDasharray="3 3" />
+              <line x1="105" y1="0" x2="105" y2="140" stroke="#FFFFFF" strokeWidth="0.3" strokeDasharray="3 3" />
+              <line x1="0" y1="45" x2="140" y2="45" stroke="#FFFFFF" strokeWidth="0.3" strokeDasharray="3 3" />
+              <line x1="0" y1="95" x2="140" y2="95" stroke="#FFFFFF" strokeWidth="0.3" strokeDasharray="3 3" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#footer-cadastral-grid)" />
+          {/* Faint cadastral corridor curves */}
+          <path
+            d="M -60 70 Q 250 30 550 110 T 1150 70 T 1750 120"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="0.8"
+          />
+          <path
+            d="M -60 140 Q 350 110 750 170 T 1350 130 T 1950 180"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="0.5"
+            strokeDasharray="5 3"
+          />
+        </svg>
+
+        {/* Foreground Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-14 pb-10 space-y-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Column 1: Brand & Ministry Details */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 text-emerald-400 flex items-center justify-center font-bold">
+                  <Compass className="w-4 h-4" />
+                </div>
+                <div className="font-bold text-white text-base tracking-tight leading-none">
+                  BhoomiDrishti
+                </div>
+              </div>
+              <div className="text-[11px] font-medium text-emerald-400">
                 National Land Lifecycle Portal
               </div>
-              <p className="text-slate-500 text-xs leading-relaxed">
+              <p className="text-slate-300 text-xs leading-relaxed max-w-sm">
                 An initiative of the Government of India. Developed under the Department of Land Resources (DoLR),
                 Ministry of Rural Development.
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="font-semibold text-slate-900 text-xs uppercase tracking-wider">
+            {/* Column 2: Portal Sections */}
+            <div className="space-y-2.5">
+              <div className="font-bold text-white text-xs uppercase tracking-wider">
                 Portal Sections
               </div>
-              <ul className="space-y-1 text-slate-600 text-xs">
+              <ul className="space-y-1.5 text-slate-300 text-xs">
                 <li>
                   <button
                     type="button"
                     onClick={() => scrollToSection("about")}
-                    className="hover:text-slate-900 cursor-pointer"
+                    className="hover:text-emerald-400 transition-colors cursor-pointer text-left"
                   >
                     About the Platform
                   </button>
@@ -956,7 +1014,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => scrollToSection("acquisition")}
-                    className="hover:text-slate-900 cursor-pointer"
+                    className="hover:text-emerald-400 transition-colors cursor-pointer text-left"
                   >
                     Land Acquisition Workflow
                   </button>
@@ -965,7 +1023,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => scrollToSection("cadastral")}
-                    className="hover:text-slate-900 cursor-pointer"
+                    className="hover:text-emerald-400 transition-colors cursor-pointer text-left"
                   >
                     Cadastral Intelligence
                   </button>
@@ -974,7 +1032,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => scrollToSection("corridors")}
-                    className="hover:text-slate-900 cursor-pointer"
+                    className="hover:text-emerald-400 transition-colors cursor-pointer text-left"
                   >
                     Corridor Monitoring
                   </button>
@@ -982,36 +1040,51 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="font-semibold text-slate-900 text-xs uppercase tracking-wider">
+            {/* Column 3: Legal & Policy */}
+            <div className="space-y-2.5">
+              <div className="font-bold text-white text-xs uppercase tracking-wider">
                 Legal &amp; Policy
               </div>
-              <ul className="space-y-1 text-slate-600 text-xs">
-                <li>Accessibility Statement</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Use</li>
-                <li>Hyperlinking Policy</li>
+              <ul className="space-y-1.5 text-slate-300 text-xs">
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">
+                  Accessibility Statement
+                </li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">
+                  Privacy Policy
+                </li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">
+                  Terms of Use
+                </li>
+                <li className="hover:text-emerald-400 transition-colors cursor-pointer">
+                  Hyperlinking Policy
+                </li>
               </ul>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="font-semibold text-slate-900 text-xs uppercase tracking-wider">
+            {/* Column 4: Support & Contact */}
+            <div className="space-y-2.5">
+              <div className="font-bold text-white text-xs uppercase tracking-wider">
                 Support &amp; Contact
               </div>
-              <ul className="space-y-1 text-slate-600 text-xs">
-                <li>National Informatics Centre Helpdesk</li>
-                <li>Toll Free: 1800-11-2026</li>
-                <li>Email: support-bhoomi@nic.in</li>
+              <ul className="space-y-1.5 text-slate-300 text-xs">
+                <li className="text-slate-300">National Informatics Centre Helpdesk</li>
+                <li className="text-slate-300">Toll Free: 1800-11-2026</li>
+                <li className="text-slate-300">Email: support-bhoomi@nic.in</li>
                 <li>
-                  <Link href="/public" className="text-[#0F2942] font-semibold hover:underline">
-                    Public Citizen Inquiry
+                  <Link
+                    href="/public"
+                    className="text-emerald-400 hover:text-emerald-300 font-semibold underline-offset-2 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Public Citizen Inquiry</span>
+                    <ArrowRight className="w-3 h-3" />
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+          {/* Bottom Copyright Area with 1px low-opacity divider */}
+          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
             <div>
               © 2026 BhoomiDrishti. An initiative of the Government of India. All rights reserved.
             </div>
