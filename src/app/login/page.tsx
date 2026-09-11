@@ -64,12 +64,12 @@ export default function LoginPage() {
   const [signupDesignation, setSignupDesignation] = useState("");
   const [signupDept, setSignupDept] = useState("");
   const [signupLevel, setSignupLevel] = useState<JurisdictionLevel>("district");
-  const [signupState, setSignupState] = useState("Maharashtra");
-  const [signupStateCode, setSignupStateCode] = useState("MH");
-  const [signupDistrict, setSignupDistrict] = useState("Nashik");
-  const [signupDistrictCode, setSignupDistrictCode] = useState("NSK");
-  const [signupProjectId, setSignupProjectId] = useState("PRJ-001");
-  const [signupProjectName, setSignupProjectName] = useState("NH-48 Greenfield Express Bypass Corridor");
+  const [signupState, setSignupState] = useState("Delhi");
+  const [signupStateCode, setSignupStateCode] = useState("DL");
+  const [signupDistrict, setSignupDistrict] = useState("North Delhi");
+  const [signupDistrictCode, setSignupDistrictCode] = useState("DEL");
+  const [signupProjectId, setSignupProjectId] = useState("DL-INFRA-001");
+  const [signupProjectName, setSignupProjectName] = useState("Delhi Land & Infrastructure Development Project");
 
   // 1-Click quick persona select
   const handleSelectPersona = (id: string) => {
@@ -303,44 +303,44 @@ export default function LoginPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  {/* Persona 1: District Collector CALA (Recommended) */}
+                  {/* Persona 1: District Magistrate CALA (Recommended) */}
                   <button
                     type="button"
-                    onClick={() => handleSelectPersona("USR-DIS-NSK")}
+                    onClick={() => handleSelectPersona("USR-DIS-DEL")}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-DIS-NSK"
+                      selectedPersonaId === "USR-DIS-DEL"
                         ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
                         : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Jalaj Sharma</span>
+                      <span className="font-bold text-slate-900">Shri Ashwini Kumar</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-[#15803D] font-bold">
                         District
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600">Collector & CALA</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Nashik (12 Parcels)</div>
+                    <div className="text-[11px] text-slate-600">DM & CALA, Delhi</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">North Delhi (12 Parcels)</div>
                   </button>
 
                   {/* Persona 2: State Admin */}
                   <button
                     type="button"
-                    onClick={() => handleSelectPersona("USR-STA-MH")}
+                    onClick={() => handleSelectPersona("USR-STA-DL")}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-STA-MH"
+                      selectedPersonaId === "USR-STA-DL"
                         ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
                         : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Shri Nitin Gadre</span>
+                      <span className="font-bold text-slate-900">Shri Naresh Kumar</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-[#0284C7] font-bold">
                         State
                       </span>
                     </div>
                     <div className="text-[11px] text-slate-600">Principal Secy (Rev)</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Maharashtra State</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Govt of NCT of Delhi</div>
                   </button>
 
                   {/* Persona 3: National Super Admin */}
@@ -366,21 +366,21 @@ export default function LoginPage() {
                   {/* Persona 4: Project Officer */}
                   <button
                     type="button"
-                    onClick={() => handleSelectPersona("USR-PRJ-SIN")}
+                    onClick={() => handleSelectPersona("USR-PRJ-01")}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      selectedPersonaId === "USR-PRJ-SIN"
+                      selectedPersonaId === "USR-PRJ-01"
                         ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
                         : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-900">Er. Suresh Deshmukh</span>
+                      <span className="font-bold text-slate-900">Er. Rajiv Tyagi</span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">
                         Project
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600">Field Project In-Charge</div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">NH-48 Greenfield Express</div>
+                    <div className="text-[11px] text-slate-600">Nodal Project Officer</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">DL-INFRA-001 (Delhi)</div>
                   </button>
                 </div>
               </div>
@@ -576,9 +576,8 @@ export default function LoginPage() {
                         onChange={(e) => setSignupDistrict(e.target.value)}
                         className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
                       >
-                        {signupState === "Maharashtra" && <option value="Nashik">Nashik</option>}
-                        {signupState === "Rajasthan" && <option value="Jodhpur (Phalodi)">Jodhpur (Phalodi)</option>}
-                        {signupState === "Uttar Pradesh" && <option value="Varanasi">Varanasi</option>}
+                        {signupState === "Delhi" && <option value="North Delhi">North Delhi</option>}
+                        {signupState === "Uttar Pradesh" && <option value="Ghaziabad">Ghaziabad</option>}
                       </select>
                     </div>
                   )}
@@ -590,11 +589,13 @@ export default function LoginPage() {
                         value={signupProjectId}
                         onChange={(e) => {
                           setSignupProjectId(e.target.value);
-                          if (e.target.value === "PRJ-001") setSignupProjectName("NH-48 Greenfield Express Bypass Corridor");
+                          if (e.target.value === "DL-INFRA-001") setSignupProjectName("Delhi Land & Infrastructure Development Project");
+                          if (e.target.value === "DL-GZB-002") setSignupProjectName("Delhi–Ghaziabad Regional Connectivity Project");
                         }}
                         className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
                       >
-                        <option value="PRJ-001">PRJ-001: NH-48 Greenfield Express Bypass Corridor (Musalgaon, Nashik)</option>
+                        <option value="DL-INFRA-001">DL-INFRA-001: Delhi Land & Infrastructure Development Project (Alipur, Delhi)</option>
+                        <option value="DL-GZB-002">DL-GZB-002: Delhi–Ghaziabad Regional Connectivity Project (Ghaziabad, UP)</option>
                       </select>
                     </div>
                   )}

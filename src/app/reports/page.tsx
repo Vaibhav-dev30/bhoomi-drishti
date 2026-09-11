@@ -195,9 +195,9 @@ export default function ReportsPage() {
             <TableBody>
               <TableRow className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                 <TableCell className="font-mono text-xs font-bold text-[#0284C7] py-3">
-                  MH-HWY-2024-001
+                  DL-INFRA-001
                 </TableCell>
-                <TableCell className="text-xs text-slate-900 font-medium">Maharashtra (MSRDC)</TableCell>
+                <TableCell className="text-xs text-slate-900 font-medium">Delhi (DDA)</TableCell>
                 <TableCell className="text-xs font-mono text-slate-600">10 Feb 2024</TableCell>
                 <TableCell className="text-xs font-mono text-slate-600">15 Aug 2024</TableCell>
                 <TableCell className="text-xs text-[#15803D] font-bold">Award Declared (01 Mar 2025)</TableCell>

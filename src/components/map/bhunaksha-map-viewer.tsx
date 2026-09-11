@@ -145,7 +145,7 @@ interface BhuNakshaMapViewerProps {
 }
 
 export function BhuNakshaMapViewer({
-  initialProjectId = "PRJ-001",
+  initialProjectId = "DL-INFRA-001",
   initialKhasraNumber,
   initialStageFilter,
 }: BhuNakshaMapViewerProps = {}) {

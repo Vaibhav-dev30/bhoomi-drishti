@@ -227,7 +227,7 @@ export default function RRPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-xs font-mono font-medium text-slate-700">
-                    {fam.isDisplaced ? "Plot #42, Sinnar Layout" : "N/A"}
+                    {fam.isDisplaced ? "Plot #42, NCR Resettlement Enclave" : "N/A"}
                   </TableCell>
                   <TableCell className="text-xs text-slate-700 font-medium">
                     {fam.isDisplaced ? "₹5,00,000 Lump Sum" : "N/A"}

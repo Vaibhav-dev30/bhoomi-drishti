@@ -59,7 +59,7 @@ const STAGE_EXECUTION_DETAILS: Record<
   },
   4: {
     durationDays: 21,
-    responsibleAuthority: "Tehsildar & Talathi Musalgaon Office",
+    responsibleAuthority: "Tehsildar & Revenue Circle Office",
     requiredDocuments: ["7/12 RoR Computerized Extracts", "Khatauni Register", "Encumbrance Certificate"],
   },
   5: {
@@ -74,7 +74,7 @@ const STAGE_EXECUTION_DETAILS: Record<
   },
   7: {
     durationDays: 30,
-    responsibleAuthority: "Revenue & Forest Dept, Govt of Maharashtra",
+    responsibleAuthority: "Revenue Department, Govt of NCT of Delhi",
     requiredDocuments: ["Gazette Notification Sec 11", "Declaration Sec 19", "Gram Panchayat Notice Proof"],
   },
   8: {

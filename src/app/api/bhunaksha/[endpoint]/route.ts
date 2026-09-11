@@ -12,7 +12,7 @@ export async function GET(
   const resolvedParams = await params;
   const endpoint = resolvedParams.endpoint;
   const searchParams = request.nextUrl.searchParams;
-  const projectId = searchParams.get("projectId") || searchParams.get("project") || "PRJ-001";
+  const projectId = searchParams.get("projectId") || searchParams.get("project") || "DL-INFRA-001";
   const khasraNumber = searchParams.get("khasra") || searchParams.get("khasraNumber");
 
   const project = BHUNAKSHA_PROJECTS.find((p) => p.id === projectId) || BHUNAKSHA_PROJECTS[0];

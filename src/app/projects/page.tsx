@@ -82,7 +82,7 @@ const STAGE_EXECUTION_DETAILS: Record<
   },
   4: {
     durationDays: 21,
-    responsibleAuthority: "Tehsildar & Talathi Musalgaon Office",
+    responsibleAuthority: "Tehsildar & Revenue Circle Office",
     requiredDocuments: ["7/12 RoR Computerized Extracts", "Khatauni Register", "Encumbrance Certificate"],
     statutoryRole: "Bhulekh Record-of-Rights cross-verification and titleholder validation.",
   },
@@ -100,13 +100,13 @@ const STAGE_EXECUTION_DETAILS: Record<
   },
   7: {
     durationDays: 30,
-    responsibleAuthority: "Revenue & Forest Dept, Govt of Maharashtra",
+    responsibleAuthority: "Revenue Department, Govt of NCT of Delhi",
     requiredDocuments: ["Gazette Notification Sec 11", "Declaration Sec 19", "Gram Panchayat Notice Proof"],
     statutoryRole: "Official Gazette publication freezing private land transactions.",
   },
   8: {
     durationDays: 30,
-    responsibleAuthority: "District Collector / CALA Nashik",
+    responsibleAuthority: "District Magistrate / CALA Division",
     requiredDocuments: ["Section 23 Award Decree", "Apportionment Schedule", "Title Clearance Order"],
     statutoryRole: "Formal Land Acquisition Award pronouncement per parcel.",
   },
@@ -251,8 +251,8 @@ export default function ProjectsPage() {
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
               {language === "hi"
-                ? "राष्ट्रीय राजमार्ग-48 ग्रीनफील्ड बाईपास के सभी 12 वैधानिक चरणों का इंटरैक्टिव प्रदर्शन, ग्राम मुसलगांव भू-नक्शा के 14 खसरों और भूलेख रिकॉर्ड के साथ।"
-                : "Flagship demonstrable land acquisition project for NH-48 Greenfield Bypass corridor across 14 Musalgaon cadastral khasras, demonstrating every statutory step from Section 4 Requisition to Section 38 Possession and R&R."}
+                ? "दिल्ली-एनसीआर एवं गाज़ियाबाद भू-अर्जन परियोजनाओं के सभी 12 वैधानिक चरणों का इंटरैक्टिव प्रदर्शन, भू-नक्शा के खसरों और भूलेख रिकॉर्ड के साथ।"
+                : "Interactive statutory lifecycle demonstrating land acquisition workflows across Delhi and Ghaziabad corridor nodes, from Section 4 Requisition to Section 38 Possession and Handover."}
             </p>
           </div>
 
@@ -456,7 +456,7 @@ export default function ProjectsPage() {
             <div className="bg-white p-4 rounded-xl border border-[#E5E0D6] space-y-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block flex items-center gap-1">
                 <Layers className="h-3 w-3 text-[#B45309]" />
-                Cadastral Scope (Musalgaon Sheet 02)
+                Cadastral Scope ({bhuProject.name})
               </span>
               <div className="space-y-1 text-slate-700 text-[11px]">
                 <div className="flex justify-between">
@@ -622,13 +622,13 @@ export default function ProjectsPage() {
           </div>
           <div className="space-y-1">
             <span className="text-slate-500 font-medium">Competent Authority (CALA):</span>
-            <div className="font-bold text-slate-900">District Collector & CALA, {flagshipProject.district}</div>
-            <div className="text-[11px] text-slate-500">Shri Jalaj Sharma, IAS (Appointed under Sec 3(g))</div>
+            <div className="font-bold text-slate-900">Competent Authority (CALA), {flagshipProject.district}</div>
+            <div className="text-[11px] text-slate-500">{bhuProject.calaOfficer}</div>
           </div>
           <div className="space-y-1">
             <span className="text-slate-500 font-medium">Cadastral Sajra Sheet:</span>
             <div className="font-bold text-slate-900">{bhuProject.sajraSheetNumber}</div>
-            <div className="text-[11px] text-slate-500">Musalgaon Village (LGD: {bhuProject.villageLgdCode}), Sinnar Taluka</div>
+            <div className="text-[11px] text-slate-500">{bhuProject.village}, {flagshipProject.district}</div>
           </div>
         </div>
       </div>
@@ -803,10 +803,10 @@ export default function ProjectsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>
-                Displaying all <strong className="text-slate-900 font-bold">14 Contiguous Khasras</strong> of Musalgaon Village Sajra Sheet 02
+                Displaying all <strong className="text-slate-900 font-bold">{bhuProject.parcels.length} Demonstration Khasras</strong> of {bhuProject.village} Sajra Sheet
               </span>
               <span className="font-mono text-slate-700 font-bold">
-                10 Affected (9.85 Ha) • 4 Buffer (8.57 Ha)
+                {bhuProject.totalAffectedParcels} Affected ({bhuProject.totalAffectedAreaHa} Ha) • {bhuProject.totalParcelsInVillageSheet - bhuProject.totalAffectedParcels} Buffer ({bhuProject.totalUnaffectedAreaHa} Ha)
               </span>
             </div>
 
@@ -1009,11 +1009,11 @@ export default function ProjectsPage() {
         {activeTab === "documents" && (
           <div className="space-y-3">
             {[
-              { title: "Gazette Notification under Section 11(1) — NH-48 Bypass", date: "10 Feb 2024", size: "2.4 MB", ref: "GZ/MH/2024/1234", type: "Gazette Publication" },
-              { title: "Social Impact Assessment (SIA) Final Report (Sec 6)", date: "20 Nov 2023", size: "14.8 MB", ref: "SIA/TISS/2023/88", type: "Expert Evaluation" },
-              { title: "Joint Measurement Survey (JMS) Panchnama & DGPS Map", date: "15 Jan 2024", size: "8.2 MB", ref: "JMS/SIN/2024/02", type: "Survey Panchnama" },
-              { title: "Section 19 Declaration of Acquisition — Musalgaon", date: "15 Aug 2024", size: "3.2 MB", ref: "GZ/MH/2024/5678", type: "Statutory Declaration" },
-              { title: "Collector's Award Schedule under Section 23 & 31", date: "18 Aug 2024", size: "5.6 MB", ref: "AWD/NSK/2024/11", type: "Award Decree" },
+              { title: "Gazette Notification under Section 11(1) — Regional Corridor", date: "28 Feb 2026", size: "2.4 MB", ref: "GZ/UP/2026/1102", type: "Gazette Publication" },
+              { title: "Social Impact Assessment (SIA) Final Report (Sec 6)", date: "20 Jan 2026", size: "14.8 MB", ref: "SIA/NCR/2026/88", type: "Expert Evaluation" },
+              { title: "Joint Measurement Survey (JMS) Panchnama & DGPS Map", date: "15 Feb 2026", size: "8.2 MB", ref: "JMS/DEL/2026/02", type: "Survey Panchnama" },
+              { title: "Section 19 Declaration of Acquisition — Delhi-NCR Nodes", date: "10 Apr 2026", size: "3.2 MB", ref: "GZ/DL/2026/1908", type: "Statutory Declaration" },
+              { title: "Collector's Award Schedule under Section 23 & 31", date: "25 Jun 2026", size: "5.6 MB", ref: "AWD/CALA/2026/11", type: "Award Decree" },
             ].map((doc, idx) => (
               <div
                 key={idx}

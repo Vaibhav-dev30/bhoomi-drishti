@@ -34,7 +34,7 @@ export default function NewProjectProposalPage() {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [purposeDescription, setPurposeDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
-  const [sajraSheet, setSajraSheet] = useState("Sheet 02 - Musalgaon (552109)");
+  const [sajraSheet, setSajraSheet] = useState("Sheet 04 - Alipur, North Delhi (110036)");
   const [corridorWidth, setCorridorWidth] = useState("60m");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -177,7 +177,7 @@ export default function NewProjectProposalPage() {
                       District *
                     </label>
                     <Input
-                      placeholder="e.g., Nashik"
+                      placeholder="e.g., North Delhi or Ghaziabad"
                       value={district}
                       onChange={(e) => setDistrict(e.target.value)}
                       required
@@ -189,7 +189,7 @@ export default function NewProjectProposalPage() {
                       Tehsil / Sub-Division *
                     </label>
                     <Input
-                      placeholder="e.g., Sinnar"
+                      placeholder="e.g., Alipur or Ghaziabad"
                       value={tehsil}
                       onChange={(e) => setTehsil(e.target.value)}
                       required
@@ -201,7 +201,7 @@ export default function NewProjectProposalPage() {
                       Notified Revenue Villages (Comma-separated) *
                     </label>
                     <Input
-                      placeholder="e.g., Sinnar, Ghoti, Ozar, Dindori, Niphad"
+                      placeholder="e.g., Alipur, Narela, Sahibabad, Morta, Duhai"
                       value={villages}
                       onChange={(e) => setVillages(e.target.value)}
                       required
@@ -256,9 +256,9 @@ export default function NewProjectProposalPage() {
                       onChange={(e) => setSajraSheet(e.target.value)}
                       className="w-full rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] px-3 py-2 text-xs font-semibold text-slate-800 focus:border-[#0284C7] focus:outline-none cursor-pointer"
                     >
-                      <option value="Sheet 02 - Musalgaon (552109)">Sheet No. 02 - Musalgaon (LGD: 552109) [14 Khasras]</option>
-                      <option value="Sheet 01 - Badwar (481920)">Sheet No. 01 - Badwar (LGD: 481920) [12 Khasras]</option>
-                      <option value="Sheet 04 - Sinnar Urban">Sheet No. 04 - Sinnar Urban Cadastre</option>
+                      <option value="Sheet 04 - Alipur, North Delhi (110036)">Sheet No. 04 - Alipur & Narela (LGD: 110036) [14 Khasras]</option>
+                      <option value="Sheet 01 - Sahibabad, Ghaziabad (201005)">Sheet No. 01 - Sahibabad & Arthala (LGD: 201005) [20 Khasras]</option>
+                      <option value="Sheet 02 - Duhai Regional Node">Sheet No. 02 - Duhai & Morta Node Cadastre</option>
                     </select>
                   </div>
 

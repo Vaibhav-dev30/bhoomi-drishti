@@ -163,7 +163,7 @@ export function SpatialMapViewer() {
   // First authorized project for current user
   const firstAuthorizedId = useMemo(() => {
     const found = MOCK_PROJECTS.find((p) => projectAccessMap[p.id]?.allowed);
-    return found ? found.id : "PRJ-001";
+    return found ? found.id : "DL-INFRA-001";
   }, [projectAccessMap]);
 
   // Active Project
@@ -182,7 +182,7 @@ export function SpatialMapViewer() {
 
   // Selected Plot for Inspection
   const [selectedPlot, setSelectedPlot] = useState<LandParcel | null>(() => {
-    return MOCK_PLOTS.find((p) => p.projectId === "PRJ-001") || MOCK_PLOTS[0];
+    return MOCK_PLOTS.find((p) => p.projectId === "DL-INFRA-001") || MOCK_PLOTS[0];
   });
 
   // Basemap API Key state (reads from localStorage or env)
@@ -272,14 +272,13 @@ export function SpatialMapViewer() {
     };
   }, [apiKey]);
 
-  // Center & Zoom by Project
+  // Center & Zoom by Project (Delhi & Ghaziabad)
   const projectCameraConfig: Record<string, { center: [number, number]; zoom: number }> = {
-    "PRJ-001": { center: [19.852, 73.998], zoom: 16 },
-    "PRJ-002": { center: [27.538, 71.915], zoom: 15 },
-    "PRJ-003": { center: [25.312, 83.007], zoom: 15 },
+    "DL-INFRA-001": { center: [28.724, 77.144], zoom: 15 },
+    "DL-GZB-002": { center: [28.675, 77.418], zoom: 14 },
   };
 
-  const currentCamera = projectCameraConfig[selectedProjectId] || { center: [19.852, 73.998], zoom: 16 };
+  const currentCamera = projectCameraConfig[selectedProjectId] || { center: [28.724, 77.144], zoom: 15 };
 
   // Filtered Plots
   const visiblePlots = useMemo(() => {

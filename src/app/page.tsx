@@ -278,11 +278,11 @@ export default function LandingPage() {
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
                   <span className="font-semibold text-slate-700 ml-2">
-                    Cadastral Overlay View · Musalgaon, Nashik
+                    Cadastral Overlay View · Alipur & Narela, Delhi
                   </span>
                 </div>
                 <span className="text-[11px] font-mono text-slate-500">
-                  NH-48 Greenfield Express Bypass
+                  Delhi Infrastructure Corridor
                 </span>
               </div>
 
@@ -604,17 +604,17 @@ export default function LandingPage() {
           {/* Corridor 1 */}
           <div className="p-5 rounded-lg bg-white border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500">PRJ-001</span>
+              <span className="text-xs font-mono font-bold text-slate-500">DL-INFRA-001</span>
               <span className="px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] text-[11px] font-semibold border border-emerald-200">
                 Section 19 Declared
               </span>
             </div>
             <div>
               <h4 className="font-bold text-slate-900 text-sm">
-                NH-48 Greenfield Express Bypass Corridor
+                Delhi Land & Infrastructure Development Project
               </h4>
               <p className="text-xs text-slate-500 mt-0.5">
-                Musalgaon, Sinnar Tehsil, Nashik District, Maharashtra
+                Alipur & Narela Localities, North Delhi, NCT of Delhi
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-xs">
@@ -636,31 +636,31 @@ export default function LandingPage() {
           {/* Corridor 2 */}
           <div className="p-5 rounded-lg bg-white border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500">PRJ-002</span>
+              <span className="text-xs font-mono font-bold text-slate-500">DL-GZB-002</span>
               <span className="px-2 py-0.5 rounded bg-blue-50 text-[#0284C7] text-[11px] font-semibold border border-blue-200">
-                Section 11 Preliminary
+                Stage 2 — Land Identification
               </span>
             </div>
             <div>
               <h4 className="font-bold text-slate-900 text-sm">
-                Western Dedicated Freight Corridor (DFC-W3)
+                Delhi–Ghaziabad Regional Connectivity Project
               </h4>
               <p className="text-xs text-slate-500 mt-0.5">
-                Kim &amp; Kosamba Nodes, Surat District, Gujarat
+                Sahibabad, Arthala, Morta &amp; Duhai, Ghaziabad, UP
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-xs">
               <div>
                 <span className="text-slate-400 block text-[10.5px]">Parcels</span>
-                <span className="font-semibold text-slate-900">28 Plots</span>
+                <span className="font-semibold text-slate-900">18 Plots</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10.5px]">Acquired Area</span>
-                <span className="font-semibold text-slate-900">42.10 Ha</span>
+                <span className="font-semibold text-slate-900">26.80 Ha</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10.5px]">Disbursed</span>
-                <span className="font-semibold text-slate-700">₹68.20 Cr</span>
+                <span className="font-semibold text-slate-700">₹36.40 Cr</span>
               </div>
             </div>
           </div>
@@ -882,7 +882,7 @@ export default function LandingPage() {
                     required
                     value={projectTitle}
                     onChange={(e) => setProjectTitle(e.target.value)}
-                    placeholder="e.g. NH-48 Greenfield Express Bypass"
+                    placeholder="e.g. Delhi Land & Infrastructure Development Project"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-xs"
                   />
                 </div>

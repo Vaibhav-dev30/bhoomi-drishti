@@ -294,7 +294,7 @@ export default function CompensationPage() {
                   <TableCell className="text-xs font-bold text-slate-900 py-3">
                     <div>{fam.familyHeadName}</div>
                     <div className="text-[10px] text-slate-500 font-normal">
-                      {fam.village}, Nashik
+                      {fam.village}, Delhi-NCR
                     </div>
                   </TableCell>
                   <TableCell className="text-xs font-mono text-[#0284C7] font-bold">

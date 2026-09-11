@@ -99,15 +99,15 @@ export default function CitizenPublicPortalPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-slate-700 font-semibold">District</label>
-                    <Input placeholder="e.g. Nashik" defaultValue="Nashik" className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900" />
+                    <Input placeholder="e.g. North Delhi" defaultValue="North Delhi" className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-slate-700 font-semibold">Revenue Village</label>
+                    <label className="text-slate-700 font-semibold">Revenue Locality / Village</label>
                     <Input
-                      placeholder="e.g. Sinnar"
+                      placeholder="e.g. Alipur"
                       value={searchVillage}
                       onChange={(e) => setSearchVillage(e.target.value)}
                       className="bg-[#FAF8F5] border-[#E5E0D6] text-slate-900"

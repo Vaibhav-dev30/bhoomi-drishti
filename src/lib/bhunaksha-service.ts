@@ -1,17 +1,18 @@
 // ============================================================
 // BhoomiDrishti — BhuNaksha Cadastral Engine & Service Layer
 // National Informatics Centre (NIC) Cadastral Integration Suite
+// Exclusively configured for Delhi NCT & Ghaziabad, Uttar Pradesh
 // ============================================================
 
 export interface BhuNakshaParcel {
   id: string;
   projectId: string;
-  khasraNumber: string; // e.g. "104", "105/1"
+  khasraNumber: string; // e.g. "DEMO-482", "DEMO-101"
   surveyNumber: string;
-  ulpin: string; // 14-digit Bhu-Aadhaar e.g. "MH240019284701"
+  ulpin: string; // 14-digit Bhu-Aadhaar e.g. "DL010048200192"
   village: string;
   villageLgdCode: string; // Local Government Directory Code
-  sheetNumber: string; // Cadastral Sajra Sheet No (e.g. "Sheet 02")
+  sheetNumber: string; // Cadastral Sajra Sheet No
   tehsil: string;
   district: string;
   state: string;
@@ -19,9 +20,9 @@ export interface BhuNakshaParcel {
 
   // Spatial Dimensions
   gisCalculatedAreaHa: number; // Calculated Area from BhuNaksha Vector Geometry
-  recordedRoRAreaHa: number; // Recorded Area in Bhulekh / RoR Register
+  recordedRoRAreaHa: number; // Recorded Area in RoR Register
   areaSqMeters: number;
-  dimensions: string; // e.g. "115m × 90m"
+  dimensions: string;
 
   // Land Attributes
   landClassification:
@@ -31,7 +32,7 @@ export interface BhuNakshaParcel {
     | "barren_wasteland"
     | "gram_sabha_revenue"
     | "forest_boundary";
-  soilClass: string; // e.g. "Kali Mitti (Black Soil Class I)"
+  soilClass: string;
   circleRatePerHa: number; // Market circle rate in ₹
   guidanceValuePerSqM: number;
 
@@ -48,10 +49,10 @@ export interface BhuNakshaParcel {
   // Acquisition Impact Analysis
   isAffected: boolean;
   affectedAreaHa: number;
-  affectedAreaPercentage: number; // e.g. 100% full, 45% partial
-  residualAreaHa: number; // Area remaining with land-holder
+  affectedAreaPercentage: number;
+  residualAreaHa: number;
   acquisitionType: "full" | "partial" | "unaffected" | "buffer";
-  severanceClaimEligible: boolean; // Under RFCTLARR Sec 27 if residual < 0.2 Ha
+  severanceClaimEligible: boolean;
 
   // Statutory Workflow Status
   status:
@@ -64,7 +65,7 @@ export interface BhuNakshaParcel {
     | "compensation_paid"
     | "possessed_mutated";
 
-  // 12-Stage Hackathon Demonstration Lifecycle
+  // Demonstration Lifecycle
   stageIndex?: number; // 1 to 12
   stageCode?: string;
   stageTitle?: string;
@@ -122,7 +123,6 @@ export interface BhuNakshaParcel {
     status: "Completed" | "In Progress" | "Exempt";
   };
 
-  // Objections filed under Section 15
   objections?: {
     id: string;
     objectorName: string;
@@ -135,23 +135,22 @@ export interface BhuNakshaParcel {
 
   // Valuation Breakdown under RFCTLARR Act 2013
   valuation: {
-    baseMarketValue: number; // Market rate × Affected Area
-    ruralMultiplier: number; // 1.0 to 2.0 based on distance from urban center
+    baseMarketValue: number;
+    ruralMultiplier: number;
     multipliedValue: number;
-    solatiumAmount: number; // 100% of multiplied value under Section 30(1)
-    assetsValue: number; // Trees, tube wells, farm houses
-    additionalInterest: number; // 12% p.a. from Sec 11 to award under Section 30(3)
+    solatiumAmount: number;
+    assetsValue: number;
+    additionalInterest: number;
     totalCompensationPayable: number;
   };
 
-  // Geographic Geometry [lat, lng]
-  coordinates: [number, number]; // Centroid for label
-  polygon: [number, number][]; // Cadastral Parcel boundary vertices
+  coordinates: [number, number]; // Centroid [lat, lng]
+  polygon: [number, number][];
   chauhaddi: {
-    north: string; // e.g. "Khasra 103 (Sunil Patil)"
-    south: string; // e.g. "Village Cart Track / PWD Road"
-    east: string; // e.g. "Khasra 105 (Gaikwad)"
-    west: string; // e.g. "Khasra 101 (State Canal)"
+    north: string;
+    south: string;
+    east: string;
+    west: string;
   };
 }
 
@@ -168,39 +167,31 @@ export interface BhuNakshaProject {
   village: string;
   villageLgdCode: string;
   sajraSheetNumber: string;
-  scaleRatio: string; // e.g. "1:2500"
-  surveyYear: string; // e.g. "2023-24 DGPS / SVAMITVA"
+  scaleRatio: string;
+  surveyYear: string;
 
-  // Alignment Corridor Details
   corridorType: "linear_alignment" | "zonal_boundary";
-  corridorWidthMeters?: number; // e.g. 60m for highway Right-of-Way
+  corridorWidthMeters?: number;
   corridorCenterline?: [number, number][];
   boundaryPolygon?: [number, number][];
 
-  // Area & Parcel Metrics
   totalParcelsInVillageSheet: number;
   totalAffectedParcels: number;
   totalVillageAreaHa: number;
   totalAffectedAreaHa: number;
   totalUnaffectedAreaHa: number;
 
-  // Financials (in ₹ Lakhs)
   totalEstimatedCompensationLakhs: number;
   totalCompensationDisbursedLakhs: number;
 
-  // Statutory Progress
-  currentWorkflowStageIndex: number; // 0 to 9
+  currentWorkflowStageIndex: number;
   currentStageName: string;
   targetCompletionDate: string;
-  calaOfficer: string; // Competent Authority for Land Acquisition
+  calaOfficer: string;
 
-  // Parcels
   parcels: BhuNakshaParcel[];
 }
 
-// ------------------------------------------------------------
-// RFCTLARR 2013 Statutory Workflow Stages
-// ------------------------------------------------------------
 export const STATUTORY_WORKFLOW_STAGES = [
   {
     stageNumber: 1,
@@ -208,7 +199,7 @@ export const STATUTORY_WORKFLOW_STAGES = [
     title: "Project Requisition & Proposal",
     actReference: "RFCTLARR 2013 Section 4",
     description: "LRB submits formal land requirement proposal with project alignment and public purpose justification.",
-    responsibleAuthority: "Land Requiring Body (LRB) / District Collector",
+    responsibleAuthority: "Land Requiring Body (LRB) / District Magistrate",
     durationDays: 30,
     requiredDocuments: ["Form-1A Requisition", "Alignment Map", "Feasibility Report"],
   },
@@ -218,1174 +209,395 @@ export const STATUTORY_WORKFLOW_STAGES = [
     title: "BhuNaksha Cadastral Identification",
     actReference: "NIC BhuNaksha & SVAMITVA Cadastre",
     description: "Overlay project alignment on digitized village Sajra cadastral sheets to extract intersecting khasras.",
-    responsibleAuthority: "District Land Records Officer & Survey of India",
+    responsibleAuthority: "Survey Department & GIS Directorate",
     durationDays: 21,
-    requiredDocuments: ["BhuNaksha Cadastral Sheet", "ULPIN Ledger", "Intersection Analysis"],
+    requiredDocuments: ["BhuNaksha Vector Layer", "Intersect Analysis Report", "ULPIN Cross-Check"],
   },
   {
     stageNumber: 3,
-    code: "JOINT_SURVEY_VERIFICATION",
-    title: "Joint Measurement Survey (JMS)",
-    actReference: "RFCTLARR Section 12 & State Revenue Manual",
-    description: "Physical ground-truthing with DGPS / Total Station by Tehsildar & LRB engineers; tree/structure census.",
-    responsibleAuthority: "Tehsildar, Talathi & LRB Engineers",
-    durationDays: 45,
-    requiredDocuments: ["JMS Panchnama", "Tree Census List", "Structure Valuation Report"],
+    code: "SEC_4_SIA",
+    title: "Social Impact Assessment (SIA)",
+    actReference: "RFCTLARR 2013 Sections 4-6",
+    description: "Multi-disciplinary SIA study, public hearing with gram sabhas, and livelihood impact documentation.",
+    responsibleAuthority: "State SIA Unit & Independent Social Evaluators",
+    durationDays: 60,
+    requiredDocuments: ["Draft SIA Report", "Public Hearing Minutes", "Social Management Plan (SIMP)"],
   },
   {
     stageNumber: 4,
-    code: "SEC_11_NOTIFICATION",
-    title: "Section 11 Preliminary Notification",
-    actReference: "RFCTLARR 2013 Section 11",
-    description: "Publication in Official Gazette, local newspapers, and Panchayat notice boards; freezes land transactions.",
-    responsibleAuthority: "District Collector / CALA",
+    code: "SEC_7_EXPERT_APPRAISAL",
+    title: "Expert Group Appraisal",
+    actReference: "RFCTLARR 2013 Section 7",
+    description: "Independent multi-disciplinary expert group evaluates SIA report and public purpose legitimacy.",
+    responsibleAuthority: "Independent Multi-Disciplinary Expert Group",
     durationDays: 60,
-    requiredDocuments: ["Gazette Notification", "Panchayat Publication Proof", "Form-4 Public Notice"],
+    requiredDocuments: ["Expert Recommendation Report", "Mitigation Audit", "State Govt Clearance"],
   },
   {
     stageNumber: 5,
-    code: "SEC_15_OBJECTIONS_HEARING",
-    title: "Section 15 Objections & Hearing",
-    actReference: "RFCTLARR 2013 Section 15",
-    description: "60-day statutory window for landowners to file objections regarding public purpose, area, or valuation.",
+    code: "SEC_11_NOTIFICATION",
+    title: "Section 11 Preliminary Notification",
+    actReference: "RFCTLARR 2013 Section 11",
+    description: "Official gazette notification freezing private land transactions and initiating RoR updating.",
     responsibleAuthority: "Competent Authority for Land Acquisition (CALA)",
     durationDays: 60,
-    requiredDocuments: ["Objection Dossier", "Hearing Minutes", "CALA Order under Sec 15(2)"],
+    requiredDocuments: ["Gazette Notification Form 4", "Public Notice in 2 Newspapers", "Gram Panchayat Notice"],
   },
   {
     stageNumber: 6,
-    code: "SEC_19_DECLARATION",
-    title: "Section 19 Final Declaration",
-    actReference: "RFCTLARR 2013 Section 19",
-    description: "Formal declaration that identified land is required for public purpose; must be issued within 12 months of Sec 11.",
-    responsibleAuthority: "State Revenue Department / Central Ministry",
-    durationDays: 30,
-    requiredDocuments: ["State Gazette Declaration", "R&R Scheme Summary", "Summary of Acquisition"],
+    code: "SEC_15_OBJECTIONS",
+    title: "Section 15 Hearing of Objections",
+    actReference: "RFCTLARR 2013 Section 15",
+    description: "60-day statutory window for affected khatedars to submit written objections regarding boundary or valuation.",
+    responsibleAuthority: "CALA / Land Acquisition Officer",
+    durationDays: 60,
+    requiredDocuments: ["Objection Dossiers", "Hearing Order Sheets", "CALA Inquiry Report"],
   },
   {
     stageNumber: 7,
-    code: "SEC_23_VALUATION_AWARD",
-    title: "Section 23 Compensation Award Inquiry",
-    actReference: "RFCTLARR 2013 Section 23, 26-30",
-    description: "Determination of Market Value, Rural Multiplier (1.0–2.0), 100% Solatium, Assets, and 12% interest.",
-    responsibleAuthority: "District Collector & Special Land Acquisition Officer (SLAO)",
-    durationDays: 45,
-    requiredDocuments: ["Award Enquiry Form", "Circle Rate Index", "Comparative Sale Deeds Analysis"],
+    code: "SEC_19_DECLARATION",
+    title: "Section 19 Final Declaration",
+    actReference: "RFCTLARR 2013 Section 19",
+    description: "Conclusive declaration that land is required for public purpose; published along with summary of R&R scheme.",
+    responsibleAuthority: "Appropriate Government (State / Centre)",
+    durationDays: 365,
+    requiredDocuments: ["Section 19 Declaration Order", "Approved R&R Scheme Summary", "Gazette Extra-Ordinary"],
   },
   {
     stageNumber: 8,
-    code: "CALA_APPROVAL_SANCTION",
-    title: "Statutory Sanction & Award Pronouncement",
-    actReference: "RFCTLARR 2013 Section 27 & 31",
-    description: "Competent Authority sanctions final financial award; deposit of compensation amount into Escrow Account.",
-    responsibleAuthority: "Competent Authority (CALA) / State Finance Dept",
-    durationDays: 15,
-    requiredDocuments: ["Approved Award Statement", "Treasury Escrow Deposit Challan"],
+    code: "SEC_23_AWARD",
+    title: "Section 23 Compensation Award",
+    actReference: "RFCTLARR 2013 Sections 23-30",
+    description: "Collector's conclusive compensation award factoring Circle Rate, 100% Solatium, assets, and 12% interest.",
+    responsibleAuthority: "CALA / District Collector",
+    durationDays: 365,
+    requiredDocuments: ["Award Enquiry Form 9", "Detailed Valuation Sheet", "Sanction Order"],
   },
   {
     stageNumber: 9,
-    code: "SEC_38_POSSESSION_HANDOVER",
-    title: "Section 38 Taking Possession",
+    code: "SEC_38_POSSESSION",
+    title: "Section 38 Physical Possession",
     actReference: "RFCTLARR 2013 Section 38",
-    description: "Collector takes possession of land free from all encumbrances after full compensation has been paid or deposited.",
-    responsibleAuthority: "District Collector & LRB Representative",
+    description: "Take encumbrance-free physical possession upon full compensation disbursement and execute revenue mutation.",
+    responsibleAuthority: "CALA, Tehsildar & Requiring Agency",
     durationDays: 30,
-    requiredDocuments: ["Possession Panchnama", "Handover Certificate", "Site Demarcation Map"],
-  },
-  {
-    stageNumber: 10,
-    code: "DISBURSEMENT_BHULEKH_MUTATION",
-    title: "DBT Payment & Land Mutation",
-    actReference: "Public Finance Management System (PFMS) & BhuNaksha GIS",
-    description: "Direct Bank Transfer to verified bank accounts; revenue mutation updating BhuNaksha & Bhulekh to Govt ownership.",
-    responsibleAuthority: "Tehsildar & District Treasury Officer",
-    durationDays: 20,
-    requiredDocuments: ["PFMS DBT Acknowledgement", "Updated Khatauni (7/12 Extract)", "Mutated BhuNaksha Cadastre"],
+    requiredDocuments: ["Possession Panchnama", "Handover Certificate", "RoR Mutation Form 6"],
   },
 ];
 
-// ------------------------------------------------------------
-// LAMS 12-Stage End-to-End Land Acquisition Lifecycle
-// ------------------------------------------------------------
 export interface Lams12Stage {
-  stageNumber: number; // 1 to 12
-  stage?: number;
+  stageNumber: number;
   code: string;
   title: string;
   shortTitle: string;
   actReference: string;
-  legalRef?: string;
+  actRef: string;
+  phase: "Pre-Notification" | "Notification & Inquiries" | "Award & Disbursement" | "Handover & Settlement";
   description: string;
-  demoAction: string;
-  category: "pre_notification" | "verification" | "statutory" | "financial_settlement" | "possession_rr";
-  badgeBg: string;
-  badgeText: string;
+  badgeVariant: "default" | "secondary" | "outline";
 }
 
 export const LAMS_12_STAGES: Lams12Stage[] = [
-  {
-    stageNumber: 1,
-    code: "proposal",
-    title: "Stage 1 — Proposal",
-    shortTitle: "Proposal",
-    actReference: "RFCTLARR 2013 Sec 4",
-    description: "Create and submit project proposal with alignment purpose, department authority, and required land estimate.",
-    demoAction: "Proposal Submitted",
-    category: "pre_notification",
-    badgeBg: "bg-sky-100",
-    badgeText: "text-sky-800",
-  },
-  {
-    stageNumber: 2,
-    code: "footprint",
-    title: "Stage 2 — Project Footprint",
-    shortTitle: "Footprint",
-    actReference: "BhuNaksha GIS & DGPS Alignment",
-    description: "Display project footprint on map with 60m highway right-of-way corridor intersecting village Sajra sheet.",
-    demoAction: "Footprint Defined",
-    category: "pre_notification",
-    badgeBg: "bg-emerald-100",
-    badgeText: "text-emerald-800",
-  },
-  {
-    stageNumber: 3,
-    code: "affected",
-    title: "Stage 3 — Affected Parcels",
-    shortTitle: "Affected",
-    actReference: "Spatial Vector Intersection",
-    description: "Identify all intersecting khasras; highlight affected vs unaffected parcels with partial/full split.",
-    demoAction: "Parcels Intersected",
-    category: "pre_notification",
-    badgeBg: "bg-red-100",
-    badgeText: "text-red-800",
-  },
-  {
-    stageNumber: 4,
-    code: "ror_verified",
-    title: "Stage 4 — RoR Verification",
-    shortTitle: "RoR Verify",
-    actReference: "Bhulekh 7/12 & Khatauni Integration",
-    description: "Cross-reference computerised Record of Rights (RoR) for verified titleholders, recorded area, and bank encumbrances.",
-    demoAction: "RoR Verified",
-    category: "verification",
-    badgeBg: "bg-amber-100",
-    badgeText: "text-amber-800",
-  },
-  {
-    stageNumber: 5,
-    code: "parcel_verified",
-    title: "Stage 5 — Parcel Verification",
-    shortTitle: "Parcel Verify",
-    actReference: "Joint Measurement Survey (JMS)",
-    description: "Detailed ground-truthing with DGPS boundary verification, tree/well census, structure valuation, and signed panchnama.",
-    demoAction: "Field Verified",
-    category: "verification",
-    badgeBg: "bg-amber-100",
-    badgeText: "text-amber-800",
-  },
-  {
-    stageNumber: 6,
-    code: "reviewed",
-    title: "Stage 6 — Parcel Review",
-    shortTitle: "Review",
-    actReference: "SLAO Scrutiny & Approval",
-    description: "Comprehensive review of verified parcels; approve, raise queries, or mark for correction before notification.",
-    demoAction: "Review Approved",
-    category: "verification",
-    badgeBg: "bg-amber-100",
-    badgeText: "text-amber-800",
-  },
-  {
-    stageNumber: 7,
-    code: "notified",
-    title: "Stage 7 — Notification",
-    shortTitle: "Notification",
-    actReference: "RFCTLARR 2013 Sec 11",
-    description: "Generate official Gazette acquisition notification for approved parcels, freezing private transactions.",
-    demoAction: "Gazette Notified",
-    category: "statutory",
-    badgeBg: "bg-red-100",
-    badgeText: "text-red-800",
-  },
-  {
-    stageNumber: 8,
-    code: "awarded",
-    title: "Stage 8 — Award",
-    shortTitle: "Award",
-    actReference: "RFCTLARR 2013 Sec 23 & 31",
-    description: "Pronounce formal Land Acquisition Award per parcel with legally determined compensation components by CALA.",
-    demoAction: "Award Pronounced",
-    category: "statutory",
-    badgeBg: "bg-red-100",
-    badgeText: "text-red-800",
-  },
-  {
-    stageNumber: 9,
-    code: "compensation",
-    title: "Stage 9 — Compensation",
-    shortTitle: "Compensation",
-    actReference: "RFCTLARR 2013 Sec 26-30",
-    description: "Statutory compensation computation: Base Value × 1.5 Multiplier + 100% Solatium + Attached Assets + 12% Interest.",
-    demoAction: "Compensation Calculated",
-    category: "financial_settlement",
-    badgeBg: "bg-purple-100",
-    badgeText: "text-purple-800",
-  },
-  {
-    stageNumber: 10,
-    code: "disbursed",
-    title: "Stage 10 — Disbursement",
-    shortTitle: "Disbursement",
-    actReference: "PFMS / e-Kuber DBT",
-    description: "Direct Bank Transfer to verified bank accounts; generate transaction IDs and disbursement certificates.",
-    demoAction: "Payment Disbursed",
-    category: "financial_settlement",
-    badgeBg: "bg-purple-100",
-    badgeText: "text-purple-800",
-  },
-  {
-    stageNumber: 11,
-    code: "possession",
-    title: "Stage 11 — Possession",
-    shortTitle: "Possession",
-    actReference: "RFCTLARR 2013 Sec 38",
-    description: "Take physical possession free from encumbrances; issue possession memo and update map to possessed state.",
-    demoAction: "Possession Taken",
-    category: "possession_rr",
-    badgeBg: "bg-purple-100",
-    badgeText: "text-purple-800",
-  },
-  {
-    stageNumber: 12,
-    code: "rr_completed",
-    title: "Stage 12 — R&R Completed",
-    shortTitle: "R&R",
-    actReference: "RFCTLARR 2013 Sch II & III",
-    description: "Rehabilitation & Resettlement benefits for eligible affected families: subsistence grants, housing, and livelihood support.",
-    demoAction: "R&R Completed",
-    category: "possession_rr",
-    badgeBg: "bg-emerald-100",
-    badgeText: "text-emerald-800",
-  },
+  { stageNumber: 1, code: "proposal", title: "Project Proposal", shortTitle: "Proposal", actReference: "RFCTLARR Sec 4(1)", actRef: "Sec 4(1)", phase: "Pre-Notification", description: "Formal land requisition submitted with alignment corridor.", badgeVariant: "outline" },
+  { stageNumber: 2, code: "identification", title: "Land Identification", shortTitle: "Identification", actReference: "NIC BhuNaksha", actRef: "BhuNaksha", phase: "Pre-Notification", description: "Cadastral khasras extracted from village digital sheets.", badgeVariant: "outline" },
+  { stageNumber: 3, code: "affected_khasras", title: "Intersecting Khasras", shortTitle: "Intersect Analysis", actReference: "Spatial GIS Engine", actRef: "Spatial GIS", phase: "Pre-Notification", description: "Intersecting khasra polygons and acreage quantified.", badgeVariant: "outline" },
+  { stageNumber: 4, code: "ror_verification", title: "RoR Verification", shortTitle: "RoR Check", actReference: "Bhulekh Land Records", actRef: "Land Records", phase: "Pre-Notification", description: "Bhulekh title & ownership records verified against revenue registers.", badgeVariant: "secondary" },
+  { stageNumber: 5, code: "field_verification", title: "Field Verification", shortTitle: "Field Survey", actReference: "JMS Panchnama", actRef: "JMS Survey", phase: "Pre-Notification", description: "Joint measurement survey & DGPS boundary validation.", badgeVariant: "secondary" },
+  { stageNumber: 6, code: "review_forward", title: "Scrutiny & Review", shortTitle: "SLAO Scrutiny", actReference: "SLAO Review Order", actRef: "SLAO Scrutiny", phase: "Pre-Notification", description: "SLAO scrutinizes parcel dossiers and submits for gazette notification.", badgeVariant: "secondary" },
+  { stageNumber: 7, code: "notification", title: "Sec 11 Notification", shortTitle: "Sec 11 Gazette", actReference: "RFCTLARR Sec 11", actRef: "Sec 11", phase: "Notification & Inquiries", description: "Preliminary statutory gazette freezes private transfers.", badgeVariant: "default" },
+  { stageNumber: 8, code: "award", title: "Sec 23 Award", shortTitle: "Sec 23 Award", actReference: "RFCTLARR Sec 23/30", actRef: "Sec 23/30", phase: "Notification & Inquiries", description: "Compensation award pronounced with 100% solatium & assets.", badgeVariant: "default" },
+  { stageNumber: 9, code: "compensation", title: "Compensation Assessment", shortTitle: "Compensation", actReference: "PFMS Escrow Standard", actRef: "PFMS DBT", phase: "Award & Disbursement", description: "Individual PFMS escrow accounts credited with award amounts.", badgeVariant: "default" },
+  { stageNumber: 10, code: "disbursement", title: "Direct Disbursement", shortTitle: "DBT Disbursement", actReference: "PFMS e-Kuber Protocol", actRef: "DBT Transfer", phase: "Award & Disbursement", description: "e-Kuber electronic direct benefit transfer to beneficiary bank accounts.", badgeVariant: "default" },
+  { stageNumber: 11, code: "possession", title: "Physical Possession", shortTitle: "Possession", actReference: "RFCTLARR Sec 38", actRef: "Sec 38", phase: "Handover & Settlement", description: "Physical possession taken and handed over free of all encumbrances.", badgeVariant: "default" },
+  { stageNumber: 12, code: "rr_completed", title: "R&R Settlement", shortTitle: "R&R Settled", actReference: "RFCTLARR Schedule II", actRef: "Schedule II", phase: "Handover & Settlement", description: "Second Schedule rehabilitation grants & housing allotments completed.", badgeVariant: "default" },
 ];
 
-// ------------------------------------------------------------
-// Curated Real-World BhuNaksha Projects with Cadastral Plots
-// ------------------------------------------------------------
+function makePolygon(lat: number, lng: number, size = 0.0015): [number, number][] {
+  return [
+    [lat - size, lng - size],
+    [lat + size, lng - size],
+    [lat + size, lng + size],
+    [lat - size, lng + size],
+  ];
+}
 
+// ------------------------------------------------------------
+// PROJECT 1: Delhi Land & Infrastructure Development Project
+// ------------------------------------------------------------
+const DELHI_PARCELS_RAW = [
+  { khasra: "DEMO-482", area: 1.84, owner: "Demo Landholder - Shri Ramesh Chand (Demonstration Data)", village: "Alipur", lat: 28.721, lng: 77.141, status: "Verified" as const },
+  { khasra: "DEMO-101", area: 1.45, owner: "Demo Landholder - Smt. Kamla Devi (Demonstration Data)", village: "Alipur", lat: 28.723, lng: 77.143, status: "Verified" as const },
+  { khasra: "DEMO-102", area: 1.62, owner: "Demo Landholder - Shri Naresh Yadav (Demonstration Data)", village: "Alipur", lat: 28.725, lng: 77.145, status: "Verified" as const },
+  { khasra: "DEMO-103", area: 1.20, owner: "Demo Landholder - Shri Satish Bansal (Demonstration Data)", village: "Narela", lat: 28.727, lng: 77.148, status: "Verified" as const },
+  { khasra: "DEMO-104", area: 1.75, owner: "Demo Landholder - Shri Om Prakash (Demonstration Data)", village: "Narela", lat: 28.729, lng: 77.151, status: "Verified" as const },
+  { khasra: "DEMO-105", area: 1.30, owner: "Demo Landholder - Shri Suresh Tyagi (Demonstration Data)", village: "Narela", lat: 28.731, lng: 77.153, status: "Discrepancy Found" as const },
+  { khasra: "DEMO-106", area: 1.55, owner: "Demo Landholder - Smt. Geeta Sharma (Demonstration Data)", village: "Hamidpur", lat: 28.718, lng: 77.137, status: "Verified" as const },
+  { khasra: "DEMO-107", area: 1.40, owner: "Demo Landholder - Shri Jagdish Prasad (Demonstration Data)", village: "Hamidpur", lat: 28.716, lng: 77.134, status: "Verified" as const },
+  { khasra: "DEMO-108", area: 1.50, owner: "Demo Landholder - Shri Harish Rawat (Demonstration Data)", village: "Hamidpur", lat: 28.714, lng: 77.131, status: "Verified" as const },
+  { khasra: "DEMO-109", area: 1.60, owner: "Demo Landholder - Smt. Meena Varma (Demonstration Data)", village: "Hamidpur", lat: 28.712, lng: 77.128, status: "Pending Verification" as const },
+  { khasra: "DEMO-110", area: 1.70, owner: "Demo Landholder - Shri Anil Gupta (Demonstration Data)", village: "Alipur", lat: 28.733, lng: 77.156, status: "Pending Verification" as const },
+  { khasra: "DEMO-111", area: 1.49, owner: "Demo Landholder - Shri Vinod Chawla (Demonstration Data)", village: "Alipur", lat: 28.735, lng: 77.159, status: "Pending Verification" as const },
+  { khasra: "DEMO-112", area: 2.10, owner: "Demo Landholder - Shri Mahender Pal (Demonstration Data)", village: "Alipur", lat: 28.738, lng: 77.164, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-113", area: 2.00, owner: "Demo Landholder - Smt. Saroj Bala (Demonstration Data)", village: "Hamidpur", lat: 28.709, lng: 77.123, status: "Verified" as const, isBuffer: true },
+];
+
+const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
+  const isAffected = !p.isBuffer;
+  const rate = 7000000;
+  const baseMarketValue = Math.round(p.area * rate);
+  const multipliedValue = Math.round(baseMarketValue * 1.5);
+  const solatiumAmount = multipliedValue;
+  const totalCompensation = multipliedValue + solatiumAmount + 250000;
+
+  return {
+    id: `BN-DL-${p.khasra}`,
+    projectId: "DL-INFRA-001",
+    khasraNumber: p.khasra,
+    surveyNumber: p.khasra,
+    ulpin: `DL0100${idx + 100}00192`,
+    village: p.village,
+    villageLgdCode: "110036",
+    sheetNumber: "Sheet No. 04",
+    tehsil: "Alipur",
+    district: "North Delhi",
+    state: "Delhi",
+    stateCode: "DL",
+    gisCalculatedAreaHa: p.area,
+    recordedRoRAreaHa: p.area,
+    areaSqMeters: Math.round(p.area * 10000),
+    dimensions: "130m × 120m",
+    landClassification: "irrigated_agricultural",
+    soilClass: "Alluvial Class I (Yamuna Floodplain)",
+    circleRatePerHa: rate,
+    guidanceValuePerSqM: 700,
+    owners: [
+      {
+        name: p.owner,
+        fatherOrHusbandName: "Demonstration Record",
+        sharePercentage: 100,
+        khatauniNumber: `KH-DL-${idx + 400}`,
+        casteCategory: "General",
+        contactNumber: "+91 98110 00000",
+      },
+    ],
+    isAffected,
+    affectedAreaHa: isAffected ? p.area : 0,
+    affectedAreaPercentage: isAffected ? 100 : 0,
+    residualAreaHa: isAffected ? 0 : p.area,
+    acquisitionType: isAffected ? "full" : "buffer",
+    severanceClaimEligible: false,
+    status: isAffected ? "notified_sec11" : "proposed",
+    valuation: {
+      baseMarketValue,
+      ruralMultiplier: 1.5,
+      multipliedValue,
+      solatiumAmount,
+      assetsValue: 250000,
+      additionalInterest: Math.round(baseMarketValue * 0.12),
+      totalCompensationPayable: totalCompensation,
+    },
+    coordinates: [p.lat, p.lng],
+    polygon: makePolygon(p.lat, p.lng),
+    chauhaddi: {
+      north: "Adjacent Khasra Cadastral Border",
+      south: "Internal Locality Road / Utility Line",
+      east: "Agricultural Boundary",
+      west: "Proposed Infrastructure Alignment",
+    },
+    rorVerification: {
+      status: p.status,
+      verificationDate: "2026-02-15",
+      khatauniNo: `KH-DL-${idx + 400}`,
+      verifiedBy: "A. K. Sharma (Patwari Alipur)",
+      remarks: p.status === "Discrepancy Found"
+        ? "Ownership discrepancy requires review — Khatauni succession entry requires CALA hearing"
+        : "Record of Rights verified against Delhi revenue records.",
+    },
+  };
+});
+
+// ------------------------------------------------------------
+// PROJECT 2: Delhi–Ghaziabad Regional Connectivity Project
+// ------------------------------------------------------------
+const GZB_PARCELS_RAW = [
+  { khasra: "DEMO-501", area: 1.56, owner: "Demo Landholder - Shri Virender Singh (Demonstration Data)", village: "Sahibabad", lat: 28.665, lng: 77.395, status: "Verified" as const },
+  { khasra: "DEMO-502", area: 1.50, owner: "Demo Landholder - Smt. Usha Rani (Demonstration Data)", village: "Sahibabad", lat: 28.668, lng: 77.401, status: "Verified" as const },
+  { khasra: "DEMO-503", area: 1.62, owner: "Demo Landholder - Shri Satendra Tyagi (Demonstration Data)", village: "Arthala", lat: 28.672, lng: 77.412, status: "Verified" as const },
+  { khasra: "DEMO-504", area: 1.38, owner: "Demo Landholder - Shri Manoj Kumar (Demonstration Data)", village: "Arthala", lat: 28.675, lng: 77.420, status: "Verified" as const },
+  { khasra: "DEMO-505", area: 1.75, owner: "Demo Landholder - Smt. Rajbala (Demonstration Data)", village: "Morta", lat: 28.679, lng: 77.428, status: "Verified" as const },
+  { khasra: "DEMO-506", area: 1.43, owner: "Demo Landholder - Shri Jagdish Tyagi (Demonstration Data)", village: "Morta", lat: 28.682, lng: 77.433, status: "Discrepancy Found" as const },
+  { khasra: "DEMO-507", area: 1.62, owner: "Demo Landholder - Shri Dharmender Singh (Demonstration Data)", village: "Duhai", lat: 28.686, lng: 77.441, status: "Verified" as const },
+  { khasra: "DEMO-508", area: 1.44, owner: "Demo Landholder - Shri Sunil Sharma (Demonstration Data)", village: "Duhai", lat: 28.689, lng: 77.448, status: "Verified" as const },
+  { khasra: "DEMO-509", area: 1.50, owner: "Demo Landholder - Shri Prem Chand (Demonstration Data)", village: "Sahibabad", lat: 28.663, lng: 77.391, status: "Verified" as const },
+  { khasra: "DEMO-510", area: 1.35, owner: "Demo Landholder - Smt. Pushpa Devi (Demonstration Data)", village: "Sahibabad", lat: 28.661, lng: 77.387, status: "Verified" as const },
+  { khasra: "DEMO-511", area: 1.40, owner: "Demo Landholder - Shri Rohit Tyagi (Demonstration Data)", village: "Arthala", lat: 28.670, lng: 77.408, status: "Verified" as const },
+  { khasra: "DEMO-512", area: 1.55, owner: "Demo Landholder - Shri Devender Pal (Demonstration Data)", village: "Arthala", lat: 28.674, lng: 77.416, status: "Pending Verification" as const },
+  { khasra: "DEMO-513", area: 1.45, owner: "Demo Landholder - Smt. Anita Chaudhry (Demonstration Data)", village: "Morta", lat: 28.677, lng: 77.424, status: "Pending Verification" as const },
+  { khasra: "DEMO-514", area: 1.50, owner: "Demo Landholder - Shri Surender Kumar (Demonstration Data)", village: "Morta", lat: 28.680, lng: 77.430, status: "Pending Verification" as const },
+  { khasra: "DEMO-515", area: 1.35, owner: "Demo Landholder - Shri Naresh Kumar (Demonstration Data)", village: "Duhai", lat: 28.684, lng: 77.437, status: "Pending Verification" as const },
+  { khasra: "DEMO-516", area: 1.40, owner: "Demo Landholder - Smt. Sushila Devi (Demonstration Data)", village: "Duhai", lat: 28.687, lng: 77.444, status: "Pending Verification" as const },
+  { khasra: "DEMO-517", area: 1.25, owner: "Demo Landholder - Shri Mukesh Verma (Demonstration Data)", village: "Sahibabad", lat: 28.659, lng: 77.383, status: "Pending Verification" as const },
+  { khasra: "DEMO-518", area: 1.25, owner: "Demo Landholder - Shri Sanjay Singh (Demonstration Data)", village: "Duhai", lat: 28.691, lng: 77.452, status: "Verified" as const },
+  { khasra: "DEMO-519", area: 2.80, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Sahibabad", lat: 28.655, lng: 77.378, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-520", area: 2.80, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Duhai", lat: 28.695, lng: 77.458, status: "Verified" as const, isBuffer: true },
+];
+
+const GZB_PARCELS: BhuNakshaParcel[] = GZB_PARCELS_RAW.map((p, idx) => {
+  const isAffected = !p.isBuffer;
+  const rate = 6500000;
+  const baseMarketValue = Math.round(p.area * rate);
+  const multipliedValue = Math.round(baseMarketValue * 1.5);
+  const solatiumAmount = multipliedValue;
+  const totalCompensation = multipliedValue + solatiumAmount + 300000;
+
+  return {
+    id: `BN-GZB-${p.khasra}`,
+    projectId: "DL-GZB-002",
+    khasraNumber: p.khasra,
+    surveyNumber: p.khasra,
+    ulpin: `UP0900${idx + 500}00223`,
+    village: p.village,
+    villageLgdCode: "201005",
+    sheetNumber: "Sheet No. 01",
+    tehsil: "Ghaziabad",
+    district: "Ghaziabad",
+    state: "Uttar Pradesh",
+    stateCode: "UP",
+    gisCalculatedAreaHa: p.area,
+    recordedRoRAreaHa: p.area,
+    areaSqMeters: Math.round(p.area * 10000),
+    dimensions: "135m × 120m",
+    landClassification: "irrigated_agricultural",
+    soilClass: "Alluvial Loam (Hindon Basin)",
+    circleRatePerHa: rate,
+    guidanceValuePerSqM: 650,
+    owners: [
+      {
+        name: p.owner,
+        fatherOrHusbandName: "Demonstration Record",
+        sharePercentage: 100,
+        khatauniNumber: `KH-UP-${idx + 600}`,
+        casteCategory: "General",
+        contactNumber: "+91 98120 00000",
+      },
+    ],
+    isAffected,
+    affectedAreaHa: isAffected ? p.area : 0,
+    affectedAreaPercentage: isAffected ? 100 : 0,
+    residualAreaHa: isAffected ? 0 : p.area,
+    acquisitionType: isAffected ? "full" : "buffer",
+    severanceClaimEligible: false,
+    status: isAffected ? "notified_sec11" : "proposed",
+    valuation: {
+      baseMarketValue,
+      ruralMultiplier: 1.5,
+      multipliedValue,
+      solatiumAmount,
+      assetsValue: 300000,
+      additionalInterest: Math.round(baseMarketValue * 0.12),
+      totalCompensationPayable: totalCompensation,
+    },
+    coordinates: [p.lat, p.lng],
+    polygon: makePolygon(p.lat, p.lng),
+    chauhaddi: {
+      north: "National Highway / Arterial Road Boundary",
+      south: "Locality Cadastral Boundary",
+      east: "Village Farmland",
+      west: "Regional Connectivity Corridor Buffer",
+    },
+    rorVerification: {
+      status: p.status,
+      verificationDate: "2026-02-20",
+      khatauniNo: `KH-UP-${idx + 600}`,
+      verifiedBy: "R. P. Verma (Lekhpal Ghaziabad)",
+      remarks: p.status === "Discrepancy Found"
+        ? "Ownership discrepancy requires review — Joint title mutation entry under revenue court review"
+        : "Record of Rights verified against UP Bhulekh records.",
+    },
+  };
+});
+
+// ============================================================
+// OFFICIAL BHUNAKSHA PROJECTS (DELHI & GHAZIABAD ONLY)
+// ============================================================
 export const BHUNAKSHA_PROJECTS: BhuNakshaProject[] = [
-  // ----------------------------------------------------------
-  // PROJECT 1: Linear Highway Corridor Expansion
-  // ----------------------------------------------------------
   {
-    id: "PRJ-001",
-    name: "NH-48 Greenfield Express Bypass Corridor",
-    projectCode: "NH48-BYPASS-MH-2024",
+    id: "DL-INFRA-001",
+    name: "Delhi Land & Infrastructure Development Project",
+    projectCode: "DL-INFRA-2026-001",
     sector: "highway",
-    department: "National Highways Authority of India (NHAI / MoRTH)",
-    state: "Maharashtra",
-    stateCode: "MH",
-    district: "Nashik",
-    tehsil: "Sinnar",
-    village: "Musalgaon",
-    villageLgdCode: "552109",
-    sajraSheetNumber: "Sheet No. 02 (Re-Surveyed 2023)",
+    department: "Delhi Development Authority & Land Acquisition Collectorate (North Delhi)",
+    state: "Delhi",
+    stateCode: "DL",
+    district: "North Delhi",
+    tehsil: "Alipur",
+    village: "Alipur, Narela & Hamidpur",
+    villageLgdCode: "110036",
+    sajraSheetNumber: "Sheet No. 04 (Delhi Digital Cadastre 2026)",
     scaleRatio: "1:2000 Cadastral Scale",
-    surveyYear: "2023 DGPS Survey",
+    surveyYear: "2026 DGPS & Drone Survey",
     corridorType: "linear_alignment",
     corridorWidthMeters: 60,
     corridorCenterline: [
-      [19.852, 73.991],
-      [19.855, 73.996],
-      [19.858, 74.002],
-      [19.861, 74.008],
+      [28.708, 77.126],
+      [28.716, 77.136],
+      [28.724, 77.146],
+      [28.732, 77.158],
     ],
     totalParcelsInVillageSheet: 14,
-    totalAffectedParcels: 10,
-    totalVillageAreaHa: 18.42,
-    totalAffectedAreaHa: 9.85,
-    totalUnaffectedAreaHa: 8.57,
-    totalEstimatedCompensationLakhs: 4120.5,
-    totalCompensationDisbursedLakhs: 2850.0,
-    currentWorkflowStageIndex: 6, // At Section 23 Award stage
-    currentStageName: "Section 23 Compensation Award Inquiry",
-    targetCompletionDate: "2025-11-30",
-    calaOfficer: "Shri Jalaj Sharma, IAS (Collector & CALA Nashik)",
-    parcels: [
-      {
-        id: "BN-001-101",
-        projectId: "PRJ-001",
-        khasraNumber: "101",
-        surveyNumber: "Gat No. 101",
-        ulpin: "MH240019284701",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.25,
-        recordedRoRAreaHa: 1.25,
-        areaSqMeters: 12500,
-        dimensions: "125m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat (Perennial Well Irrigated)",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Rameshwar Bhaurao Patil",
-            fatherOrHusbandName: "Bhaurao Patil",
-            sharePercentage: 50,
-            khatauniNumber: "KH-412",
-            casteCategory: "General",
-            contactNumber: "+91 98221 44510",
-          },
-          {
-            name: "Suresh Bhaurao Patil",
-            fatherOrHusbandName: "Bhaurao Patil",
-            sharePercentage: 50,
-            khatauniNumber: "KH-412",
-            casteCategory: "General",
-            contactNumber: "+91 98221 44511",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.25,
-        affectedAreaPercentage: 100,
-        residualAreaHa: 0.0,
-        acquisitionType: "full",
-        severanceClaimEligible: false,
-        status: "award_assessed",
-        valuation: {
-          baseMarketValue: 4000000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 6000000,
-          solatiumAmount: 6000000,
-          assetsValue: 850000, // 1 Borewell + 42 Pomegranate Trees
-          additionalInterest: 720000,
-          totalCompensationPayable: 13570000,
-        },
-        coordinates: [19.853, 73.992],
-        polygon: [
-          [19.8515, 73.9905],
-          [19.8545, 73.9905],
-          [19.8545, 73.9935],
-          [19.8515, 73.9935],
-        ],
-        chauhaddi: {
-          north: "Khasra 102 (Deshmukh)",
-          south: "Village Cart Track / Gaothan",
-          east: "Khasra 104 (Gaikwad)",
-          west: "Canal Distributary No. 4",
-        },
-      },
-      {
-        id: "BN-001-102-1",
-        projectId: "PRJ-001",
-        khasraNumber: "102/1",
-        surveyNumber: "Gat No. 102 Part A",
-        ulpin: "MH240019284702",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.1,
-        recordedRoRAreaHa: 1.1,
-        areaSqMeters: 11000,
-        dimensions: "110m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat (Drip Irrigated Vineyards)",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Sunil Baburao Deshmukh",
-            fatherOrHusbandName: "Baburao Deshmukh",
-            sharePercentage: 100,
-            khatauniNumber: "KH-518",
-            casteCategory: "General",
-            contactNumber: "+91 94220 88231",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 0.72,
-        affectedAreaPercentage: 65.5,
-        residualAreaHa: 0.38,
-        acquisitionType: "partial",
-        severanceClaimEligible: false,
-        status: "award_assessed",
-        valuation: {
-          baseMarketValue: 2304000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 3456000,
-          solatiumAmount: 3456000,
-          assetsValue: 620000, // Grape trellis structure
-          additionalInterest: 414720,
-          totalCompensationPayable: 7946720,
-        },
-        coordinates: [19.856, 73.992],
-        polygon: [
-          [19.8545, 73.9905],
-          [19.8575, 73.9905],
-          [19.8575, 73.9935],
-          [19.8545, 73.9935],
-        ],
-        chauhaddi: {
-          north: "Khasra 103 (Wagh)",
-          south: "Khasra 101 (Patil)",
-          east: "Khasra 105 (Sanap)",
-          west: "Canal Distributary No. 4",
-        },
-      },
-      {
-        id: "BN-001-102-2",
-        projectId: "PRJ-001",
-        khasraNumber: "102/2",
-        surveyNumber: "Gat No. 102 Part B",
-        ulpin: "MH240019284703",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 0.95,
-        recordedRoRAreaHa: 0.95,
-        areaSqMeters: 9500,
-        dimensions: "95m × 100m",
-        landClassification: "rainfed_dryland",
-        soilClass: "Jirayat Class II",
-        circleRatePerHa: 2600000,
-        guidanceValuePerSqM: 260,
-        owners: [
-          {
-            name: "Kisan Tukaram Wagh",
-            fatherOrHusbandName: "Tukaram Wagh",
-            sharePercentage: 100,
-            khatauniNumber: "KH-520",
-            casteCategory: "OBC",
-          },
-        ],
-        isAffected: false,
-        affectedAreaHa: 0.0,
-        affectedAreaPercentage: 0,
-        residualAreaHa: 0.95,
-        acquisitionType: "unaffected",
-        severanceClaimEligible: false,
-        status: "proposed",
-        valuation: {
-          baseMarketValue: 0,
-          ruralMultiplier: 1.5,
-          multipliedValue: 0,
-          solatiumAmount: 0,
-          assetsValue: 0,
-          additionalInterest: 0,
-          totalCompensationPayable: 0,
-        },
-        coordinates: [19.859, 73.992],
-        polygon: [
-          [19.8575, 73.9905],
-          [19.8605, 73.9905],
-          [19.8605, 73.9935],
-          [19.8575, 73.9935],
-        ],
-        chauhaddi: {
-          north: "Village Boundary (Musalgaon-Gonde)",
-          south: "Khasra 102/1 (Deshmukh)",
-          east: "Khasra 106 (Jadhav)",
-          west: "Forest Reserve Block 12",
-        },
-      },
-      {
-        id: "BN-001-104",
-        projectId: "PRJ-001",
-        khasraNumber: "104",
-        surveyNumber: "Gat No. 104",
-        ulpin: "MH240019284704",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.4,
-        recordedRoRAreaHa: 1.4,
-        areaSqMeters: 14000,
-        dimensions: "140m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat Class I",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Priya Vasant Gaikwad",
-            fatherOrHusbandName: "Vasant Gaikwad",
-            sharePercentage: 60,
-            khatauniNumber: "KH-610",
-            casteCategory: "General",
-          },
-          {
-            name: "Ashok Vasant Gaikwad",
-            fatherOrHusbandName: "Vasant Gaikwad",
-            sharePercentage: 40,
-            khatauniNumber: "KH-610",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.15,
-        affectedAreaPercentage: 82.1,
-        residualAreaHa: 0.25,
-        acquisitionType: "partial",
-        severanceClaimEligible: false,
-        status: "objection_filed",
-        objections: [
-          {
-            id: "OBJ-104-01",
-            objectorName: "Priya Vasant Gaikwad",
-            dateFiled: "2024-07-15",
-            natureOfObjection: "Valuation Rate Dispute",
-            details: "Recorded circle rate does not account for 2023 high-density pomegranate plantation and drip irrigation equipment valued at ₹9.5 Lakhs.",
-            status: "pending_hearing",
-            hearingDate: "2024-10-12",
-          },
-        ],
-        valuation: {
-          baseMarketValue: 3680000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 5520000,
-          solatiumAmount: 5520000,
-          assetsValue: 950000,
-          additionalInterest: 662400,
-          totalCompensationPayable: 12652400,
-        },
-        coordinates: [19.853, 73.995],
-        polygon: [
-          [19.8515, 73.9935],
-          [19.8545, 73.9935],
-          [19.8545, 73.9965],
-          [19.8515, 73.9965],
-        ],
-        chauhaddi: {
-          north: "Khasra 105 (Sanap)",
-          south: "State Highway 30",
-          east: "Khasra 107 (Pawar)",
-          west: "Khasra 101 (Patil)",
-        },
-      },
-      {
-        id: "BN-001-105",
-        projectId: "PRJ-001",
-        khasraNumber: "105",
-        surveyNumber: "Gat No. 105",
-        ulpin: "MH240019284705",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.35,
-        recordedRoRAreaHa: 1.35,
-        areaSqMeters: 13500,
-        dimensions: "135m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat (Onion & Soybean Belt)",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Dnyaneshwar Mahadu Sanap",
-            fatherOrHusbandName: "Mahadu Sanap",
-            sharePercentage: 100,
-            khatauniNumber: "KH-614",
-            casteCategory: "OBC",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.35,
-        affectedAreaPercentage: 100,
-        residualAreaHa: 0.0,
-        acquisitionType: "full",
-        severanceClaimEligible: false,
-        status: "sec19_declared",
-        valuation: {
-          baseMarketValue: 4320000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 6480000,
-          solatiumAmount: 6480000,
-          assetsValue: 420000, // Farm storage shed
-          additionalInterest: 777600,
-          totalCompensationPayable: 14157600,
-        },
-        coordinates: [19.856, 73.995],
-        polygon: [
-          [19.8545, 73.9935],
-          [19.8575, 73.9935],
-          [19.8575, 73.9965],
-          [19.8545, 73.9965],
-        ],
-        chauhaddi: {
-          north: "Khasra 106 (Jadhav)",
-          south: "Khasra 104 (Gaikwad)",
-          east: "Khasra 108 (Gram Sabha)",
-          west: "Khasra 102/1 (Deshmukh)",
-        },
-      },
-      {
-        id: "BN-001-106",
-        projectId: "PRJ-001",
-        khasraNumber: "106",
-        surveyNumber: "Gat No. 106",
-        ulpin: "MH240019284706",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.2,
-        recordedRoRAreaHa: 1.2,
-        areaSqMeters: 12000,
-        dimensions: "120m × 100m",
-        landClassification: "rainfed_dryland",
-        soilClass: "Jirayat Class I",
-        circleRatePerHa: 2600000,
-        guidanceValuePerSqM: 260,
-        owners: [
-          {
-            name: "Anandrao Namdeo Jadhav",
-            fatherOrHusbandName: "Namdeo Jadhav",
-            sharePercentage: 100,
-            khatauniNumber: "KH-622",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: false,
-        affectedAreaHa: 0.0,
-        affectedAreaPercentage: 0,
-        residualAreaHa: 1.2,
-        acquisitionType: "unaffected",
-        severanceClaimEligible: false,
-        status: "proposed",
-        valuation: {
-          baseMarketValue: 0,
-          ruralMultiplier: 1.5,
-          multipliedValue: 0,
-          solatiumAmount: 0,
-          assetsValue: 0,
-          additionalInterest: 0,
-          totalCompensationPayable: 0,
-        },
-        coordinates: [19.859, 73.995],
-        polygon: [
-          [19.8575, 73.9935],
-          [19.8605, 73.9935],
-          [19.8605, 73.9965],
-          [19.8575, 73.9965],
-        ],
-        chauhaddi: {
-          north: "Boundary Musalgaon Village",
-          south: "Khasra 105 (Sanap)",
-          east: "Khasra 109 (Shinde)",
-          west: "Khasra 102/2 (Wagh)",
-        },
-      },
-      {
-        id: "BN-001-107",
-        projectId: "PRJ-001",
-        khasraNumber: "107",
-        surveyNumber: "Gat No. 107",
-        ulpin: "MH240019284707",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.5,
-        recordedRoRAreaHa: 1.5,
-        areaSqMeters: 15000,
-        dimensions: "150m × 100m",
-        landClassification: "non_agricultural_commercial",
-        soilClass: "NA Commercial (Highway Roadside)",
-        circleRatePerHa: 5800000,
-        guidanceValuePerSqM: 580,
-        owners: [
-          {
-            name: "Rajendra Kashinath Pawar",
-            fatherOrHusbandName: "Kashinath Pawar",
-            sharePercentage: 100,
-            khatauniNumber: "KH-705",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.5,
-        affectedAreaPercentage: 100,
-        residualAreaHa: 0.0,
-        acquisitionType: "full",
-        severanceClaimEligible: false,
-        status: "compensation_paid",
-        valuation: {
-          baseMarketValue: 8700000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 13050000,
-          solatiumAmount: 13050000,
-          assetsValue: 1850000, // Commercial weighbridge & boundary wall
-          additionalInterest: 1566000,
-          totalCompensationPayable: 29516000,
-        },
-        coordinates: [19.853, 73.998],
-        polygon: [
-          [19.8515, 73.9965],
-          [19.8545, 73.9965],
-          [19.8545, 73.9995],
-          [19.8515, 73.9995],
-        ],
-        chauhaddi: {
-          north: "Khasra 108 (Gram Sabha)",
-          south: "State Highway 30",
-          east: "Khasra 110 (Chavan)",
-          west: "Khasra 104 (Gaikwad)",
-        },
-      },
-      {
-        id: "BN-001-108",
-        projectId: "PRJ-001",
-        khasraNumber: "108",
-        surveyNumber: "Gat No. 108 (Gaikran)",
-        ulpin: "MH240019284708",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 2.1,
-        recordedRoRAreaHa: 2.1,
-        areaSqMeters: 21000,
-        dimensions: "210m × 100m",
-        landClassification: "gram_sabha_revenue",
-        soilClass: "Government Revenue / Charnot (Grazing)",
-        circleRatePerHa: 2200000,
-        guidanceValuePerSqM: 220,
-        owners: [
-          {
-            name: "Gram Panchayat Musalgaon / Government of Maharashtra",
-            fatherOrHusbandName: "Public Authority",
-            sharePercentage: 100,
-            khatauniNumber: "GOV-01",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.45,
-        affectedAreaPercentage: 69.0,
-        residualAreaHa: 0.65,
-        acquisitionType: "partial",
-        severanceClaimEligible: false,
-        status: "possessed_mutated",
-        valuation: {
-          baseMarketValue: 3190000,
-          ruralMultiplier: 1.0, // Inter-departmental transfer factor
-          multipliedValue: 3190000,
-          solatiumAmount: 0, // Exempt for government land transfer
-          assetsValue: 120000, // Community water pond
-          additionalInterest: 0,
-          totalCompensationPayable: 3310000,
-        },
-        coordinates: [19.856, 73.998],
-        polygon: [
-          [19.8545, 73.9965],
-          [19.8575, 73.9965],
-          [19.8575, 73.9995],
-          [19.8545, 73.9995],
-        ],
-        chauhaddi: {
-          north: "Khasra 109 (Shinde)",
-          south: "Khasra 107 (Pawar)",
-          east: "Khasra 111 (Borse)",
-          west: "Khasra 105 (Sanap)",
-        },
-      },
-      {
-        id: "BN-001-109",
-        projectId: "PRJ-001",
-        khasraNumber: "109",
-        surveyNumber: "Gat No. 109",
-        ulpin: "MH240019284709",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.15,
-        recordedRoRAreaHa: 1.15,
-        areaSqMeters: 11500,
-        dimensions: "115m × 100m",
-        landClassification: "rainfed_dryland",
-        soilClass: "Jirayat Class II",
-        circleRatePerHa: 2600000,
-        guidanceValuePerSqM: 260,
-        owners: [
-          {
-            name: "Ramdas Bansi Shinde",
-            fatherOrHusbandName: "Bansi Shinde",
-            sharePercentage: 100,
-            khatauniNumber: "KH-740",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: false,
-        affectedAreaHa: 0.0,
-        affectedAreaPercentage: 0,
-        residualAreaHa: 1.15,
-        acquisitionType: "unaffected",
-        severanceClaimEligible: false,
-        status: "proposed",
-        valuation: {
-          baseMarketValue: 0,
-          ruralMultiplier: 1.5,
-          multipliedValue: 0,
-          solatiumAmount: 0,
-          assetsValue: 0,
-          additionalInterest: 0,
-          totalCompensationPayable: 0,
-        },
-        coordinates: [19.859, 73.998],
-        polygon: [
-          [19.8575, 73.9965],
-          [19.8605, 73.9965],
-          [19.8605, 73.9995],
-          [19.8575, 73.9995],
-        ],
-        chauhaddi: {
-          north: "Village Boundary Musalgaon",
-          south: "Khasra 108 (Gram Sabha)",
-          east: "Khasra 112 (Waje)",
-          west: "Khasra 106 (Jadhav)",
-        },
-      },
-      {
-        id: "BN-001-110",
-        projectId: "PRJ-001",
-        khasraNumber: "110",
-        surveyNumber: "Gat No. 110",
-        ulpin: "MH240019284710",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.3,
-        recordedRoRAreaHa: 1.3,
-        areaSqMeters: 13000,
-        dimensions: "130m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat Class I",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Sambhaji Vishwanath Chavan",
-            fatherOrHusbandName: "Vishwanath Chavan",
-            sharePercentage: 100,
-            khatauniNumber: "KH-802",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 1.3,
-        affectedAreaPercentage: 100,
-        residualAreaHa: 0.0,
-        acquisitionType: "full",
-        severanceClaimEligible: false,
-        status: "award_assessed",
-        valuation: {
-          baseMarketValue: 4160000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 6240000,
-          solatiumAmount: 6240000,
-          assetsValue: 530000, // 2 Open wells + irrigation pipeline
-          additionalInterest: 748800,
-          totalCompensationPayable: 13758800,
-        },
-        coordinates: [19.853, 74.001],
-        polygon: [
-          [19.8515, 73.9995],
-          [19.8545, 73.9995],
-          [19.8545, 74.0025],
-          [19.8515, 74.0025],
-        ],
-        chauhaddi: {
-          north: "Khasra 111 (Borse)",
-          south: "State Highway 30",
-          east: "Khasra 113 (Khairnar)",
-          west: "Khasra 107 (Pawar)",
-        },
-      },
-      {
-        id: "BN-001-111",
-        projectId: "PRJ-001",
-        khasraNumber: "111",
-        surveyNumber: "Gat No. 111",
-        ulpin: "MH240019284711",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.25,
-        recordedRoRAreaHa: 1.25,
-        areaSqMeters: 12500,
-        dimensions: "125m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat Class I",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Vijay Pandurang Borse",
-            fatherOrHusbandName: "Pandurang Borse",
-            sharePercentage: 100,
-            khatauniNumber: "KH-815",
-            casteCategory: "OBC",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 0.95,
-        affectedAreaPercentage: 76.0,
-        residualAreaHa: 0.3,
-        acquisitionType: "partial",
-        severanceClaimEligible: false,
-        status: "surveyed_verified",
-        valuation: {
-          baseMarketValue: 3040000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 4560000,
-          solatiumAmount: 4560000,
-          assetsValue: 310000,
-          additionalInterest: 547200,
-          totalCompensationPayable: 9977200,
-        },
-        coordinates: [19.856, 74.001],
-        polygon: [
-          [19.8545, 73.9995],
-          [19.8575, 73.9995],
-          [19.8575, 74.0025],
-          [19.8545, 74.0025],
-        ],
-        chauhaddi: {
-          north: "Khasra 112 (Waje)",
-          south: "Khasra 110 (Chavan)",
-          east: "Khasra 114 (Nalawade)",
-          west: "Khasra 108 (Gram Sabha)",
-        },
-      },
-      {
-        id: "BN-001-112",
-        projectId: "PRJ-001",
-        khasraNumber: "112",
-        surveyNumber: "Gat No. 112",
-        ulpin: "MH240019284712",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 1.1,
-        recordedRoRAreaHa: 1.1,
-        areaSqMeters: 11000,
-        dimensions: "110m × 100m",
-        landClassification: "rainfed_dryland",
-        soilClass: "Jirayat Class II",
-        circleRatePerHa: 2600000,
-        guidanceValuePerSqM: 260,
-        owners: [
-          {
-            name: "Nivruti Bhikaji Waje",
-            fatherOrHusbandName: "Bhikaji Waje",
-            sharePercentage: 100,
-            khatauniNumber: "KH-830",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: false,
-        affectedAreaHa: 0.0,
-        affectedAreaPercentage: 0,
-        residualAreaHa: 1.1,
-        acquisitionType: "unaffected",
-        severanceClaimEligible: false,
-        status: "proposed",
-        valuation: {
-          baseMarketValue: 0,
-          ruralMultiplier: 1.5,
-          multipliedValue: 0,
-          solatiumAmount: 0,
-          assetsValue: 0,
-          additionalInterest: 0,
-          totalCompensationPayable: 0,
-        },
-        coordinates: [19.859, 74.001],
-        polygon: [
-          [19.8575, 73.9995],
-          [19.8605, 73.9995],
-          [19.8605, 74.0025],
-          [19.8575, 74.0025],
-        ],
-        chauhaddi: {
-          north: "Village Boundary",
-          south: "Khasra 111 (Borse)",
-          east: "Village Forest Patch",
-          west: "Khasra 109 (Shinde)",
-        },
-      },
-      {
-        id: "BN-001-113",
-        projectId: "PRJ-001",
-        khasraNumber: "113",
-        surveyNumber: "Gat No. 113",
-        ulpin: "MH240019284713",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 0.88,
-        recordedRoRAreaHa: 0.88,
-        areaSqMeters: 8800,
-        dimensions: "88m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat Class I",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Dattatraya Baban Khairnar",
-            fatherOrHusbandName: "Baban Khairnar",
-            sharePercentage: 100,
-            khatauniNumber: "KH-842",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 0.73,
-        affectedAreaPercentage: 83.0,
-        residualAreaHa: 0.15,
-        acquisitionType: "partial",
-        severanceClaimEligible: true, // Residual < 0.2 Ha
-        status: "surveyed_verified",
-        valuation: {
-          baseMarketValue: 2336000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 3504000,
-          solatiumAmount: 3504000,
-          assetsValue: 240000,
-          additionalInterest: 420480,
-          totalCompensationPayable: 7668480,
-        },
-        coordinates: [19.853, 74.004],
-        polygon: [
-          [19.8515, 74.0025],
-          [19.8545, 74.0025],
-          [19.8545, 74.0055],
-          [19.8515, 74.0055],
-        ],
-        chauhaddi: {
-          north: "Khasra 114 (Nalawade)",
-          south: "State Highway 30",
-          east: "Village Approach Road",
-          west: "Khasra 110 (Chavan)",
-        },
-      },
-      {
-        id: "BN-001-114",
-        projectId: "PRJ-001",
-        khasraNumber: "114",
-        surveyNumber: "Gat No. 114",
-        ulpin: "MH240019284714",
-        village: "Musalgaon",
-        villageLgdCode: "552109",
-        sheetNumber: "Sheet 02",
-        tehsil: "Sinnar",
-        district: "Nashik",
-        state: "Maharashtra",
-        stateCode: "MH",
-        gisCalculatedAreaHa: 0.89,
-        recordedRoRAreaHa: 0.89,
-        areaSqMeters: 8900,
-        dimensions: "89m × 100m",
-        landClassification: "irrigated_agricultural",
-        soilClass: "Bagayat Class I",
-        circleRatePerHa: 3200000,
-        guidanceValuePerSqM: 320,
-        owners: [
-          {
-            name: "Bhagwan Trimbak Nalawade",
-            fatherOrHusbandName: "Trimbak Nalawade",
-            sharePercentage: 100,
-            khatauniNumber: "KH-855",
-            casteCategory: "General",
-          },
-        ],
-        isAffected: true,
-        affectedAreaHa: 0.45,
-        affectedAreaPercentage: 50.5,
-        residualAreaHa: 0.44,
-        acquisitionType: "partial",
-        severanceClaimEligible: false,
-        status: "notified_sec11",
-        valuation: {
-          baseMarketValue: 1440000,
-          ruralMultiplier: 1.5,
-          multipliedValue: 2160000,
-          solatiumAmount: 2160000,
-          assetsValue: 180000,
-          additionalInterest: 259200,
-          totalCompensationPayable: 4759200,
-        },
-        coordinates: [19.856, 74.004],
-        polygon: [
-          [19.8545, 74.0025],
-          [19.8575, 74.0025],
-          [19.8575, 74.0055],
-          [19.8545, 74.0055],
-        ],
-        chauhaddi: {
-          north: "Village Boundary",
-          south: "Khasra 113 (Khairnar)",
-          east: "Panchayat Wells",
-          west: "Khasra 111 (Borse)",
-        },
-      },
-    ]
-  }
+    totalAffectedParcels: 12,
+    totalVillageAreaHa: 22.5,
+    totalAffectedAreaHa: 18.4,
+    totalUnaffectedAreaHa: 4.1,
+    totalEstimatedCompensationLakhs: 3120.0,
+    totalCompensationDisbursedLakhs: 980.0,
+    currentWorkflowStageIndex: 1,
+    currentStageName: "Stage 1 — Project Initiation",
+    targetCompletionDate: "2026-12-31",
+    calaOfficer: "Shri Ashwini Kumar, IAS (District Magistrate & CALA, North Delhi)",
+    parcels: DELHI_PARCELS,
+  },
+  {
+    id: "DL-GZB-002",
+    name: "Delhi–Ghaziabad Regional Connectivity Project",
+    projectCode: "DL-GZB-2026-002",
+    sector: "highway",
+    department: "National Capital Region Transport Corporation & UP PWD",
+    state: "Uttar Pradesh",
+    stateCode: "UP",
+    district: "Ghaziabad",
+    tehsil: "Ghaziabad",
+    village: "Sahibabad, Arthala, Morta & Duhai",
+    villageLgdCode: "201005",
+    sajraSheetNumber: "Sheet No. 01 (NCR Cadastral Sheet 2026)",
+    scaleRatio: "1:2500 Cadastral Scale",
+    surveyYear: "2026 DGPS & Satellite Ortho",
+    corridorType: "linear_alignment",
+    corridorWidthMeters: 60,
+    corridorCenterline: [
+      [28.648, 77.375],
+      [28.662, 77.398],
+      [28.675, 77.420],
+      [28.690, 77.445],
+    ],
+    totalParcelsInVillageSheet: 20,
+    totalAffectedParcels: 18,
+    totalVillageAreaHa: 32.4,
+    totalAffectedAreaHa: 26.8,
+    totalUnaffectedAreaHa: 5.6,
+    totalEstimatedCompensationLakhs: 5240.0,
+    totalCompensationDisbursedLakhs: 2150.0,
+    currentWorkflowStageIndex: 2,
+    currentStageName: "Stage 2 — Land Identification",
+    targetCompletionDate: "2026-11-30",
+    calaOfficer: "Shri Rakesh Kumar Singh, IAS (District Magistrate & CALA, Ghaziabad)",
+    parcels: GZB_PARCELS,
+  },
 ];
 
 // ------------------------------------------------------------
-
+// GeoJSON Export Generator
+// ------------------------------------------------------------
 export function generateBhuNakshaGeoJSON(project: BhuNakshaProject) {
   return {
     type: "FeatureCollection",
@@ -1405,7 +617,6 @@ export function generateBhuNakshaGeoJSON(project: BhuNakshaProject) {
       geometry: {
         type: "Polygon",
         coordinates: [
-          // Leaflet is [lat, lng], GeoJSON standard is [lng, lat]
           [...parcel.polygon.map(([lat, lng]) => [lng, lat]), [parcel.polygon[0][1], parcel.polygon[0][0]]],
         ],
       },
@@ -1443,7 +654,7 @@ export function generateBhuNakshaGeoJSON(project: BhuNakshaProject) {
 export function calculateRFCTLARRCompensation(params: {
   affectedAreaHa: number;
   circleRatePerHa: number;
-  ruralMultiplier?: number; // Defaults to 1.5
+  ruralMultiplier?: number;
   assetsValue?: number;
   additionalInterestMonths?: number;
 }) {
@@ -1452,11 +663,8 @@ export function calculateRFCTLARRCompensation(params: {
   const multipliedValue = Math.round(baseMarketValue * ruralMultiplier);
   const solatiumAmount = multipliedValue; // 100% Solatium under Section 30(1)
   const assetsValue = params.assetsValue ?? 0;
-
-  // 12% per annum interest from date of Sec 11 notification to award date (Section 30(3))
   const months = params.additionalInterestMonths ?? 12;
   const additionalInterest = Math.round((baseMarketValue * 0.12 * months) / 12);
-
   const totalPayable = multipliedValue + solatiumAmount + assetsValue + additionalInterest;
 
   return {
@@ -1471,517 +679,47 @@ export function calculateRFCTLARRCompensation(params: {
 }
 
 // ------------------------------------------------------------
-// 12-Stage Lifecycle Parcel Metadata Map & Helpers
+// 12-Stage Lifecycle Metadata Map
 // ------------------------------------------------------------
 export const KHASRA_12_STAGE_DATA: Record<string, Partial<BhuNakshaParcel>> = {
-  "101": {
-    stageIndex: 12,
-    stageCode: "rr_completed",
-    stageTitle: "Stage 12 — R&R Completed",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-12",
-      khatauniNo: "KH-412",
-      verifiedBy: "A. K. Shinde (Talathi Musalgaon)",
-      remarks: "Title verified against Bhulekh computerised record; 0 encumbrances.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-05",
-      officer: "M. P. Deshmukh (SLAO Land Surveyor)",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "Field coordinates matched BhuNaksha polygon; 1 borewell and 42 pomegranate trees enumerated.",
-      documents: ["JMS-Panchnama-101.pdf", "DGPS-Vertex-Report.csv", "Tree-Census-101.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik Division",
-      reviewDate: "2024-04-20",
-      remarks: "Scrutiny completed; 0 boundary queries. Approved for Section 11 Gazette notification.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/101",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-041",
-      awardDate: "2024-07-10",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
-    },
-    disbursementDetails: {
-      txnId: "PFMS-MH-2024-881920",
-      amountPaidLakhs: 135.7,
-      paymentDate: "2024-08-02",
-      paymentMode: "PFMS e-Kuber",
-      status: "Disbursed",
-    },
-    possessionDetails: {
-      memoNumber: "MEMO-POSS-2024-101",
-      possessionDate: "2024-08-20",
-      handoverTo: "NHAI Project Director (Nashik PIU)",
-      demarcationDone: true,
-      status: "Possession Completed",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 2,
-      entitlementPackage: "RFCTLARR Sch II — Construction Grant + Subsistence Allowance",
-      totalAssistanceLakhs: 5.5,
-      relocationStatus: "Relocated",
-      status: "Completed",
-    },
-  },
-  "102/1": {
-    stageIndex: 11,
-    stageCode: "possession",
-    stageTitle: "Stage 11 — Possession",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-14",
-      khatauniNo: "KH-519",
-      verifiedBy: "A. K. Shinde (Talathi Musalgaon)",
-      remarks: "Verified title with State Co-operative Bank NOC.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-08",
-      officer: "M. P. Deshmukh (SLAO Land Surveyor)",
-      dgpsAccuracyMeters: 0.03,
-      remarks: "Partial acquisition pegging completed (65.5% affected area = 0.55 Ha).",
-      documents: ["JMS-Panchnama-102-1.pdf", "Corridor-Intersection-Map.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik Division",
-      reviewDate: "2024-04-22",
-      remarks: "Residual area 0.29 Ha viable; approved for Section 11 Gazette.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/102",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-042",
-      awardDate: "2024-07-12",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
-    },
-    disbursementDetails: {
-      txnId: "PFMS-MH-2024-881921",
-      amountPaidLakhs: 48.2,
-      paymentDate: "2024-08-05",
-      paymentMode: "PFMS e-Kuber",
-      status: "Disbursed",
-    },
-    possessionDetails: {
-      memoNumber: "MEMO-POSS-2024-102",
-      possessionDate: "2024-08-25",
-      handoverTo: "NHAI Project Director (Nashik PIU)",
-      demarcationDone: true,
-      status: "Possession Completed",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 1,
-      entitlementPackage: "RFCTLARR Sch II — One-time Resettlement Allowance",
-      totalAssistanceLakhs: 2.8,
-      relocationStatus: "In Transit",
-      status: "In Progress",
-    },
-  },
-  "103": {
-    stageIndex: 10,
-    stageCode: "disbursed",
-    stageTitle: "Stage 10 — Disbursement",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-16",
-      khatauniNo: "KH-603",
-      verifiedBy: "A. K. Shinde (Talathi Musalgaon)",
-      remarks: "Single owner; clear title.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-10",
-      officer: "M. P. Deshmukh (SLAO Land Surveyor)",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "Full plot within 60m highway corridor.",
-      documents: ["JMS-Panchnama-103.pdf", "Title-Clearance-103.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik Division",
-      reviewDate: "2024-04-25",
-      remarks: "Approved for award and payment.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/103",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-043",
-      awardDate: "2024-07-15",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
-    },
-    disbursementDetails: {
-      txnId: "PFMS-MH-2024-994103",
-      amountPaidLakhs: 27.8,
-      paymentDate: "2024-08-10",
-      paymentMode: "PFMS e-Kuber",
-      status: "Disbursed",
-    },
-    possessionDetails: {
-      memoNumber: "PENDING-SEC-38-NOTICE",
-      possessionDate: "Scheduled: 2024-10-15",
-      handoverTo: "NHAI PIU",
-      demarcationDone: false,
-      status: "Pending",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 0,
-      entitlementPackage: "Non-residential agricultural parcel",
-      totalAssistanceLakhs: 0,
-      relocationStatus: "Not Required",
-      status: "Exempt",
-    },
-  },
-  "104": {
-    stageIndex: 9,
-    stageCode: "compensation",
-    stageTitle: "Stage 9 — Compensation",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-18",
-      khatauniNo: "KH-680",
-      verifiedBy: "A. K. Shinde (Talathi Musalgaon)",
-      remarks: "Ownership verified; joint shareholding.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-12",
-      officer: "M. P. Deshmukh (SLAO Land Surveyor)",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "Section 15 objection filed regarding fruit trees & drip irrigation system; revised joint inspection completed.",
-      documents: ["JMS-Panchnama-104.pdf", "Horticulture-Valuation-104.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik Division",
-      reviewDate: "2024-04-28",
-      remarks: "Section 15 objection settled; revised horticulture valuation incorporated into compensation matrix.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/104",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-044",
-      awardDate: "2024-07-18",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
-    },
-    disbursementDetails: {
-      txnId: "PENDING-ESCROW",
-      amountPaidLakhs: 0,
-      paymentDate: "Pending Treasury Release",
-      paymentMode: "PFMS e-Kuber",
-      status: "Pending",
-    },
-    possessionDetails: {
-      memoNumber: "N/A",
-      possessionDate: "Pending Disbursement",
-      handoverTo: "NHAI PIU",
-      demarcationDone: false,
-      status: "Pending",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 1,
-      entitlementPackage: "Livelihood Assistance Grant",
-      totalAssistanceLakhs: 1.5,
-      relocationStatus: "Not Required",
-      status: "In Progress",
-    },
-  },
-  "105": {
-    stageIndex: 8,
-    stageCode: "awarded",
-    stageTitle: "Stage 8 — Award",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-20",
-      khatauniNo: "KH-710",
-      verifiedBy: "A. K. Shinde (Talathi Musalgaon)",
-      remarks: "Verified clear title.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-15",
-      officer: "M. P. Deshmukh",
-      dgpsAccuracyMeters: 0.03,
-      remarks: "Full acquisition 0.85 Ha within ROW.",
-      documents: ["JMS-Panchnama-105.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik",
-      reviewDate: "2024-05-02",
-      remarks: "Approved for award pronouncement under Sec 23.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/105",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-045",
-      awardDate: "2024-08-01",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
-    },
-    disbursementDetails: {
-      txnId: "PENDING",
-      amountPaidLakhs: 0,
-      paymentDate: "Awaiting Bank Account Validation",
-      paymentMode: "PFMS e-Kuber",
-      status: "Pending",
-    },
-    possessionDetails: {
-      memoNumber: "N/A",
-      possessionDate: "Pending Award Payment",
-      handoverTo: "NHAI",
-      demarcationDone: false,
-      status: "Pending",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 0,
-      entitlementPackage: "Exempt",
-      totalAssistanceLakhs: 0,
-      relocationStatus: "Not Required",
-      status: "Exempt",
-    },
-  },
-  "106": {
-    stageIndex: 7,
-    stageCode: "notified",
-    stageTitle: "Stage 7 — Notification",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-22",
-      khatauniNo: "KH-740",
-      verifiedBy: "A. K. Shinde",
-      remarks: "Ownership verified.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-18",
-      officer: "M. P. Deshmukh",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "Field verified.",
-      documents: ["JMS-Panchnama-106.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO",
-      reviewDate: "2024-05-04",
-      remarks: "Approved for notification.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/106",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "IN-PROGRESS",
-      awardDate: "Under Sec 23 Inquiry",
-      sanctionedBy: "CALA",
-      status: "Pending",
-    },
-    disbursementDetails: {
-      txnId: "N/A",
-      amountPaidLakhs: 0,
-      paymentDate: "N/A",
-      paymentMode: "PFMS e-Kuber",
-      status: "Pending",
-    },
-    possessionDetails: {
-      memoNumber: "N/A",
-      possessionDate: "N/A",
-      handoverTo: "N/A",
-      demarcationDone: false,
-      status: "Pending",
-    },
-    rrDetails: {
-      eligibleFamiliesCount: 0,
-      entitlementPackage: "Pending Assessment",
-      totalAssistanceLakhs: 0,
-      relocationStatus: "Not Required",
-      status: "In Progress",
-    },
-  },
-  "107": {
-    stageIndex: 6,
-    stageCode: "reviewed",
-    stageTitle: "Stage 6 — Parcel Review",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-25",
-      khatauniNo: "KH-770",
-      verifiedBy: "Talathi",
-      remarks: "Verified title.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-20",
-      officer: "M. P. Deshmukh",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "JMS verified.",
-      documents: ["JMS-Panchnama-107.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO Nashik Division",
-      reviewDate: "2024-05-10",
-      remarks: "Cleared for Gazette publication.",
-    },
-    notificationDetails: {
-      gazetteRef: "DRAFT-GAZETTE",
-      notificationDate: "Scheduled Next Batch",
-      status: "Pending",
-    },
-  },
-  "108": {
-    stageIndex: 5,
-    stageCode: "parcel_verified",
-    stageTitle: "Stage 5 — Parcel Verification",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-26",
-      khatauniNo: "KH-790",
-      verifiedBy: "Talathi",
-      remarks: "Verified title.",
-    },
-    fieldVerification: {
-      status: "Verified",
-      surveyDate: "2024-04-22",
-      officer: "M. P. Deshmukh",
-      dgpsAccuracyMeters: 0.02,
-      remarks: "Field DGPS completed.",
-      documents: ["JMS-Panchnama-108.pdf"],
-    },
-    reviewDetails: {
-      status: "Under Review",
-      reviewedBy: "SLAO Scrutiny Desk",
-      reviewDate: "In Queue",
-      remarks: "Under verification review.",
-    },
-  },
-  "109": {
-    stageIndex: 4,
-    stageCode: "ror_verified",
-    stageTitle: "Stage 4 — RoR Verification",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-28",
-      khatauniNo: "KH-810",
-      verifiedBy: "A. K. Shinde (Talathi)",
-      remarks: "RoR linked and confirmed from Bhulekh database.",
-    },
-    fieldVerification: {
-      status: "Pending Field Survey",
-      surveyDate: "Scheduled: 2024-10-18",
-      officer: "Survey Team B",
-      dgpsAccuracyMeters: 0,
-      remarks: "Notice issued to landowner for Joint Measurement Survey.",
-      documents: [],
-    },
-  },
-  "110": {
+  "DEMO-482": {
     stageIndex: 3,
-    stageCode: "affected",
-    stageTitle: "Stage 3 — Affected Parcels",
-    rorVerification: {
-      status: "Pending Verification",
-      verificationDate: "Scheduled",
-      khatauniNo: "KH-820",
-      verifiedBy: "Talathi Office",
-      remarks: "RoR fetch request pending.",
-    },
-  },
-  "111": {
-    stageIndex: 2,
-    stageCode: "footprint",
-    stageTitle: "Stage 2 — Project Footprint",
+    stageCode: "ror_verification",
+    stageTitle: "Stage 3 — Survey & RoR Verification",
     rorVerification: {
       status: "Verified",
-      verificationDate: "2024-03-01",
-      khatauniNo: "KH-825",
-      verifiedBy: "Talathi",
-      remarks: "Buffer parcel; outside direct ROW.",
-    },
-  },
-  "112": {
-    stageIndex: 2,
-    stageCode: "footprint",
-    stageTitle: "Stage 2 — Project Footprint",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-01",
-      khatauniNo: "KH-830",
-      verifiedBy: "Talathi",
-      remarks: "Buffer parcel; outside direct ROW.",
-    },
-  },
-  "113": {
-    stageIndex: 9,
-    stageCode: "compensation",
-    stageTitle: "Stage 9 — Compensation",
-    rorVerification: {
-      status: "Verified",
-      verificationDate: "2024-03-15",
-      khatauniNo: "KH-840",
-      verifiedBy: "Talathi",
-      remarks: "Verified title.",
+      verificationDate: "2026-02-15",
+      khatauniNo: "KH-DL-482",
+      verifiedBy: "A. K. Sharma (Patwari Alipur)",
+      remarks: "Title verified against Delhi computerized revenue records; 0 encumbrances.",
     },
     fieldVerification: {
       status: "Verified",
-      surveyDate: "2024-04-14",
-      officer: "M. P. Deshmukh",
+      surveyDate: "2026-02-18",
+      officer: "Er. S. K. Gupta (DGPS Surveyor)",
       dgpsAccuracyMeters: 0.02,
-      remarks: "Severance claim under RFCTLARR Section 27 confirmed (Residual area 0.15 Ha < 0.2 Ha).",
-      documents: ["JMS-Panchnama-113.pdf", "Sec27-Severance-Consent.pdf"],
-    },
-    reviewDetails: {
-      status: "Approved",
-      reviewedBy: "SLAO & CALA",
-      reviewDate: "2024-05-02",
-      remarks: "Compulsory total acquisition recommended due to non-viable residual plot.",
-    },
-    notificationDetails: {
-      gazetteRef: "MH-GAZ-REV-2024-1102/113",
-      notificationDate: "2024-05-15",
-      status: "Published",
-    },
-    awardDetails: {
-      awardNumber: "LARR/NSK/2024/AWD-049",
-      awardDate: "2024-07-22",
-      sanctionedBy: "Shri Jalaj Sharma, IAS (Collector & CALA)",
-      status: "Pronounced",
+      remarks: "Field boundary markers verified against BhuNaksha vector polygon.",
+      documents: ["JMS-Delhi-482.pdf", "DGPS-Vertex-Report.csv"],
     },
   },
-  "114": {
-    stageIndex: 2,
-    stageCode: "footprint",
-    stageTitle: "Stage 2 — Project Footprint",
+  "DEMO-501": {
+    stageIndex: 4,
+    stageCode: "review_forward",
+    stageTitle: "Stage 4 — Scrutiny & Review",
     rorVerification: {
       status: "Verified",
-      verificationDate: "2024-03-01",
-      khatauniNo: "KH-850",
-      verifiedBy: "Talathi",
-      remarks: "Buffer parcel; outside direct ROW.",
+      verificationDate: "2026-02-10",
+      khatauniNo: "KH-UP-501",
+      verifiedBy: "R. P. Verma (Lekhpal Ghaziabad)",
+      remarks: "Verified title against UP Bhulekh records.",
+    },
+    fieldVerification: {
+      status: "Verified",
+      surveyDate: "2026-02-14",
+      officer: "Er. Amit Yadav (SLAO Land Surveyor)",
+      dgpsAccuracyMeters: 0.03,
+      remarks: "Boundary verified on Sahibabad corridor interface.",
+      documents: ["JMS-GZB-501.pdf", "DGPS-Report.csv"],
     },
   },
 };
@@ -1998,11 +736,11 @@ export function getParcel12StageInfo(parcel: BhuNakshaParcel): BhuNakshaParcel {
     stageCode: stageMeta.code,
     stageTitle: stageMeta.title,
     rorVerification: extra.rorVerification ?? {
-      status: parcel.isAffected ? "Verified" : "Pending Verification",
-      verificationDate: "2024-03-15",
+      status: parcel.isAffected ? (parcel.rorVerification?.status || "Verified") : "Pending Verification",
+      verificationDate: "2026-02-15",
       khatauniNo: parcel.owners[0]?.khatauniNumber || "KH-000",
-      verifiedBy: "Talathi Office",
-      remarks: "Record of Rights verified.",
+      verifiedBy: parcel.state === "Delhi" ? "Patwari Office Alipur" : "Lekhpal Office Ghaziabad",
+      remarks: parcel.rorVerification?.remarks || "Record of Rights verified.",
     },
     fieldVerification: extra.fieldVerification,
     reviewDetails: extra.reviewDetails,
@@ -2099,4 +837,3 @@ export function getParcelStageVisualColor(parcel: BhuNakshaParcel): {
     categoryLabel: "Possessed / R&R",
   };
 }
-
