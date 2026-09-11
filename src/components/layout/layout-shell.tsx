@@ -1,19 +1,41 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { useApp } from "@/context/app-context";
 
-const AUTH_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/public"];
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthPage = AUTH_ROUTES.includes(pathname);
+  const router = useRouter();
+  const { currentUser } = useApp();
+
+  const isPublicPage = PUBLIC_ROUTES.includes(pathname);
   const isMapPage = pathname === "/map";
 
-  if (isAuthPage) {
+  useEffect(() => {
+    if (!isPublicPage && currentUser === null) {
+      router.push("/login");
+    }
+  }, [isPublicPage, currentUser, router]);
+
+  if (isPublicPage) {
     return <>{children}</>;
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#FAF8F5]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-[#15803D] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-500">Checking authorization...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

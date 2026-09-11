@@ -181,8 +181,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
     }
-    // Default logged in as Nashik District Collector for immediate realistic demonstration
-    return PRESEEDED_USERS.find((u) => u.id === "USR-DIS-NSK") || PRESEEDED_USERS[0];
+    // Default to null so unauthenticated visitors see the public landing page first
+    return null;
   });
 
   const [registeredUsers, setRegisteredUsers] = useState<AuthUser[]>(() => {
