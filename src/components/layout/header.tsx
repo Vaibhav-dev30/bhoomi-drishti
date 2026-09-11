@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Search,
   Bell,
@@ -11,28 +12,35 @@ import {
   Clock,
   Layers,
   Check,
+  LogOut,
+  ShieldCheck,
+  KeyRound,
+  FileCheck2,
+  Inbox,
+  Sparkles,
 } from "lucide-react";
 import { useApp, ROLE_CONFIGS } from "@/context/app-context";
-import { UserRole } from "@/types";
+import { PRESEEDED_USERS } from "@/lib/auth-store";
 import { INDIAN_STATES, MOCK_NOTIFICATIONS } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const {
+    currentUser,
+    loginAsPersona,
+    logout,
+    accessRequests,
     role,
-    setRole,
     language,
     setLanguage,
     searchQuery,
     setSearchQuery,
     selectedState,
     setSelectedState,
-    selectedSector,
-    setSelectedSector,
   } = useApp();
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [timeStr, setTimeStr] = useState("");
 
   useEffect(() => {
@@ -53,17 +61,8 @@ export function Header() {
     return () => clearInterval(interval);
   }, []);
 
-  const rolesList: { id: UserRole; label: string; desc: string }[] = [
-    { id: "super_admin", label: "Super Admin (NIC / Central)", desc: "Full administrative & statutory configuration access" },
-    { id: "central_ministry", label: "Central Ministry (Joint Secy)", desc: "All-India multi-state projects & policy tracking" },
-    { id: "state_government", label: "State Government (Principal Secy)", desc: "State-level gazette publications & sanctions" },
-    { id: "district_collector", label: "District Collector / CALA (Nashik)", desc: "Sec 11/19 declarations, awards, & hearings" },
-    { id: "lrb", label: "Land Requiring Body (NHAI / Rly)", desc: "Proposal submissions & possession monitoring" },
-    { id: "rr_commissioner", label: "R&R Commissioner", desc: "Schedule II/III entitlements & civic amenities" },
-    { id: "sia_agency", label: "SIA Agency (TISS / Empanelled)", desc: "Social Impact Assessment studies & public hearings" },
-    { id: "field_surveyor", label: "Field Surveyor / Talathi", desc: "Mobile GPS geotagging & ground-truth validation" },
-    { id: "public", label: "Affected Landowner / Citizen", desc: "Claim search, compensation tracking, & objections" },
-  ];
+  // Pending requests for this authority
+  const pendingRequestsCount = accessRequests.filter((r) => r.status === "pending").length;
 
   return (
     <header className="sticky top-0 z-20 flex flex-col border-b border-[#E5E0D6] bg-white/95 backdrop-blur-md shadow-xs">
@@ -90,186 +89,142 @@ export function Header() {
           </div>
         </div>
 
-        {/* Center: Global State & Sector Filters */}
-        <div className="hidden lg:flex items-center gap-2">
-          {/* State selector */}
-          <div className="flex items-center gap-1.5 text-xs bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl px-2.5 py-1">
-            <Building2 className="h-3.5 w-3.5 text-[#0284C7]" />
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="bg-transparent text-slate-700 text-xs font-medium focus:outline-none cursor-pointer"
-            >
-              <option value="all">
-                {language === "hi" ? "सभी राज्य / केंद्र शासित" : "All States & UTs"}
-              </option>
-              {INDIAN_STATES.map((st) => (
-                <option key={st.code} value={st.code}>
-                  {st.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Center: Jurisdiction Badge & Clock */}
+        <div className="hidden xl:flex items-center gap-2">
+          {currentUser && (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF8F5] border border-[#E5E0D6] text-xs">
+              <span className="h-2 w-2 rounded-full bg-[#15803D]" />
+              <span className="font-semibold text-slate-700">Jurisdiction:</span>
+              <span className="font-bold text-slate-900 font-mono text-[11px] truncate max-w-[200px]">
+                {currentUser.jurisdiction.displayText}
+              </span>
+            </div>
+          )}
 
-          {/* Sector selector */}
-          <div className="flex items-center gap-1.5 text-xs bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl px-2.5 py-1">
-            <Layers className="h-3.5 w-3.5 text-[#15803D]" />
-            <select
-              value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
-              className="bg-transparent text-slate-700 text-xs font-medium focus:outline-none cursor-pointer"
-            >
-              <option value="all">
-                {language === "hi" ? "सभी क्षेत्र (Sectors)" : "All Sectors"}
-              </option>
-              <option value="highway">National Highways</option>
-              <option value="railway">Railways & HSR</option>
-              <option value="irrigation">River Linking & Irrigation</option>
-              <option value="industrial">Industrial Corridors / Ports</option>
-              <option value="renewable_energy">Solar & Renewable</option>
-              <option value="urban_development">Urban Development</option>
-            </select>
+          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 bg-[#FAF8F5] border border-[#E5E0D6] px-2.5 py-1 rounded-full">
+            <Clock className="h-3 w-3 text-[#0284C7]" />
+            <span>{timeStr || "09:00:00 AM IST"}</span>
           </div>
         </div>
 
-        {/* Right: Clock, Language, Notifications, Role Switcher */}
+        {/* Right: Actions (Language, Access Requests Bell, Profile / Persona Switcher) */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live IST clock */}
-          <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-slate-600 font-mono bg-[#FAF8F5] px-2.5 py-1 rounded-lg border border-[#E5E0D6]">
-            <Clock className="h-3 w-3 text-[#15803D]" />
-            <span>{timeStr}</span>
-          </div>
-
-          {/* Language Switcher */}
+          {/* Language toggle */}
           <button
             onClick={() => setLanguage(language === "en" ? "hi" : "en")}
-            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] text-slate-700 hover:text-slate-900 hover:bg-[#F2EFE8] transition-colors"
-            title="Toggle Language / भाषा बदलें"
+            className="flex items-center gap-1.5 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] px-2.5 py-1.5 text-xs text-slate-700 hover:text-slate-900 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
+            title="Switch Language / भाषा बदलें"
           >
-            <Languages className="h-3.5 w-3.5 text-[#0284C7]" />
+            <Languages className="h-3.5 w-3.5 text-[#15803D]" />
             <span className="font-bold">{language === "en" ? "हिन्दी" : "EN"}</span>
           </button>
 
-          {/* Notifications Bell */}
-          <div className="relative">
+          {/* Access Requests Link / Bell */}
+          <Link href="/access-requests">
             <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative p-1.5 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] text-slate-600 hover:text-slate-900 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
-              title="Statutory Notifications & Alerts"
+              title="Access Requests & Senior Sanctions"
             >
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#0284C7] text-[10px] font-bold text-white">
-                {MOCK_NOTIFICATIONS.length}
-              </span>
+              <Inbox className="h-4 w-4 text-[#0284C7]" />
+              {pendingRequestsCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-xs">
+                  {pendingRequestsCount}
+                </span>
+              )}
             </button>
+          </Link>
 
-            {/* Notifications Popover */}
-            {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E5E0D6] bg-white p-4 shadow-2xl z-50">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                    <Bell className="h-3.5 w-3.5 text-[#0284C7]" />
-                    <span>Statutory Gazette Alerts</span>
-                  </h4>
-                  <span className="text-[10px] text-[#0284C7] font-mono font-bold">
-                    {MOCK_NOTIFICATIONS.length} active
-                  </span>
-                </div>
-                <div className="max-h-72 overflow-y-auto space-y-2">
-                  {MOCK_NOTIFICATIONS.slice(0, 5).map((notif) => (
-                    <div
-                      key={notif.id}
-                      className="rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] p-2.5 text-xs hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-slate-900 truncate">
-                          {notif.title}
-                        </span>
-                        <span className="text-[9px] font-mono text-[#15803D] uppercase font-semibold">
-                          {notif.issuedDate}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                        {notif.description}
-                      </p>
-                      {notif.gazetteRef && (
-                        <p className="mt-1 text-[9px] font-mono text-[#0284C7] font-medium">
-                          Ref: {notif.gazetteRef}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 pt-2 border-t border-slate-100 text-center">
-                  <a
-                    href="/notifications"
-                    onClick={() => setNotificationsOpen(false)}
-                    className="text-[11px] font-semibold text-[#0284C7] hover:underline"
-                  >
-                    View All Statutory Notifications →
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Interactive Role Switcher Dropdown */}
+          {/* User Profile & Persona Switcher */}
           <div className="relative">
             <button
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-2 rounded-xl bg-[#FAF8F5] border border-[#E5E0D6] px-3 py-1.5 text-xs hover:border-[#0284C7] transition-all cursor-pointer shadow-xs"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E0F2FE] text-[#0284C7] font-bold text-xs">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-[#15803D] font-bold text-xs">
                 <UserCheck className="h-3.5 w-3.5" />
               </div>
               <div className="hidden sm:flex flex-col text-left">
-                <span className="text-[10px] uppercase font-bold text-[#0284C7] leading-tight">
-                  {ROLE_CONFIGS[role].badge}
+                <span className="text-[10px] uppercase font-bold text-[#15803D] leading-tight">
+                  {currentUser?.jurisdiction.level.toUpperCase()} LEVEL
                 </span>
-                <span className="text-[11px] text-slate-800 font-semibold leading-tight truncate max-w-[120px]">
-                  {ROLE_CONFIGS[role].name.split(" ")[0]}
+                <span className="text-[11px] text-slate-800 font-semibold leading-tight truncate max-w-[130px]">
+                  {currentUser?.name || "Official"}
                 </span>
               </div>
               <ChevronDown className="h-3 w-3 text-slate-500" />
             </button>
 
-            {roleDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl border border-[#E5E0D6] bg-white p-2 shadow-2xl z-50">
-                <div className="p-2 border-b border-slate-100">
-                  <p className="text-[11px] font-bold text-slate-900">
-                    Switch Administrative Perspective
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    Live role-based view switcher
-                  </p>
+            {/* Profile & Switcher Dropdown */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[#E5E0D6] bg-white p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                {/* Active user card */}
+                {currentUser && (
+                  <div className="p-3 bg-[#FAF8F5] rounded-xl border border-[#E5E0D6] space-y-1 mb-2">
+                    <div className="font-bold text-xs text-slate-900">{currentUser.name}</div>
+                    <div className="text-[11px] text-slate-600 font-medium">{currentUser.designation}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">{currentUser.department}</div>
+                    <div className="pt-1 mt-1 border-t border-[#E5E0D6] text-[10px] text-[#0284C7] font-semibold flex items-center gap-1">
+                      <span>Authority:</span>
+                      <span className="font-mono">{currentUser.jurisdiction.displayText}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="py-1">
+                  <div className="px-2 py-1 text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-[#15803D]" />
+                    <span>Quick Switch Persona (Demo)</span>
+                  </div>
+
+                  <div className="space-y-1 mt-1 max-h-56 overflow-y-auto pr-1">
+                    {PRESEEDED_USERS.map((persona) => {
+                      const isCurrent = currentUser?.id === persona.id;
+                      return (
+                        <button
+                          key={persona.id}
+                          onClick={() => {
+                            loginAsPersona(persona.id);
+                            setProfileDropdownOpen(false);
+                          }}
+                          className={`w-full p-2 rounded-xl text-left text-xs transition-colors flex items-center justify-between ${
+                            isCurrent
+                              ? "bg-emerald-50 text-[#15803D] font-bold border border-emerald-200"
+                              : "hover:bg-[#FAF8F5] text-slate-700"
+                          }`}
+                        >
+                          <div className="truncate">
+                            <div className="font-semibold truncate">{persona.name}</div>
+                            <div className="text-[10px] text-slate-500 truncate">{persona.jurisdiction.displayText}</div>
+                          </div>
+                          <Badge variant="outline" className="text-[9px] uppercase shrink-0 font-mono">
+                            {persona.jurisdiction.level}
+                          </Badge>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="max-h-80 overflow-y-auto py-1 space-y-1">
-                  {rolesList.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setRole(item.id);
-                        setRoleDropdownOpen(false);
-                      }}
-                      className={`w-full text-left p-2 rounded-xl text-xs transition-colors flex flex-col cursor-pointer ${
-                        role === item.id
-                          ? "bg-[#E0F2FE] border border-[#BAE6FD] text-[#0369A1]"
-                          : "hover:bg-[#FAF8F5] text-slate-700"
-                      }`}
-                    >
-                      <span className="font-bold flex items-center justify-between">
-                        {item.label}
-                        {role === item.id && (
-                          <span className="text-[10px] text-[#0284C7] font-semibold flex items-center gap-0.5">
-                            <Check className="h-3 w-3" /> Active
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-[10px] text-slate-500 mt-0.5">
-                        {item.desc}
-                      </span>
-                    </button>
-                  ))}
+
+                {/* Footer links & Logout */}
+                <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <Link
+                    href="/audit-trail"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="text-[#0284C7] hover:underline text-[11px] font-semibold"
+                  >
+                    Audit Trail
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      logout();
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               </div>
             )}

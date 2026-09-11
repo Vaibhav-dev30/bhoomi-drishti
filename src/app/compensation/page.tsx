@@ -14,7 +14,9 @@ import {
   ArrowRight,
   TrendingUp,
 } from "lucide-react";
-import { MOCK_FAMILIES } from "@/lib/mock-data";
+import { MOCK_FAMILIES, MOCK_PROJECTS } from "@/lib/mock-data";
+import { useApp } from "@/context/app-context";
+import { filterProjectsForUser } from "@/lib/auth-store";
 import { calculateCompensation } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,21 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function CompensationPage() {
+  const { currentUser, scopedGrants } = useApp();
+
+  // Jurisdictional Scoping
+  const authorizedProjects = React.useMemo(() => {
+    return filterProjectsForUser(currentUser, scopedGrants, MOCK_PROJECTS);
+  }, [currentUser, scopedGrants]);
+
+  const authorizedProjectIds = React.useMemo(() => {
+    return new Set(authorizedProjects.map((p) => p.id));
+  }, [authorizedProjects]);
+
+  const jurisdictionFamilies = React.useMemo(() => {
+    return MOCK_FAMILIES.filter((fam) => authorizedProjectIds.has(fam.projectId));
+  }, [authorizedProjectIds]);
+
   // Calculator state
   const [areaHectares, setAreaHectares] = useState<number>(2.5);
   const [marketRate, setMarketRate] = useState<number>(2000000); // 20 Lakhs / ha
@@ -249,9 +266,14 @@ export default function CompensationPage() {
               Direct transfer status from Requiring Body Escrow to Beneficiary Aadhaar-seeded accounts
             </CardDescription>
           </div>
-          <Badge variant="success" className="text-xs bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">
-            PFMS Gateway Online
-          </Badge>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-300">
+              Scope: {currentUser?.jurisdiction.displayText || "All India"}
+            </span>
+            <Badge variant="success" className="text-xs bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]">
+              PFMS Gateway Online
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -267,7 +289,7 @@ export default function CompensationPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {MOCK_FAMILIES.map((fam) => (
+              {jurisdictionFamilies.map((fam) => (
                 <TableRow key={fam.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                   <TableCell className="text-xs font-bold text-slate-900 py-3">
                     <div>{fam.familyHeadName}</div>

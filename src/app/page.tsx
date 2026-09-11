@@ -17,82 +17,58 @@ import {
   CheckCircle2,
   MapPin,
   Fingerprint,
+  Building2,
+  Landmark,
+  Layers,
+  AlertCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { SpatialGlobe3D } from "@/components/auth/spatial-globe-3d";
 import { useApp } from "@/context/app-context";
-import { UserRole } from "@/types";
+import { UserRole, JurisdictionLevel } from "@/types";
+import { PRESEEDED_USERS } from "@/lib/auth-store";
+import { INDIAN_STATES } from "@/lib/mock-data";
 
 type AuthMode = "login" | "signup";
 type SubmitPhase = "idle" | "validating" | "success";
 
-interface DemoRoleOption {
-  role: UserRole;
-  label: string;
-  name: string;
-  dept: string;
-  email: string;
-  badge: string;
-}
-
-const DEMO_ROLES: DemoRoleOption[] = [
-  {
-    role: "district_collector",
-    label: "Collector & CALA",
-    name: "Shri Jalaj Sharma, IAS",
-    dept: "Nashik Revenue Division",
-    email: "collector.nashik@nic.in",
-    badge: "Sec 11-23 Authority",
-  },
-  {
-    role: "lrb",
-    label: "NHAI / LRB Body",
-    name: "Er. Manoj Kumar Sinha",
-    dept: "National Highways Authority (NHAI)",
-    email: "gm.land@nhai.gov.in",
-    badge: "Requiring Body",
-  },
-  {
-    role: "central_ministry",
-    label: "Central Ministry",
-    name: "Smt. Rashmi Verma, IAS",
-    dept: "MoRTH Infrastructure Cell",
-    email: "js.infra@morth.nic.in",
-    badge: "National Oversight",
-  },
-  {
-    role: "public",
-    label: "Citizen Landowner",
-    name: "Rameshwar Patil",
-    dept: "Khasra #142/3A, Nashik",
-    email: "rameshwar.patil@bhoomi.in",
-    badge: "Bhu-Aadhaar ULPIN",
-  },
-];
-
 export default function LoginPage() {
   const router = useRouter();
-  const { setRole } = useApp();
+  const { login, signup, loginAsPersona } = useApp();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [submitPhase, setSubmitPhase] = useState<SubmitPhase>("idle");
-  const [selectedDemoRole, setSelectedDemoRole] = useState<UserRole>("district_collector");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Form Fields
-  const [email, setEmail] = useState("collector.nashik@nic.in");
-  const [password, setPassword] = useState("Bhoomi#Gov2026");
-  const [fullName, setFullName] = useState("Shri Jalaj Sharma, IAS");
-  const [department, setDepartment] = useState("District Revenue Administration");
-  const [ulpinId, setUlpinId] = useState("MH-NSK-2026-889104");
+  // Login Form Fields
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>("USR-DIS-NSK");
+  const [email, setEmail] = useState("collector.nsk@nic.in");
+  const [password, setPassword] = useState("collector123");
 
-  // Quick select preset
-  const handleSelectRole = (option: DemoRoleOption) => {
-    setSelectedDemoRole(option.role);
-    setRole(option.role);
-    setEmail(option.email);
-    setFullName(option.name);
-    setDepartment(option.dept);
+  // Signup Form Fields
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupDesignation, setSignupDesignation] = useState("");
+  const [signupDept, setSignupDept] = useState("");
+  const [signupLevel, setSignupLevel] = useState<JurisdictionLevel>("district");
+  const [signupState, setSignupState] = useState("Maharashtra");
+  const [signupStateCode, setSignupStateCode] = useState("MH");
+  const [signupDistrict, setSignupDistrict] = useState("Nashik");
+  const [signupDistrictCode, setSignupDistrictCode] = useState("NSK");
+  const [signupProjectId, setSignupProjectId] = useState("PRJ-001");
+  const [signupProjectName, setSignupProjectName] = useState("Sinnar Agro-Industrial Logistics Park");
+
+  // 1-Click quick persona select
+  const handleSelectPersona = (id: string) => {
+    setSelectedPersonaId(id);
+    const persona = PRESEEDED_USERS.find((p) => p.id === id);
+    if (persona) {
+      setEmail(persona.email);
+      setPassword("GovPass#2026");
+      setErrorMessage("");
+    }
   };
 
   // Trigger celebration confetti
@@ -104,7 +80,6 @@ export default function LoginPage() {
         origin: { y: 0.6, x: 0.65 },
         colors: ["#15803d", "#0284c7", "#f59e0b", "#ffffff", "#10b981"],
       });
-
       setTimeout(() => {
         confetti({
           particleCount: 50,
@@ -118,402 +93,517 @@ export default function LoginPage() {
     }
   };
 
-  // Handle Form Submission with multi-stage animations
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle Login Submit
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitPhase !== "idle") return;
-
+    setErrorMessage("");
     setSubmitPhase("validating");
 
-    setTimeout(() => {
+    try {
+      const res = await login(email, password);
+      if (!res.success) {
+        setErrorMessage(res.error || "Invalid administrator credentials.");
+        setSubmitPhase("idle");
+        return;
+      }
+
       setSubmitPhase("success");
       triggerConfetti();
-
       setTimeout(() => {
         router.push("/dashboard");
-      }, 1000);
-    }, 1100);
+      }, 800);
+    } catch (err) {
+      setErrorMessage("Authentication server error. Please try again.");
+      setSubmitPhase("idle");
+    }
   };
 
-  return (
-    <div className="relative min-h-screen lg:h-screen lg:max-h-screen w-full bg-[#FAF8F5] text-slate-900 overflow-y-auto lg:overflow-hidden flex flex-col justify-between selection:bg-[#E0F2FE] selection:text-[#0369A1]">
-      
-      {/* Light Ambient Pastel Mesh Orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-[#E0F2FE]/60 via-[#DCFCE7]/40 to-transparent blur-3xl" />
-        <div className="absolute -bottom-[20%] right-[10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-[#FEF3C7]/40 via-[#DCFCE7]/30 to-transparent blur-3xl" />
-        <div className="absolute top-[35%] left-[25%] w-[35vw] h-[35vw] rounded-full bg-gradient-to-tr from-[#E0F2FE]/30 via-transparent to-transparent blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(#E5E0D6_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
-      </div>
+  // Handle Signup Submit
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSubmitPhase("validating");
 
-      {/* ───── Top Header Bar ───── */}
-      <header className="relative z-20 flex h-14 shrink-0 items-center justify-between px-6 border-b border-[#E5E0D6] bg-white/90 backdrop-blur-md shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] border border-[#BBF7D0] text-[#15803D] font-bold shadow-xs">
-            <Compass className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">भूमिदृष्टि</span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
-                GOI • MoRD
+    let role: UserRole = "district_collector";
+    if (signupLevel === "national") role = "central_ministry";
+    else if (signupLevel === "state") role = "state_government";
+    else if (signupLevel === "district") role = "district_collector";
+    else role = "lrb";
+
+    try {
+      const res = await signup({
+        name: signupName.trim(),
+        email: signupEmail.trim(),
+        role,
+        designation: signupDesignation.trim() || "Administrative Officer",
+        department: signupDept.trim() || "Land Acquisition Cell",
+        jurisdictionLevel: signupLevel,
+        state: signupLevel !== "national" ? signupState : undefined,
+        stateCode: signupLevel !== "national" ? signupStateCode : undefined,
+        district: signupLevel === "district" || signupLevel === "project" ? signupDistrict : undefined,
+        districtCode: signupLevel === "district" || signupLevel === "project" ? signupDistrictCode : undefined,
+        projectId: signupLevel === "project" ? signupProjectId : undefined,
+        projectName: signupLevel === "project" ? signupProjectName : undefined,
+      });
+
+      if (!res.success) {
+        setErrorMessage(res.error || "Failed to create account.");
+        setSubmitPhase("idle");
+        return;
+      }
+
+      setSubmitPhase("success");
+      triggerConfetti();
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 800);
+    } catch (err) {
+      setErrorMessage("Error during onboarding. Please try again.");
+      setSubmitPhase("idle");
+    }
+  };
+
+  // Calculated parent authority for signup preview
+  let parentAuthorityPreview = "Central Ministry (MoRTH) / Smt. Rashmi Verma, IAS";
+  if (signupLevel === "district") {
+    parentAuthorityPreview = `Principal Secretary (Revenue), Government of ${signupState}`;
+  } else if (signupLevel === "project") {
+    parentAuthorityPreview = `District Collector & CALA (${signupDistrict} District)`;
+  }
+
+  return (
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAF8F5] text-slate-900 font-sans selection:bg-[#0284C7] selection:text-white">
+      {/* ───── LEFT COLUMN: 3D Spatial Visualizer & Hero ───── */}
+      <div className="relative w-full lg:w-[50%] min-h-[420px] lg:min-h-screen bg-gradient-to-b from-[#F2EFE8] via-[#FAF8F5] to-white border-b lg:border-b-0 lg:border-r border-[#E5E0D6] flex flex-col justify-between p-6 sm:p-10 overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-tr from-[#0284C7]/15 to-[#15803D]/15 rounded-full blur-3xl pointer-events-none -z-0" />
+
+        {/* Brand Header */}
+        <div className="relative z-10 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-[#15803D] text-white shadow-sm flex items-center justify-center">
+              <Compass className="w-5 h-5 animate-spin-slow" />
+            </div>
+            <div>
+              <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">
+                BhoomiDrishti
+              </span>
+              <span className="text-[11px] font-semibold text-[#15803D] tracking-wide uppercase">
+                भूमि दृष्टि • Gov of India
               </span>
             </div>
-            <p className="hidden sm:block text-[10px] text-slate-500 font-semibold">
-              National Land Acquisition & Management System
-            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A] animate-ping" />
-            RFCTLARR Act 2013 Gateway
-          </span>
-          <span className="hidden sm:inline font-mono text-[11px] text-slate-500 font-semibold">v2.4 (Bhuvan 3D)</span>
+        <div className="relative z-10 w-full h-[260px] sm:h-[320px] lg:h-[380px] my-auto flex items-center justify-center">
+          <SpatialGlobe3D mode={mode} isSubmitting={submitPhase !== "idle"} />
         </div>
-      </header>
+        <div className="relative z-10 flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-[#E5E0D6]">
+          <span className="flex items-center gap-1.5 font-medium">
+            <ShieldCheck className="w-4 h-4 text-[#15803D]" />
+            RFCTLARR Act 2013 Statutory Compliance
+          </span>
+          <span className="font-mono text-[11px]">NIC GovNet Secure</span>
+        </div>
+      </div>
 
-      {/* ───── Main Viewport Container (Full Screen Fit) ───── */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-12 py-3 max-w-7xl mx-auto w-full min-h-0">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-center w-full">
-          
-          {/* ───── Left Column: 3D Spatial Hologram & Info ───── */}
-          <motion.div
-            className="lg:col-span-6 flex flex-col items-center justify-center text-center lg:text-left relative"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            {/* Title & Badge */}
-            <div className="w-full max-w-lg mb-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E5E0D6] shadow-xs mb-2">
-                <Sparkles className="h-3.5 w-3.5 text-[#15803D]" />
-                <span className="text-[11px] font-bold text-slate-700">
-                  Next-Gen Sovereign Geospatial Portal
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-                Real-Time National <br />
-                <span className="bg-gradient-to-r from-[#15803D] via-[#0284C7] to-[#0369A1] bg-clip-text text-transparent">
-                  Land Acquisition
-                </span>{" "}
-                Intelligence
-              </h1>
-              <p className="mt-1.5 text-xs text-slate-600 leading-relaxed max-w-md mx-auto lg:mx-0 font-medium">
-                3D Cadastral Spatial Visualizer, automated RFCTLARR statutory clock tracking, and Direct Benefit Transfer (DBT) valuation engine.
-              </p>
+      {/* ───── RIGHT COLUMN: Working Login & Signup Form ───── */}
+      <div className="w-full lg:w-[50%] flex flex-col justify-center p-6 sm:p-10 lg:p-14 max-w-xl mx-auto">
+        <div className="space-y-6">
+          {/* Top mode switcher */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 bg-[#F2EFE8] border border-[#E5E0D6] p-1 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setErrorMessage("");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  mode === "login"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signup");
+                  setErrorMessage("");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  mode === "signup"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Onboard Authority
+              </button>
             </div>
 
-            {/* Scaled 3D Canvas Container */}
-            <div className="relative w-full max-w-sm lg:max-w-md h-[210px] sm:h-[240px] xl:h-[270px] my-1">
-              <SpatialGlobe3D mode={mode} isSubmitting={submitPhase !== "idle"} />
+            <span className="text-[11px] font-mono text-slate-400">v2.4.0 Secure</span>
+          </div>
+
+          {/* Headline */}
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {mode === "login" ? "Administrator Access" : "Jurisdictional Onboarding"}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+              {mode === "login"
+                ? "Authenticate with your official credentials or select a verified administrative persona below."
+                : "Register a new officer into the statutory hierarchy with automated senior routing."}
+            </p>
+          </div>
+
+          {/* Error Banner */}
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-2xl text-xs flex items-start gap-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <span>{errorMessage}</span>
             </div>
+          )}
 
-            {/* Live Micro-Metrics strip */}
-            <div className="grid grid-cols-3 gap-2 w-full max-w-md pt-2 border-t border-[#E5E0D6]">
-              <div className="p-2.5 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs">
-                <div className="text-[9px] text-slate-400 uppercase font-bold">States Active</div>
-                <div className="text-sm sm:text-base font-extrabold text-slate-900 mt-0.5">28 + 8 UTs</div>
-                <div className="text-[9px] text-[#15803D] font-semibold">100% Online</div>
-              </div>
-              <div className="p-2.5 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs">
-                <div className="text-[9px] text-slate-400 uppercase font-bold">Disbursed</div>
-                <div className="text-sm sm:text-base font-extrabold text-[#15803D] mt-0.5">₹36,750 Cr</div>
-                <div className="text-[9px] text-slate-500 font-medium">PFMS Direct</div>
-              </div>
-              <div className="p-2.5 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs">
-                <div className="text-[9px] text-slate-400 uppercase font-bold">Resolution</div>
-                <div className="text-sm sm:text-base font-extrabold text-[#0284C7] mt-0.5">±0.05 m</div>
-                <div className="text-[9px] text-[#0284C7] font-semibold">NavIC / CORS</div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ───── Right Column: Light Auth Card ───── */}
-          <motion.div
-            className="lg:col-span-6 flex justify-center w-full"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-          >
-            <div className="relative w-full max-w-md rounded-3xl border border-[#E5E0D6] bg-white p-5 sm:p-6 shadow-xl">
-              
-              {/* Mode Toggle Pills (Login vs Signup) */}
-              <div className="relative flex p-1 rounded-2xl bg-[#F5F2EB] border border-[#E5E0D6] mb-4">
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  className={`relative flex-1 py-1.5 text-xs font-bold rounded-xl transition-all z-10 cursor-pointer ${
-                    mode === "login" ? "text-[#15803D]" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {mode === "login" && (
-                    <motion.div
-                      layoutId="auth-pill-active"
-                      className="absolute inset-0 bg-white rounded-xl shadow-xs -z-10"
-                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span>Portal Sign In</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode("signup")}
-                  className={`relative flex-1 py-1.5 text-xs font-bold rounded-xl transition-all z-10 cursor-pointer ${
-                    mode === "signup" ? "text-[#0284C7]" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {mode === "signup" && (
-                    <motion.div
-                      layoutId="auth-pill-active"
-                      className="absolute inset-0 bg-white rounded-xl shadow-xs -z-10"
-                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span>New Registration</span>
-                </button>
-              </div>
-
-              {/* Card Heading */}
-              <div className="mb-3">
-                <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <span>{mode === "login" ? "Authorized Officer Login" : "Entity Registration"}</span>
-                </h2>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  {mode === "login"
-                    ? "Access statutory dossiers, award calculations & GIS spatial layers."
-                    : "Register requisition body, survey agency or citizen Bhu-Aadhaar key."}
-                </p>
-              </div>
-
-              {/* Quick Demo Role Switcher (For Evaluators) */}
-              {mode === "login" && (
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Fingerprint className="h-3 w-3 text-[#15803D]" />
-                      <span>Quick Demo Roles:</span>
-                    </span>
-                    <span className="text-[10px] text-[#15803D] font-mono font-bold">1-Click Auto-Fill</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {DEMO_ROLES.map((demo) => {
-                      const isSelected = selectedDemoRole === demo.role;
-                      return (
-                        <button
-                          key={demo.role}
-                          type="button"
-                          onClick={() => handleSelectRole(demo)}
-                          className={`text-left p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                            isSelected
-                              ? "bg-[#E8F5E9] border-[#16A34A] shadow-xs"
-                              : "bg-[#FAF8F5] border-[#E5E0D6] hover:bg-[#F2EFE8]"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-extrabold text-slate-900 truncate">
-                              {demo.label}
-                            </span>
-                            {isSelected && (
-                              <CheckCircle2 className="h-3 w-3 text-[#15803D] shrink-0" />
-                            )}
-                          </div>
-                          <span className="text-[9px] text-slate-500 truncate mt-0.5 font-medium">
-                            {demo.name}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+          {/* ───── MODE 1: WORKING LOGIN ───── */}
+          {mode === "login" ? (
+            <div className="space-y-5">
+              {/* 1-Click Persona Pills for Demonstration */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-[#15803D]" />
+                    1-Click Verified Personas (For Judges & Demo)
+                  </span>
                 </div>
-              )}
 
-              {/* Form Fields */}
-              <form onSubmit={handleSubmit} className="space-y-2.5">
-                <AnimatePresence mode="wait">
-                  {mode === "signup" && (
-                    <motion.div
-                      key="signup-fields"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="space-y-2.5 overflow-hidden"
-                    >
-                      <div>
-                        <label className="text-[11px] font-bold text-slate-700 mb-1 block">
-                          Full Name / Official Designation
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                          <input
-                            type="text"
-                            required
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            placeholder="e.g. Er. Rajiv Mehta"
-                            className="w-full bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl h-9 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0284C7] transition-all"
-                          />
-                        </div>
-                      </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {/* Persona 1: District Collector */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-DIS-NSK")}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      selectedPersonaId === "USR-DIS-NSK"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Shri Jalaj Sharma</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-[#15803D] font-bold">
+                        District
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600">Collector & CALA</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Nashik (12 Plots)</div>
+                  </button>
 
-                      <div>
-                        <label className="text-[11px] font-bold text-slate-700 mb-1 block">
-                          Department / Requiring Body
-                        </label>
-                        <div className="relative">
-                          <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                          <input
-                            type="text"
-                            required
-                            value={department}
-                            onChange={(e) => setDepartment(e.target.value)}
-                            placeholder="e.g. Dedicated Freight Corridor"
-                            className="w-full bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl h-9 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0284C7] transition-all"
-                          />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  {/* Persona 2: State Admin */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-STA-MH")}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      selectedPersonaId === "USR-STA-MH"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Shri Nitin Gadre</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-[#0284C7] font-bold">
+                        State
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600">Principal Secy (Rev)</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">State of Maharashtra</div>
+                  </button>
 
-                {/* Email / Officer ID */}
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 mb-1 block">
-                    Official Email / Gov NIC ID
-                  </label>
+                  {/* Persona 3: National Super Admin */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-NAT-01")}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      selectedPersonaId === "USR-NAT-01"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Dr. A. K. Sharma</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">
+                        National
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600">Apex System Admin</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">All India (30 Plots)</div>
+                  </button>
+
+                  {/* Persona 4: Project Officer */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPersona("USR-PRJ-SIN")}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      selectedPersonaId === "USR-PRJ-SIN"
+                        ? "bg-white border-[#15803D] ring-2 ring-[#15803D]/20 shadow-sm"
+                        : "bg-white border-[#E5E0D6] hover:bg-[#FAF8F5]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">Er. Suresh Deshmukh</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold">
+                        Project
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-600">Field Project In-Charge</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">Sinnar Logistics Hub</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Login Form Inputs */}
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Official Government Email</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="officer@nic.in"
-                      className="w-full bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl h-9 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#15803D] transition-all"
+                      placeholder="e.g. collector.nsk@nic.in"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
-                {/* Password */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-bold text-slate-700 block">
-                      {mode === "login" ? "Security Key / Password" : "Create Password"}
-                    </label>
-                    {mode === "login" && (
-                      <button
-                        type="button"
-                        className="text-[10px] text-[#0284C7] hover:underline font-semibold"
-                      >
-                        OTP Login?
-                      </button>
-                    )}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <label className="font-semibold text-slate-700">Security Password</label>
+                    <span className="text-[11px] text-[#0284C7] hover:underline cursor-pointer">
+                      Forgot Access Token?
+                    </span>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type={showPassword ? "text" : "password"}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl h-9 pl-9 pr-10 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#15803D] transition-all"
+                      className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:border-transparent transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                     >
-                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Submit Button */}
-                <motion.button
+                {/* Submit button */}
+                <button
                   type="submit"
                   disabled={submitPhase !== "idle"}
-                  whileHover={submitPhase === "idle" ? { scale: 1.01 } : {}}
-                  whileTap={submitPhase === "idle" ? { scale: 0.98 } : {}}
-                  className={`relative w-full h-11 mt-2.5 rounded-xl font-bold text-xs overflow-hidden transition-all shadow-md cursor-pointer ${
-                    submitPhase === "success"
-                      ? "bg-[#15803D] text-white"
-                      : submitPhase === "validating"
-                      ? "bg-[#0284C7] text-white"
-                      : mode === "login"
-                      ? "bg-[#15803D] hover:bg-[#16A34A] text-white"
-                      : "bg-[#0284C7] hover:bg-[#0369A1] text-white"
-                  }`}
+                  className="w-full py-3 px-4 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
-                  <div className="relative z-10 flex items-center justify-center gap-2">
-                    {submitPhase === "validating" ? (
-                      <>
-                        <motion.span
-                          animate={{ rotate: 360 }}
-                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                          className="inline-block h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"
-                        />
-                        <span>Validating NIC Token & ULPIN...</span>
-                      </>
-                    ) : submitPhase === "success" ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-white" />
-                        <span>Clearance Granted • Launching...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{mode === "login" ? "Enter Sovereign Portal" : "Complete Registration"}</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </>
-                    )}
-                  </div>
-                </motion.button>
+                  {submitPhase === "validating" ? (
+                    <span>Validating Administrative Key...</span>
+                  ) : submitPhase === "success" ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                      <span>Jurisdiction Authorized! Redirecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Authenticate & Access Portal</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
               </form>
+            </div>
+          ) : (
+            /* ───── MODE 2: WORKING SIGNUP WITH JURISDICTION HIERARCHY ───── */
+            <form onSubmit={handleSignupSubmit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Full Name & Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    placeholder="e.g. Smt. Priya Sharma, IAS"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                  />
+                </div>
 
-              {/* Social / National SSO Authentication */}
-              <div className="mt-3.5 pt-3 border-t border-[#E5E0D6]">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSelectRole(DEMO_ROLES[0]);
-                      handleSubmit({ preventDefault: () => {} } as any);
-                    }}
-                    className="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] hover:bg-[#F2EFE8] text-[11px] font-bold text-slate-700 transition-all cursor-pointer shadow-xs"
-                  >
-                    <ShieldCheck className="h-3.5 w-3.5 text-[#15803D]" />
-                    <span>e-Pramaan SSO</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSelectRole(DEMO_ROLES[3]);
-                      handleSubmit({ preventDefault: () => {} } as any);
-                    }}
-                    className="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-[#E5E0D6] bg-[#FAF8F5] hover:bg-[#F2EFE8] text-[11px] font-bold text-slate-700 transition-all cursor-pointer shadow-xs"
-                  >
-                    <Fingerprint className="h-3.5 w-3.5 text-[#0284C7]" />
-                    <span>DigiLocker</span>
-                  </button>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Official Gov Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="e.g. priya.sharma@nic.in"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                  />
                 </div>
               </div>
 
-              {/* Bottom Disclaimer */}
-              <div className="mt-2.5 text-center">
-                <p className="text-[9px] text-slate-400 font-medium">
-                  Protected by MeghRaj Cloud Infrastructure & CERT-In Compliance.
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Official Designation</label>
+                  <input
+                    type="text"
+                    required
+                    value={signupDesignation}
+                    onChange={(e) => setSignupDesignation(e.target.value)}
+                    placeholder="e.g. Sub-Divisional Officer & CALA"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Department / Body</label>
+                  <input
+                    type="text"
+                    required
+                    value={signupDept}
+                    onChange={(e) => setSignupDept(e.target.value)}
+                    placeholder="e.g. Revenue & Land Reforms"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD5E1] rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-[#15803D]"
+                  />
+                </div>
               </div>
-            </div>
-          </motion.div>
+
+              {/* Jurisdictional Hierarchy Level Selector */}
+              <div className="space-y-1.5 pt-1">
+                <label className="font-bold text-slate-900 block">
+                  1. Administrative Authority Level (Jurisdiction)
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: "national", label: "National", sub: "All India" },
+                    { id: "state", label: "State", sub: "State-wide" },
+                    { id: "district", label: "District", sub: "Collectorate" },
+                    { id: "project", label: "Local", sub: "Project" },
+                  ].map((lvl) => (
+                    <button
+                      key={lvl.id}
+                      type="button"
+                      onClick={() => setSignupLevel(lvl.id as JurisdictionLevel)}
+                      className={`p-2.5 rounded-xl border text-center transition-all ${
+                        signupLevel === lvl.id
+                          ? "bg-emerald-50 border-[#15803D] text-[#15803D] font-bold ring-2 ring-[#15803D]/20"
+                          : "bg-white border-[#E5E0D6] text-slate-600 hover:bg-[#FAF8F5]"
+                      }`}
+                    >
+                      <span className="block text-xs">{lvl.label}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{lvl.sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic Sub-Jurisdiction Pickers */}
+              {signupLevel !== "national" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#E5E0D6]">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-slate-700">Assigned State</label>
+                    <select
+                      value={signupState}
+                      onChange={(e) => {
+                        setSignupState(e.target.value);
+                        const match = INDIAN_STATES.find((s) => s.name === e.target.value);
+                        if (match) setSignupStateCode(match.code);
+                      }}
+                      className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
+                    >
+                      <option value="Maharashtra">Maharashtra (MH)</option>
+                      <option value="Rajasthan">Rajasthan (RJ)</option>
+                      <option value="Uttar Pradesh">Uttar Pradesh (UP)</option>
+                    </select>
+                  </div>
+
+                  {(signupLevel === "district" || signupLevel === "project") && (
+                    <div className="space-y-1">
+                      <label className="font-semibold text-slate-700">Assigned District</label>
+                      <select
+                        value={signupDistrict}
+                        onChange={(e) => setSignupDistrict(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
+                      >
+                        {signupState === "Maharashtra" && <option value="Nashik">Nashik</option>}
+                        {signupState === "Rajasthan" && <option value="Jodhpur (Phalodi)">Jodhpur (Phalodi)</option>}
+                        {signupState === "Uttar Pradesh" && <option value="Varanasi">Varanasi</option>}
+                      </select>
+                    </div>
+                  )}
+
+                  {signupLevel === "project" && (
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="font-semibold text-slate-700">Specific Project Scope</label>
+                      <select
+                        value={signupProjectId}
+                        onChange={(e) => {
+                          setSignupProjectId(e.target.value);
+                          if (e.target.value === "PRJ-001") setSignupProjectName("Sinnar Agro-Industrial Logistics Park");
+                          if (e.target.value === "PRJ-002") setSignupProjectName("Bhadla Clean Energy Solar Enclave");
+                          if (e.target.value === "PRJ-003") setSignupProjectName("Varanasi Riverfront Eco-Buffer & Greenway");
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
+                      >
+                        <option value="PRJ-001">PRJ-001: Sinnar Agro-Industrial Logistics Park</option>
+                        <option value="PRJ-002">PRJ-002: Bhadla Clean Energy Solar Enclave</option>
+                        <option value="PRJ-003">PRJ-003: Varanasi Riverfront Eco-Buffer & Greenway</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Hierarchy Routing Notice */}
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 text-[11px] text-emerald-950 space-y-1">
+                <span className="font-bold text-emerald-900 block flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5 text-[#15803D]" />
+                  Designated Senior Reporting Authority:
+                </span>
+                <span className="text-emerald-800 block">{parentAuthorityPreview}</span>
+                <span className="text-[10px] text-emerald-600 block italic">
+                  Cross-jurisdiction requests from this account will be automatically routed to this office for sanction.
+                </span>
+              </div>
+
+              {/* Submit Onboarding */}
+              <button
+                type="submit"
+                disabled={submitPhase !== "idle"}
+                className="w-full py-3 px-4 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer mt-3"
+              >
+                {submitPhase === "validating" ? (
+                  <span>Recording in National Administrative Registry...</span>
+                ) : submitPhase === "success" ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    <span>Officer Onboarded! Loading Authorized Scope...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Enroll Administrator & Launch Dashboard</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
         </div>
       </div>
-
-      {/* ───── Bottom Sovereign Tricolor Line ───── */}
-      <div className="relative z-20 tricolor-stripe shrink-0" />
     </div>
   );
 }

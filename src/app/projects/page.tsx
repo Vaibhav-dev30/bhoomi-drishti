@@ -9,8 +9,14 @@ import {
   Building,
   MapPin,
   ExternalLink,
+  Lock,
+  ShieldAlert,
+  ShieldCheck,
+  Key,
 } from "lucide-react";
 import { useApp } from "@/context/app-context";
+import { checkResourceAccess } from "@/lib/auth-store";
+import { RequestAccessModal } from "@/components/auth/request-access-modal";
 import { MOCK_PROJECTS, INDIAN_STATES } from "@/lib/mock-data";
 import { ProjectStatus } from "@/types";
 import { formatArea, getPercentage } from "@/lib/utils";
@@ -21,7 +27,16 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function ProjectsPage() {
-  const { language, searchQuery, setSearchQuery } = useApp();
+  const { language, searchQuery, setSearchQuery, currentUser, scopedGrants } = useApp();
+  const [requestTarget, setRequestTarget] = useState<{
+    targetType: "project" | "district" | "state" | "plots";
+    targetId: string;
+    targetName: string;
+    targetState?: string;
+    targetDistrict?: string;
+    seniorAuthorityName?: string;
+    seniorAuthorityRole?: string;
+  } | null>(null);
   const [filterSector, setFilterSector] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterState, setFilterState] = useState("all");
@@ -205,6 +220,12 @@ export default function ProjectsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((proj) => {
             const percentAcquired = getPercentage(proj.areaAcquired, proj.totalAreaRequired);
+            const access = checkResourceAccess(currentUser, scopedGrants, {
+              projectId: proj.id,
+              state: proj.state,
+              stateCode: proj.stateCode,
+              district: proj.district,
+            });
             return (
               <Card
                 key={proj.id}
@@ -212,9 +233,17 @@ export default function ProjectsPage() {
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-[11px] px-2.5 py-0.5 rounded-lg bg-[#FAF8F5] text-slate-700 font-bold border border-[#E5E0D6]">
-                      {proj.projectCode}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-[11px] px-2.5 py-0.5 rounded-lg bg-[#FAF8F5] text-slate-700 font-bold border border-[#E5E0D6]">
+                        {proj.projectCode}
+                      </span>
+                      {!access.allowed && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          <Lock className="w-2.5 h-2.5 text-amber-700" />
+                          Restricted
+                        </span>
+                      )}
+                    </div>
                     {getStatusBadge(proj.status)}
                   </div>
                   <CardTitle className="text-base font-extrabold text-slate-900 group-hover:text-[#0284C7] transition-colors line-clamp-1">
@@ -275,12 +304,40 @@ export default function ProjectsPage() {
                     </div>
                   </div>
 
-                  {/* Action Link */}
-                  <div className="pt-2">
-                    <Link href={`/projects/${proj.id}`} className="w-full block">
-                      <Button variant="outline" size="sm" className="w-full text-xs font-bold gap-1 border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE]">
-                        <span>Inspect Complete Statutory Dossier</span>
-                        <ExternalLink className="h-3.5 w-3.5 text-[#0284C7]" />
+                  {/* Action Links with RBAC Jurisdiction Guard */}
+                  <div className="pt-2 flex items-center gap-2">
+                    {access.allowed ? (
+                      <Link href={`/projects/${proj.id}`} className="flex-1 block">
+                        <Button variant="outline" size="sm" className="w-full text-xs font-bold gap-1 border-[#BAE6FD] bg-[#F0F9FF] text-[#0284C7] hover:bg-[#E0F2FE]">
+                          <span>Dossier</span>
+                          <ExternalLink className="h-3.5 w-3.5 text-[#0284C7]" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setRequestTarget({
+                            targetType: "project",
+                            targetId: proj.id,
+                            targetName: proj.name,
+                            targetState: proj.state,
+                            targetDistrict: proj.district,
+                            seniorAuthorityName: access.seniorName || currentUser?.parentAuthorityName,
+                            seniorAuthorityRole: access.seniorRole || currentUser?.parentAuthorityTitle,
+                          })
+                        }
+                        className="flex-1 text-xs font-bold gap-1 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                      >
+                        <Lock className="h-3.5 w-3.5 text-amber-700" />
+                        <span>Request Access</span>
+                      </Button>
+                    )}
+                    <Link href="/map" className="flex-1 block">
+                      <Button size="sm" className="w-full text-xs font-bold gap-1 bg-[#15803D] hover:bg-[#166534] text-white">
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span>GIS Map</span>
                       </Button>
                     </Link>
                   </div>
@@ -305,7 +362,14 @@ export default function ProjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProjects.map((proj) => (
+              {filteredProjects.map((proj) => {
+                const access = checkResourceAccess(currentUser, scopedGrants, {
+                  projectId: proj.id,
+                  state: proj.state,
+                  stateCode: proj.stateCode,
+                  district: proj.district,
+                });
+                return (
                 <TableRow key={proj.id} className="border-[#F2EFE8] hover:bg-[#FAF8F5] transition-colors">
                   <TableCell className="font-medium max-w-xs py-3">
                     <div className="font-mono text-[10px] text-[#0284C7] font-bold">{proj.projectCode}</div>
@@ -328,17 +392,54 @@ export default function ProjectsPage() {
                     {getStatusBadge(proj.status)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/projects/${proj.id}`}>
-                      <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]">
-                        View →
+                    {access.allowed ? (
+                      <Link href={`/projects/${proj.id}`}>
+                        <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:text-[#0369A1] hover:bg-[#E0F2FE]">
+                          View →
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setRequestTarget({
+                            targetType: "project",
+                            targetId: proj.id,
+                            targetName: proj.name,
+                            targetState: proj.state,
+                            targetDistrict: proj.district,
+                            seniorAuthorityName: access.seniorName || currentUser?.parentAuthorityName,
+                            seniorAuthorityRole: access.seniorRole || currentUser?.parentAuthorityTitle,
+                          })
+                        }
+                        className="text-xs font-bold text-amber-700 hover:text-amber-800 hover:bg-amber-100 gap-1"
+                      >
+                        <Lock className="w-3 h-3" />
+                        <span>Request Access</span>
                       </Button>
-                    </Link>
+                    )}
                   </TableCell>
                 </TableRow>
-              ))}
+              );
+              })}
             </TableBody>
           </Table>
         </div>
+      )}
+    {/* Cross-Jurisdiction Request Access Modal */}
+      {requestTarget && (
+        <RequestAccessModal
+          isOpen={!!requestTarget}
+          onClose={() => setRequestTarget(null)}
+          targetType={requestTarget.targetType}
+          targetId={requestTarget.targetId}
+          targetName={requestTarget.targetName}
+          targetState={requestTarget.targetState}
+          targetDistrict={requestTarget.targetDistrict}
+          seniorAuthorityName={requestTarget.seniorAuthorityName}
+          seniorAuthorityRole={requestTarget.seniorAuthorityRole}
+        />
       )}
     </div>
   );

@@ -15,6 +15,9 @@ import {
   Users,
   Coins,
   ShieldCheck,
+  Lock,
+  ShieldAlert,
+  Key,
   Download,
   Share2,
   Printer,
@@ -24,6 +27,9 @@ import {
   Compass,
 } from "lucide-react";
 import { MOCK_PROJECTS, MOCK_FAMILIES, getProjectWorkflow } from "@/lib/mock-data";
+import { useApp } from "@/context/app-context";
+import { checkResourceAccess } from "@/lib/auth-store";
+import { RequestAccessModal } from "@/components/auth/request-access-modal";
 import { formatArea, formatCurrency, formatDate, getPercentage } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +48,113 @@ export default function ProjectDetailPage({
   const project = MOCK_PROJECTS.find((p) => p.id === projectId) || MOCK_PROJECTS[0];
   const workflowStages = getProjectWorkflow(project);
   const [activeTab, setActiveTab] = useState("overview");
+
+  const { currentUser, scopedGrants } = useApp();
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+  const access = checkResourceAccess(currentUser, scopedGrants, {
+    projectId: project.id,
+    state: project.state,
+    stateCode: project.stateCode,
+    district: project.district,
+  });
+
+  // Statutory Gate for Out-of-Jurisdiction Access
+  if (!access.allowed) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 space-y-6">
+        {/* Back Link */}
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to All Projects</span>
+        </Link>
+
+        {/* Statutory Restriction Card */}
+        <div className="rounded-3xl border border-amber-200 bg-gradient-to-b from-[#FEF3C7]/40 via-white to-[#FAF8F5] p-8 shadow-md text-center space-y-6">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shadow-sm">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="max-w-xl mx-auto space-y-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
+              RFCTLARR Statutory Jurisdiction Boundary
+            </span>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              Administrative Access Restricted
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              This statutory land acquisition dossier is outside your authorized administrative jurisdiction.
+              Access to full project cadastres, landowner awards, and compensation registers requires formal senior delegation.
+            </p>
+          </div>
+
+          {/* Comparison Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-2xl mx-auto text-xs">
+            <div className="bg-white rounded-2xl p-4 border border-[#E5E0D6] shadow-xs space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                Your Current Authority
+              </span>
+              <div className="font-bold text-slate-900 text-sm">{currentUser?.name || "Official"}</div>
+              <div className="text-slate-600 font-medium">{currentUser?.designation}</div>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-slate-700 font-semibold">
+                <span>Jurisdiction:</span>
+                <span className="text-[#15803D]">{currentUser?.jurisdiction.displayText || "Local"}</span>
+              </div>
+            </div>
+
+            <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-200 shadow-xs space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">
+                Target Project Dossier
+              </span>
+              <div className="font-bold text-amber-950 text-sm">{project.name}</div>
+              <div className="text-amber-800 font-medium">Requisitioning: {project.lrbName}</div>
+              <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-amber-900 font-semibold">
+                <span>Jurisdiction:</span>
+                <span>{project.district}, {project.state}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button
+              onClick={() => setShowRequestModal(true)}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold gap-2 bg-[#15803D] hover:bg-[#166534] text-white shadow-xs"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Request Scoped Access from Senior Officer</span>
+            </Button>
+            <Link href="/projects" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold border-[#E5E0D6] text-slate-700 hover:bg-[#F4EFEA]">
+                Return to My Projects
+              </Button>
+            </Link>
+          </div>
+
+          <div className="text-[11px] text-slate-500 pt-4 border-t border-slate-200/70 max-w-md mx-auto">
+            Governed by Section 11 & Section 101 of RFCTLARR Act 2013 and Central Land Portal Access Standards.
+          </div>
+        </div>
+
+        {/* Modal */}
+        <RequestAccessModal
+          isOpen={showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+          targetType="project"
+          targetId={project.id}
+          targetName={project.name}
+          targetState={project.state}
+          targetDistrict={project.district}
+          seniorAuthorityName={access.seniorName || currentUser?.parentAuthorityName}
+          seniorAuthorityRole={access.seniorRole || currentUser?.parentAuthorityTitle}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

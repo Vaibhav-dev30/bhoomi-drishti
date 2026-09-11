@@ -145,6 +145,7 @@ export interface Project {
   // GIS
   centerLat: number;
   centerLng: number;
+  coordinates?: [number, number];
   parcels?: LandParcel[];
 }
 
@@ -403,3 +404,90 @@ export const PROJECT_TYPE_COLORS: Record<ProjectType, string> = {
   defense: "#ef4444",
   other: "#6b7280",
 };
+
+// --- Authentication & Hierarchical Jurisdictional RBAC ---
+
+export type JurisdictionLevel = "national" | "state" | "district" | "tehsil" | "project";
+
+export interface AdministrativeJurisdiction {
+  level: JurisdictionLevel;
+  state?: string;
+  stateCode?: string;
+  district?: string;
+  districtCode?: string;
+  tehsil?: string;
+  projectId?: string;
+  projectName?: string;
+  displayText: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: UserRole;
+  designation: string;
+  department: string;
+  jurisdiction: AdministrativeJurisdiction;
+  parentAuthorityId?: string;
+  parentAuthorityTitle?: string;
+  parentAuthorityName?: string;
+  createdAt: string;
+}
+
+export interface AccessRequest {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  requesterRole: string;
+  requesterDesignation: string;
+  requesterJurisdiction: string;
+  targetType: "project" | "district" | "state" | "plots";
+  targetId: string;
+  targetName: string;
+  reason: string;
+  durationDays: number;
+  status: "pending" | "approved" | "rejected";
+  routedToLevel: JurisdictionLevel;
+  routedToRole: string;
+  approverId?: string;
+  approverName?: string;
+  approverComments?: string;
+  approvedAt?: string;
+  expiresAt?: string;
+  createdAt: string;
+}
+
+export interface ScopedAccessGrant {
+  id: string;
+  requestId: string;
+  userId: string;
+  targetType: "project" | "district" | "state" | "plots";
+  targetId: string;
+  targetName: string;
+  grantedBy: string;
+  grantedAt: string;
+  expiresAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  userJurisdiction: string;
+  action:
+    | "LOGIN"
+    | "LOGOUT"
+    | "SIGNUP"
+    | "ACCESS_REQUEST_SUBMITTED"
+    | "ACCESS_REQUEST_APPROVED"
+    | "ACCESS_REQUEST_REJECTED"
+    | "CROSS_JURISDICTION_ACCESS";
+  targetResource: string;
+  details: string;
+  ipAddress: string;
+}
+

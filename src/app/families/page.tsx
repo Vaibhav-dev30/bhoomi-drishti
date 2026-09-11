@@ -14,19 +14,35 @@ import {
   UserCheck,
   ArrowRight,
 } from "lucide-react";
-import { MOCK_FAMILIES } from "@/lib/mock-data";
+import { MOCK_FAMILIES, MOCK_PROJECTS } from "@/lib/mock-data";
+import { useApp } from "@/context/app-context";
+import { filterProjectsForUser } from "@/lib/auth-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function FamiliesPage() {
+  const { currentUser, scopedGrants } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [displacementFilter, setDisplacementFilter] = useState("all");
 
+  // Jurisdictional Scoping
+  const authorizedProjects = useMemo(() => {
+    return filterProjectsForUser(currentUser, scopedGrants, MOCK_PROJECTS);
+  }, [currentUser, scopedGrants]);
+
+  const authorizedProjectIds = useMemo(() => {
+    return new Set(authorizedProjects.map((p) => p.id));
+  }, [authorizedProjects]);
+
+  const jurisdictionFamilies = useMemo(() => {
+    return MOCK_FAMILIES.filter((fam) => authorizedProjectIds.has(fam.projectId));
+  }, [authorizedProjectIds]);
+
   const filteredFamilies = useMemo(() => {
-    return MOCK_FAMILIES.filter((fam) => {
+    return jurisdictionFamilies.filter((fam) => {
       const matchSearch =
         !searchTerm ||
         fam.familyHeadName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,12 +55,12 @@ export default function FamiliesPage() {
         (displacementFilter === "non_displaced" && !fam.isDisplaced);
       return matchSearch && matchCategory && matchDisplacement;
     });
-  }, [searchTerm, categoryFilter, displacementFilter]);
+  }, [jurisdictionFamilies, searchTerm, categoryFilter, displacementFilter]);
 
-  const totalFamilies = MOCK_FAMILIES.length;
-  const displacedCount = MOCK_FAMILIES.filter((f) => f.isDisplaced).length;
-  const bplCount = MOCK_FAMILIES.filter((f) => f.isBPL).length;
-  const totalPaid = MOCK_FAMILIES.reduce((acc, f) => acc + f.compensationPaid, 0);
+  const totalFamilies = jurisdictionFamilies.length;
+  const displacedCount = jurisdictionFamilies.filter((f) => f.isDisplaced).length;
+  const bplCount = jurisdictionFamilies.filter((f) => f.isBPL).length;
+  const totalPaid = jurisdictionFamilies.reduce((acc, f) => acc + f.compensationPaid, 0);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -56,6 +72,9 @@ export default function FamiliesPage() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
                 <Users className="h-3.5 w-3.5" />
                 <span>RFCTLARR Act 2013 • Social Impact Census</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-amber-900 border border-[#FDE68A]">
+                <span>Scope: {currentUser?.jurisdiction.displayText || "All India"}</span>
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-2">

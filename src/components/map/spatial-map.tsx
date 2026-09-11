@@ -36,312 +36,68 @@ import {
   Coins,
   ShieldCheck,
   Check,
+  ExternalLink,
+  ChevronRight,
+  HelpCircle,
+  Copy,
+  ArrowUpRight,
+  Sun,
+  Trees,
+  Factory,
+  Key,
+  Lock,
+  ShieldAlert,
 } from "lucide-react";
-import { MOCK_PROJECTS, INDIAN_STATES } from "@/lib/mock-data";
+import { MOCK_PROJECTS, MOCK_PLOTS } from "@/lib/mock-data";
 import { Project, LandParcel } from "@/types";
-import { formatArea, formatCurrency } from "@/lib/utils";
+import { useApp } from "@/context/app-context";
+import { checkResourceAccess } from "@/lib/auth-store";
+import { RequestAccessModal } from "@/components/auth/request-access-modal";
+import { formatCurrency, formatIndianNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-// --- Enhanced DivIcon Factory for Sector Markers ---
-function createCustomPin(color: string, label?: string) {
+// Centroid Plot Badge DivIcon
+function createPlotBadgeIcon(plotNumber: string, isSelected: boolean, status: string) {
+  let statusDotColor = "#15803D"; // green
+  if (status === "available") statusDotColor = "#0284C7"; // blue
+  if (status === "disputed") statusDotColor = "#D97706"; // amber
+  if (status === "reserved") statusDotColor = "#7C3AED"; // purple
+
+  const containerStyle = isSelected
+    ? "background: #0f172a; color: #ffffff; border: 2px solid #38bdf8; box-shadow: 0 4px 14px rgba(0,0,0,0.35); font-weight: 700;"
+    : "background: rgba(255, 255, 255, 0.95); color: #1e293b; border: 1.5px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.12); font-weight: 600;";
+
   return L.divIcon({
-    className: "custom-div-icon",
+    className: "custom-plot-badge",
     html: `
       <div style="
-        background: ${color};
-        width: 28px;
-        height: 28px;
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        border: 2px solid #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-        display: flex;
+        ${containerStyle}
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px;
+        line-height: 1;
+        padding: 3px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        text-align: center;
+        transform: translate(-50%, -50%);
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+        pointer-events: auto;
       ">
-        <div style="
-          width: 9px;
-          height: 9px;
-          background: #ffffff;
-          border-radius: 50%;
-          transform: rotate(45deg);
-        "></div>
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: ${statusDotColor}; display: inline-block;"></span>
+        <span>${plotNumber}</span>
       </div>
     `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-    popupAnchor: [0, -28],
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
   });
 }
 
-// Measurement Point Pin
-const measureIcon = L.divIcon({
-  className: "measure-div-icon",
-  html: `
-    <div style="
-      background: #0284c7;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 3px solid #ffffff;
-      box-shadow: 0 0 8px rgba(2,132,199,0.8);
-    "></div>
-  `,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
-
-// --- High-Density Cadastral Parcels with 14-Digit ULPIN ---
-export interface CadastralParcel extends LandParcel {
-  ulpin: string;
-  polygon: [number, number][];
-  solatiumAmount: number;
-  marketRatePerHa: number;
-  khasraClassification: string;
-}
-
-const EXTENDED_CADASTRAL_PARCELS: CadastralParcel[] = [
-  // Nashik - Sinnar Corridor (Samruddhi Mahamarg)
-  {
-    id: "PRC-001",
-    projectId: "PRJ-001",
-    surveyNumber: "42/1",
-    khasraNumber: "KH-892",
-    ulpin: "MH240019284712",
-    village: "Sinnar",
-    tehsil: "Sinnar",
-    district: "Nashik",
-    state: "Maharashtra",
-    areaHectares: 2.5,
-    landType: "agricultural",
-    ownershipType: "private",
-    status: "acquired",
-    ownerName: "Ramesh Patil & Sons",
-    marketValue: 4500000,
-    marketRatePerHa: 1800000,
-    solatiumAmount: 4500000,
-    khasraClassification: "Irrigated Bagayat Land",
-    coordinates: [19.845, 73.995],
-    polygon: [
-      [19.843, 73.992],
-      [19.847, 73.992],
-      [19.848, 73.997],
-      [19.844, 73.998],
-    ],
-  },
-  {
-    id: "PRC-002",
-    projectId: "PRJ-001",
-    surveyNumber: "42/2",
-    khasraNumber: "KH-893",
-    ulpin: "MH240019284713",
-    village: "Sinnar",
-    tehsil: "Sinnar",
-    district: "Nashik",
-    state: "Maharashtra",
-    areaHectares: 1.8,
-    landType: "agricultural",
-    ownershipType: "private",
-    status: "possessed",
-    ownerName: "Suresh Gaikwad",
-    marketValue: 3240000,
-    marketRatePerHa: 1800000,
-    solatiumAmount: 3240000,
-    khasraClassification: "Jirayat Non-irrigated",
-    coordinates: [19.849, 73.996],
-    polygon: [
-      [19.848, 73.997],
-      [19.852, 73.998],
-      [19.853, 74.002],
-      [19.849, 74.001],
-    ],
-  },
-  {
-    id: "PRC-003",
-    projectId: "PRJ-001",
-    surveyNumber: "43",
-    khasraNumber: "KH-901",
-    ulpin: "MH240019284714",
-    village: "Sinnar",
-    tehsil: "Sinnar",
-    district: "Nashik",
-    state: "Maharashtra",
-    areaHectares: 3.2,
-    landType: "commercial",
-    ownershipType: "private",
-    status: "notified",
-    ownerName: "Priya Deshmukh & Co-owners",
-    marketValue: 7680000,
-    marketRatePerHa: 2400000,
-    solatiumAmount: 7680000,
-    khasraClassification: "Highway Frontage Commercial",
-    coordinates: [19.854, 74.004],
-    polygon: [
-      [19.853, 74.002],
-      [19.857, 74.003],
-      [19.858, 74.008],
-      [19.854, 74.007],
-    ],
-  },
-  {
-    id: "PRC-004",
-    projectId: "PRJ-001",
-    surveyNumber: "44/A",
-    khasraNumber: "KH-910",
-    ulpin: "MH240019284715",
-    village: "Sinnar",
-    tehsil: "Sinnar",
-    district: "Nashik",
-    state: "Maharashtra",
-    areaHectares: 4.1,
-    landType: "forest",
-    ownershipType: "government",
-    status: "surveyed",
-    ownerName: "Maharashtra State Forest Dept",
-    marketValue: 4920000,
-    marketRatePerHa: 1200000,
-    solatiumAmount: 0,
-    khasraClassification: "Class-II Social Forest",
-    coordinates: [19.859, 74.009],
-    polygon: [
-      [19.858, 74.008],
-      [19.862, 74.009],
-      [19.863, 74.015],
-      [19.859, 74.014],
-    ],
-  },
-  // Lucknow - Kakori Corridor (Delhi-Varanasi High-Speed Rail)
-  {
-    id: "PRC-005",
-    projectId: "PRJ-002",
-    surveyNumber: "112/4",
-    khasraNumber: "KH-1024",
-    ulpin: "UP240019884102",
-    village: "Kakori",
-    tehsil: "Lucknow",
-    district: "Lucknow",
-    state: "Uttar Pradesh",
-    areaHectares: 3.5,
-    landType: "agricultural",
-    ownershipType: "private",
-    status: "notified",
-    ownerName: "Harishankar Tiwari",
-    marketValue: 9800000,
-    marketRatePerHa: 2800000,
-    solatiumAmount: 9800000,
-    khasraClassification: "Perennial Crop Multi-Crop",
-    coordinates: [26.872, 80.795],
-    polygon: [
-      [26.869, 80.792],
-      [26.874, 80.791],
-      [26.876, 80.798],
-      [26.871, 80.799],
-    ],
-  },
-  {
-    id: "PRC-006",
-    projectId: "PRJ-002",
-    surveyNumber: "113",
-    khasraNumber: "KH-1025",
-    ulpin: "UP240019884103",
-    village: "Kakori",
-    tehsil: "Lucknow",
-    district: "Lucknow",
-    state: "Uttar Pradesh",
-    areaHectares: 2.8,
-    landType: "residential",
-    ownershipType: "private",
-    status: "surveyed",
-    ownerName: "Mohd. Azharuddin & 3 Others",
-    marketValue: 8960000,
-    marketRatePerHa: 3200000,
-    solatiumAmount: 8960000,
-    khasraClassification: "Abadi Settlement Extension",
-    coordinates: [26.877, 80.801],
-    polygon: [
-      [26.875, 80.799],
-      [26.879, 80.800],
-      [26.881, 80.806],
-      [26.877, 80.805],
-    ],
-  },
-];
-
-// --- Strategic Infrastructure Corridor Linear Polylines ---
-const INFRASTRUCTURE_CORRIDORS: {
-  id: string;
-  name: string;
-  projectCode: string;
-  color: string;
-  rowWidthMeters: number;
-  path: [number, number][];
-}[] = [
-  {
-    id: "CORR-001",
-    name: "Mumbai-Nagpur Expressway (Samruddhi Mahamarg RoW Alignment)",
-    projectCode: "MH-HWY-2024-001",
-    color: "#0284c7", // Cerulean Blue
-    rowWidthMeters: 120,
-    path: [
-      [19.78, 73.88],
-      [19.82, 73.95],
-      [19.845, 73.995],
-      [19.89, 74.08],
-      [19.95, 74.25],
-      [20.02, 74.45],
-    ],
-  },
-  {
-    id: "CORR-002",
-    name: "Delhi-Varanasi High-Speed Rail Corridor (Alignment Spine)",
-    projectCode: "UP-RLY-2024-002",
-    color: "#16a34a", // Emerald Green
-    rowWidthMeters: 60,
-    path: [
-      [28.61, 77.23],
-      [27.18, 78.01],
-      [26.85, 80.94],
-      [26.872, 80.795],
-      [25.43, 81.84],
-      [25.31, 82.97],
-    ],
-  },
-];
-
-// --- Circle Rate Valuation Density Heatmap Zones ---
-const VALUATION_ZONES = [
-  { center: [19.847, 73.996] as [number, number], radius: 1200, tier: "Zone A (Prime RoW)", rate: "₹24 L/ha", color: "#16a34a" },
-  { center: [19.858, 74.01] as [number, number], radius: 1500, tier: "Zone B (Semi-Urban)", rate: "₹18 L/ha", color: "#0284c7" },
-  { center: [26.873, 80.796] as [number, number], radius: 2000, tier: "Zone A (Bullet Train Buffer)", rate: "₹32 L/ha", color: "#eab308" },
-];
-
-// Quick Focus Presets
-const QUICK_FOCUS_PRESETS = [
-  { label: "All India", center: [21.5937, 78.9629] as [number, number], zoom: 5 },
-  { label: "Nashik Corridor (MH)", center: [19.848, 73.997] as [number, number], zoom: 14 },
-  { label: "Kakori HSR (UP)", center: [26.874, 80.796] as [number, number], zoom: 14 },
-  { label: "Amaravati City (AP)", center: [16.5062, 80.648] as [number, number], zoom: 11 },
-  { label: "Bhadla Solar (RJ)", center: [27.53, 71.91] as [number, number], zoom: 11 },
-];
-
-// Helper to calculate distance in km using Haversine formula
-function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-// Controller to smoothly fly map to coordinates
-function MapViewController({
+// Map Camera Controller
+function MapCameraController({
   center,
   zoom,
 }: {
@@ -350,12 +106,12 @@ function MapViewController({
 }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, zoom, { duration: 1.4 });
+    map.flyTo(center, zoom, { duration: 1.2 });
   }, [center, zoom, map]);
   return null;
 }
 
-// Interactive Map Events (Measurement & Live Coordinates)
+// Map Event Tracker (Telemetry & Measurement)
 function MapEventTracker({
   measuring,
   onAddPoint,
@@ -379,426 +135,563 @@ function MapEventTracker({
 }
 
 export function SpatialMapViewer() {
+  const { currentUser, scopedGrants } = useApp();
+  const [requestAccessResource, setRequestAccessResource] = useState<{
+    targetType: "project" | "district" | "state" | "plots";
+    targetId: string;
+    targetName: string;
+    targetState?: string;
+    targetDistrict?: string;
+    seniorAuthorityName?: string;
+    seniorAuthorityRole?: string;
+  } | null>(null);
+
+  // Pre-calculate access map for projects
+  const projectAccessMap = useMemo(() => {
+    const map: Record<string, any> = {};
+    MOCK_PROJECTS.forEach((p) => {
+      map[p.id] = checkResourceAccess(currentUser, scopedGrants, {
+        projectId: p.id,
+        state: p.state,
+        stateCode: p.stateCode,
+        district: p.district,
+      });
+    });
+    return map;
+  }, [currentUser, scopedGrants]);
+
+  // First authorized project for current user
+  const firstAuthorizedId = useMemo(() => {
+    const found = MOCK_PROJECTS.find((p) => projectAccessMap[p.id]?.allowed);
+    return found ? found.id : "PRJ-001";
+  }, [projectAccessMap]);
+
+  // Active Project
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(firstAuthorizedId);
+
+  // Sync when user changes or grants change
+  useEffect(() => {
+    if (!projectAccessMap[selectedProjectId]?.allowed && firstAuthorizedId) {
+      setSelectedProjectId(firstAuthorizedId);
+    }
+  }, [firstAuthorizedId, projectAccessMap, selectedProjectId]);
+
+  const currentProject = useMemo(() => {
+    return MOCK_PROJECTS.find((p) => p.id === selectedProjectId) || MOCK_PROJECTS[0];
+  }, [selectedProjectId]);
+
+  // Selected Plot for Inspection
+  const [selectedPlot, setSelectedPlot] = useState<LandParcel | null>(() => {
+    return MOCK_PLOTS.find((p) => p.projectId === "PRJ-001") || MOCK_PLOTS[0];
+  });
+
+  // Basemap API Key state (reads from localStorage or env)
+  const [apiKey, setApiKey] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return (
+        localStorage.getItem("bhoomi_basemap_key") ||
+        process.env.NEXT_PUBLIC_CARTO_API_KEY ||
+        process.env.NEXT_PUBLIC_BASEMAP_API_KEY ||
+        process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+        process.env.NEXT_PUBLIC_MAPTILER_KEY ||
+        ""
+      );
+    }
+    return (
+      process.env.NEXT_PUBLIC_CARTO_API_KEY ||
+      process.env.NEXT_PUBLIC_BASEMAP_API_KEY ||
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+      process.env.NEXT_PUBLIC_MAPTILER_KEY ||
+      ""
+    );
+  });
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [inputKey, setInputKey] = useState(apiKey);
+
   // Base Map Layer
-  const [selectedBaseMap, setSelectedBaseMap] = useState<"cartoLight" | "satellite" | "osm">("cartoLight");
+  const [baseMap, setBaseMap] = useState<"cartoLight" | "satellite" | "osm">("cartoLight");
 
-  // Operational Layers
-  const [showProjects, setShowProjects] = useState(true);
-  const [showCadastral, setShowCadastral] = useState(true);
-  const [showCorridors, setShowCorridors] = useState(true);
-  const [showValuationZones, setShowValuationZones] = useState(false);
-  const [showStates, setShowStates] = useState(false);
-
-  // Status Filter for Parcels
+  // Status Filter ("all" | "acquired" | "available" | "disputed" | "reserved")
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  // Selection state
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [selectedParcel, setSelectedParcel] = useState<CadastralParcel | null>(EXTENDED_CADASTRAL_PARCELS[0]);
-  const [selectedCorridor, setSelectedCorridor] = useState<typeof INFRASTRUCTURE_CORRIDORS[0] | null>(null);
+  // Layer Toggles
+  const [showBadges, setShowBadges] = useState(true);
 
-  // Map viewport state
-  const [mapCenter, setMapCenter] = useState<[number, number]>([19.848, 73.997]);
-  const [mapZoom, setMapZoom] = useState(14);
+  // Inspector Panel State
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [copiedULPIN, setCopiedULPIN] = useState(false);
 
-  // Live HUD Telemetry
-  const [cursorPos, setCursorPos] = useState({ lat: 19.848, lng: 73.997 });
-
-  // Measurement Tool State
+  // Measurement Tool
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
 
-  // Search Query
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResultsOpen, setSearchResultsOpen] = useState(false);
+  // Telemetry HUD
+  const [cursorPos, setCursorPos] = useState({ lat: 19.852, lng: 73.998 });
 
-  // Tile sources
-  const baseMapTiles = {
-    cartoLight: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    osm: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  };
-
-  // Color mapping
-  const getParcelColor = (status: string) => {
-    switch (status) {
-      case "possessed":
-        return "#16a34a"; // Vibrant Emerald
-      case "acquired":
-        return "#0284c7"; // Cerulean Light Blue
-      case "notified":
-        return "#f59e0b"; // Amber Gold
-      case "surveyed":
-        return "#9333ea"; // Purple
-      default:
-        return "#64748b";
+  // Save API Key
+  const handleSaveApiKey = (keyToSave: string) => {
+    const trimmed = keyToSave.trim();
+    setApiKey(trimmed);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("bhoomi_basemap_key", trimmed);
     }
+    setShowKeyModal(false);
   };
 
-  const getSectorPinColor = (type: string) => {
-    switch (type) {
-      case "highway":
-        return "#0284c7";
-      case "railway":
-        return "#16a34a";
-      case "irrigation":
-        return "#0891b2";
-      case "industrial":
-        return "#8b5cf6";
-      case "renewable_energy":
-        return "#eab308";
-      default:
-        return "#ec4899";
+  // Dynamic Tile Sources using CARTO API Key
+  const baseMapTiles = useMemo(() => {
+    const key = apiKey.trim();
+    const isMapbox = key.startsWith("pk.");
+    const isMapTiler = key.length >= 20 && key.startsWith("maptiler");
+
+    if (isMapbox) {
+      return {
+        cartoLight: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}@2x?access_token=${key}`,
+        satellite: `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${key}`,
+        osm: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      };
     }
+
+    if (isMapTiler) {
+      return {
+        cartoLight: `https://api.maptiler.com/maps/voyager/{z}/{x}/{y}.png?key=${key}`,
+        satellite: `https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=${key}`,
+        osm: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      };
+    }
+
+    // Default primary: Basemaps by CARTO (CartoDB Voyager) with optional CARTO API Key
+    const cartoVoyagerUrl = key
+      ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${key}`
+      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+
+    return {
+      cartoLight: cartoVoyagerUrl,
+      satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      osm: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    };
+  }, [apiKey]);
+
+  // Center & Zoom by Project
+  const projectCameraConfig: Record<string, { center: [number, number]; zoom: number }> = {
+    "PRJ-001": { center: [19.852, 73.998], zoom: 16 },
+    "PRJ-002": { center: [27.538, 71.915], zoom: 15 },
+    "PRJ-003": { center: [25.312, 83.007], zoom: 15 },
   };
 
-  // Filtered Parcels
-  const filteredParcels = useMemo(() => {
-    return EXTENDED_CADASTRAL_PARCELS.filter((p) => {
-      if (statusFilter === "all") return true;
-      return p.status === statusFilter;
+  const currentCamera = projectCameraConfig[selectedProjectId] || { center: [19.852, 73.998], zoom: 16 };
+
+  // Filtered Plots
+  const visiblePlots = useMemo(() => {
+    return MOCK_PLOTS.filter((plot) => {
+      const matchesProject = plot.projectId === selectedProjectId;
+      const matchesStatus =
+        statusFilter === "all" ? true : plot.plotStatus === statusFilter;
+      return matchesProject && matchesStatus;
     });
-  }, [statusFilter]);
+  }, [selectedProjectId, statusFilter]);
 
-  // Search Results
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
+  // Project plot counts by status
+  const projectPlots = useMemo(() => {
+    return MOCK_PLOTS.filter((p) => p.projectId === selectedProjectId);
+  }, [selectedProjectId]);
 
-    const matchedParcels = EXTENDED_CADASTRAL_PARCELS.filter(
-      (p) =>
-        p.khasraNumber.toLowerCase().includes(q) ||
-        p.ulpin.toLowerCase().includes(q) ||
-        p.village.toLowerCase().includes(q) ||
-        p.ownerName.toLowerCase().includes(q)
-    ).map((p) => ({ type: "parcel" as const, data: p }));
+  const statusCounts = useMemo(() => {
+    const counts = { all: projectPlots.length, acquired: 0, available: 0, disputed: 0, reserved: 0 };
+    projectPlots.forEach((p) => {
+      if (p.plotStatus in counts) {
+        counts[p.plotStatus as keyof typeof counts]++;
+      }
+    });
+    return counts;
+  }, [projectPlots]);
 
-    const matchedProjects = MOCK_PROJECTS.filter(
-      (pr) =>
-        pr.name.toLowerCase().includes(q) ||
-        pr.projectCode.toLowerCase().includes(q) ||
-        pr.district.toLowerCase().includes(q)
-    ).map((pr) => ({ type: "project" as const, data: pr }));
-
-    return [...matchedParcels, ...matchedProjects].slice(0, 6);
-  }, [searchQuery]);
-
-  // Total measured distance in km
-  const totalMeasureDistanceKm = useMemo(() => {
-    if (measurePoints.length < 2) return 0;
-    let dist = 0;
-    for (let i = 1; i < measurePoints.length; i++) {
-      dist += calculateDistanceKm(
-        measurePoints[i - 1][0],
-        measurePoints[i - 1][1],
-        measurePoints[i][0],
-        measurePoints[i][1]
-      );
+  // Handle Project Change with Jurisdiction Guard
+  const handleSelectProject = (projectId: string) => {
+    const access = projectAccessMap[projectId];
+    if (access && !access.allowed) {
+      const proj = MOCK_PROJECTS.find((p) => p.id === projectId);
+      if (proj) {
+        setRequestAccessResource({
+          targetType: "project",
+          targetId: proj.id,
+          targetName: proj.name,
+          targetState: proj.state,
+          targetDistrict: proj.district,
+          seniorAuthorityName: access.seniorName || currentUser?.parentAuthorityName || "Competent Authority",
+          seniorAuthorityRole: access.seniorRole || currentUser?.parentAuthorityTitle || "Senior Administrator",
+        });
+      }
+      return;
     }
-    return dist;
+    setSelectedProjectId(projectId);
+    const firstPlot = MOCK_PLOTS.find((p) => p.projectId === projectId);
+    if (firstPlot) {
+      setSelectedPlot(firstPlot);
+    }
+  };
+
+  // Plot Colors
+  const getPlotStyles = (plot: LandParcel, isSelected: boolean) => {
+    switch (plot.plotStatus) {
+      case "acquired":
+        return {
+          color: isSelected ? "#0F172A" : "#15803D",
+          fillColor: "#16A34A",
+          fillOpacity: isSelected ? 0.72 : 0.45,
+          weight: isSelected ? 3.5 : 2,
+        };
+      case "available":
+        return {
+          color: isSelected ? "#0F172A" : "#0284C7",
+          fillColor: "#38BDF8",
+          fillOpacity: isSelected ? 0.72 : 0.45,
+          weight: isSelected ? 3.5 : 2,
+        };
+      case "disputed":
+        return {
+          color: isSelected ? "#0F172A" : "#D97706",
+          fillColor: "#F59E0B",
+          fillOpacity: isSelected ? 0.72 : 0.45,
+          weight: isSelected ? 3.5 : 2,
+        };
+      case "reserved":
+        return {
+          color: isSelected ? "#0F172A" : "#7C3AED",
+          fillColor: "#A855F7",
+          fillOpacity: isSelected ? 0.72 : 0.45,
+          weight: isSelected ? 3.5 : 2,
+        };
+      default:
+        return {
+          color: "#64748B",
+          fillColor: "#94A3B8",
+          fillOpacity: 0.4,
+          weight: 2,
+        };
+    }
+  };
+
+  // Copy ULPIN
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedULPIN(true);
+    setTimeout(() => setCopiedULPIN(false), 2000);
+  };
+
+  // Calculate measurement distance
+  const measuredDistanceMeters = useMemo(() => {
+    if (measurePoints.length < 2) return 0;
+    let total = 0;
+    for (let i = 0; i < measurePoints.length - 1; i++) {
+      const p1 = L.latLng(measurePoints[i][0], measurePoints[i][1]);
+      const p2 = L.latLng(measurePoints[i + 1][0], measurePoints[i + 1][1]);
+      total += p1.distanceTo(p2);
+    }
+    return Math.round(total);
   }, [measurePoints]);
 
-  // Export GeoJSON
-  const handleExportGeoJSON = () => {
-    const geojsonData = {
-      type: "FeatureCollection",
-      features: filteredParcels.map((p) => ({
-        type: "Feature",
-        properties: {
-          id: p.id,
-          ulpin: p.ulpin,
-          khasra: p.khasraNumber,
-          surveyNumber: p.surveyNumber,
-          village: p.village,
-          owner: p.ownerName,
-          areaHectares: p.areaHectares,
-          status: p.status,
-          marketValue: p.marketValue,
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: [p.polygon.map(([lat, lng]) => [lng, lat])],
-        },
-      })),
-    };
-
-    const blob = new Blob([JSON.stringify(geojsonData, null, 2)], {
-      type: "application/geo+json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `BhoomiDrishti_Cadastral_Export_${Date.now()}.geojson`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <div className="relative h-[calc(100vh-140px)] w-full rounded-3xl overflow-hidden border border-[#E5E0D6] bg-[#FAF8F5] shadow-2xl flex flex-col">
-      
-      {/* ───── 1. Top Unified GIS Toolbar ───── */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        
-        {/* Left Side: Search & Layer Buttons */}
-        <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
-          
-          {/* Spatial Search Bar */}
-          <div className="relative">
-            <div className="flex items-center h-10 w-64 sm:w-80 rounded-xl bg-white/95 border border-[#E5E0D6] px-3 shadow-lg backdrop-blur-md">
-              <Search className="h-4 w-4 text-[#0284C7] shrink-0 mr-2" />
-              <input
-                type="text"
-                placeholder="Search Khasra, ULPIN, Village..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchResultsOpen(true);
-                }}
-                onFocus={() => setSearchResultsOpen(true)}
-                className="w-full bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none"
-              />
-              {searchQuery && (
+    <div className="relative w-full h-[calc(100vh-4rem)] flex flex-col bg-[#FAF8F5] overflow-hidden">
+      {/* TOP CONTROL BAR: Project Selector & Status Chips */}
+      <div className="z-10 bg-white/95 backdrop-blur-md border-b border-[#E5E0D6] px-4 py-3 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 max-w-7xl mx-auto">
+          {/* Project Switcher Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap hidden sm:inline">
+              Project:
+            </span>
+            {MOCK_PROJECTS.map((project) => {
+              const isSelected = project.id === selectedProjectId;
+              const access = projectAccessMap[project.id];
+              const isLocked = access && !access.allowed;
+
+              return (
                 <button
-                  onClick={() => setSearchQuery("")}
-                  className="text-slate-400 hover:text-slate-700"
+                  key={project.id}
+                  onClick={() => handleSelectProject(project.id)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all shrink-0 ${
+                    isSelected
+                      ? "bg-[#15803D] text-white shadow-xs"
+                      : isLocked
+                      ? "bg-[#FEF3C7]/70 text-amber-900 hover:bg-[#FDE68A] border border-amber-300"
+                      : "bg-[#F4EFEA] text-slate-700 hover:bg-[#EBE5DC] border border-[#E5E0D6]"
+                  }`}
+                  title={isLocked ? `Jurisdiction Restricted: Click to request access from ${access?.seniorRole || 'Senior Authority'}` : undefined}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  {isLocked ? (
+                    <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                  ) : (
+                    <>
+                      {project.type === "industrial" && <Factory className="w-3.5 h-3.5" />}
+                      {project.type === "renewable_energy" && <Sun className="w-3.5 h-3.5" />}
+                      {project.type === "irrigation" && <Trees className="w-3.5 h-3.5" />}
+                    </>
+                  )}
+                  <span>{project.name}</span>
+                  {isLocked ? (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-200/80 text-amber-950">
+                      Restricted
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                        isSelected ? "bg-white/25 text-white" : "bg-white text-slate-600"
+                      }`}
+                    >
+                      {project.id === "PRJ-001" ? "12 Plots" : project.id === "PRJ-002" ? "10 Plots" : "8 Plots"}
+                    </span>
+                  )}
                 </button>
-              )}
+              );
+            })}
+          </div>
+
+          {/* Right Action Tools: Base Map + API Key + Measurement */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Base Layer Switcher */}
+            <div className="flex items-center bg-[#F4EFEA] border border-[#E5E0D6] rounded-lg p-0.5 text-xs font-medium">
+              <button
+                onClick={() => setBaseMap("cartoLight")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  baseMap === "cartoLight"
+                    ? "bg-white text-slate-900 font-semibold shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Cadastral Light
+              </button>
+              <button
+                onClick={() => setBaseMap("satellite")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  baseMap === "satellite"
+                    ? "bg-white text-slate-900 font-semibold shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Satellite Imagery
+              </button>
+              <button
+                onClick={() => setBaseMap("osm")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  baseMap === "osm"
+                    ? "bg-white text-slate-900 font-semibold shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                OSM Standard
+              </button>
             </div>
 
-            {/* Search Dropdown Results */}
-            {searchResultsOpen && searchResults.length > 0 && (
-              <div className="absolute top-12 left-0 w-80 rounded-xl bg-white border border-[#E5E0D6] p-2 shadow-2xl space-y-1 z-50">
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Matched GIS Entities
-                </div>
-                {searchResults.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      if (item.type === "parcel") {
-                        setSelectedParcel(item.data as CadastralParcel);
-                        setSelectedProject(null);
-                        setSelectedCorridor(null);
-                        setMapCenter(item.data.coordinates);
-                        setMapZoom(16);
-                      } else {
-                        setSelectedProject(item.data as Project);
-                        setSelectedParcel(null);
-                        setSelectedCorridor(null);
-                        setMapCenter([item.data.centerLat, item.data.centerLng]);
-                        setMapZoom(13);
-                      }
-                      setSearchResultsOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-[#F0FDF4] transition-colors flex items-center justify-between border-b border-slate-100 last:border-none"
-                  >
-                    <div>
-                      <div className="font-bold text-slate-900">
-                        {item.type === "parcel" ? (item.data as CadastralParcel).khasraNumber : (item.data as Project).name}
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        {item.type === "parcel"
-                          ? `ULPIN: ${(item.data as CadastralParcel).ulpin} • ${(item.data as CadastralParcel).village}`
-                          : `${(item.data as Project).district}, ${(item.data as Project).state}`}
-                      </div>
-                    </div>
-                    <Badge variant={item.type === "parcel" ? "success" : "info"} className="text-[10px]">
-                      {item.type}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
+            {/* Basemap API Key Button */}
+            <button
+              onClick={() => {
+                setInputKey(apiKey);
+                setShowKeyModal(true);
+              }}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-all ${
+                apiKey
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                  : "bg-white text-slate-700 border-[#E5E0D6] hover:bg-[#F4EFEA]"
+              }`}
+              title="Configure Basemap API Key (Mapbox / MapTiler / Custom)"
+            >
+              <Key className={`w-3.5 h-3.5 ${apiKey ? "text-[#15803D]" : "text-slate-500"}`} />
+              <span>{apiKey ? "API Key Active" : "Add API Key"}</span>
+              {apiKey && <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />}
+            </button>
+
+            {/* Measurement Tool Button */}
+            <button
+              onClick={() => {
+                setIsMeasuring(!isMeasuring);
+                setMeasurePoints([]);
+              }}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-all ${
+                isMeasuring
+                  ? "bg-[#0284C7] text-white border-[#0284C7] shadow-xs"
+                  : "bg-white text-slate-700 border-[#E5E0D6] hover:bg-[#F4EFEA]"
+              }`}
+              title="Click to measure distance on map"
+            >
+              <Ruler className="w-3.5 h-3.5" />
+              <span>{isMeasuring ? "Measuring..." : "Measure"}</span>
+            </button>
+
+            {/* Badges Toggle */}
+            <button
+              onClick={() => setShowBadges(!showBadges)}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-all ${
+                showBadges
+                  ? "bg-white text-slate-800 border-[#CBD5E1]"
+                  : "bg-[#F4EFEA] text-slate-400 border-[#E5E0D6]"
+              }`}
+              title="Toggle plot centroid numbers"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Labels</span>
+            </button>
+          </div>
+        </div>
+
+        {/* SUB-ROW: Status Filter Chips & Active Count */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#F0EBE1] text-xs max-w-7xl mx-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+            <span className="text-[11px] font-semibold text-slate-500 mr-1">Filter Status:</span>
+            <button
+              onClick={() => setStatusFilter("all")}
+              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                statusFilter === "all"
+                  ? "bg-slate-800 text-white"
+                  : "bg-[#F4EFEA] text-slate-600 hover:bg-[#EBE5DC]"
+              }`}
+            >
+              All ({statusCounts.all})
+            </button>
+            <button
+              onClick={() => setStatusFilter("acquired")}
+              className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                statusFilter === "acquired"
+                  ? "bg-[#15803D] text-white"
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+              Acquired ({statusCounts.acquired})
+            </button>
+            <button
+              onClick={() => setStatusFilter("available")}
+              className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                statusFilter === "available"
+                  ? "bg-[#0284C7] text-white"
+                  : "bg-sky-50 text-sky-800 hover:bg-sky-100"
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#0284C7]"></span>
+              Available / Notified ({statusCounts.available})
+            </button>
+            {statusCounts.disputed > 0 && (
+              <button
+                onClick={() => setStatusFilter("disputed")}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                  statusFilter === "disputed"
+                    ? "bg-[#D97706] text-white"
+                    : "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
+                Disputed ({statusCounts.disputed})
+              </button>
+            )}
+            {statusCounts.reserved > 0 && (
+              <button
+                onClick={() => setStatusFilter("reserved")}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                  statusFilter === "reserved"
+                    ? "bg-[#7C3AED] text-white"
+                    : "bg-purple-50 text-purple-800 hover:bg-purple-100"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#7C3AED]"></span>
+                Reserved ({statusCounts.reserved})
+              </button>
             )}
           </div>
 
-          {/* Base Map Switcher */}
-          <div className="flex items-center rounded-xl bg-white/95 border border-[#E5E0D6] p-1 shadow-lg backdrop-blur-md text-xs">
-            <button
-              onClick={() => setSelectedBaseMap("cartoLight")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                selectedBaseMap === "cartoLight"
-                  ? "bg-[#E0F2FE] text-[#0284C7] shadow-sm font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Cadastral Light
-            </button>
-            <button
-              onClick={() => setSelectedBaseMap("satellite")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                selectedBaseMap === "satellite"
-                  ? "bg-[#DCFCE7] text-[#15803D] shadow-sm font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              ISRO Satellite
-            </button>
-            <button
-              onClick={() => setSelectedBaseMap("osm")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                selectedBaseMap === "osm"
-                  ? "bg-[#E0F2FE] text-[#0284C7] shadow-sm font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              OSM Topo
-            </button>
+          <div className="hidden sm:flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+            <span>Lat: {cursorPos.lat.toFixed(4)}°N</span>
+            <span>•</span>
+            <span>Lng: {cursorPos.lng.toFixed(4)}°E</span>
           </div>
-
-          {/* Measurement Tool Toggle */}
-          <button
-            onClick={() => {
-              setIsMeasuring(!isMeasuring);
-              if (isMeasuring) setMeasurePoints([]);
-            }}
-            className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer ${
-              isMeasuring
-                ? "bg-[#0284C7] border-[#0284C7] text-white shadow-[#0284C7]/20"
-                : "bg-white/95 border-[#E5E0D6] text-slate-700 hover:bg-[#F2EFE8]"
-            }`}
-          >
-            <Ruler className="h-4 w-4 text-emerald-500" />
-            <span>{isMeasuring ? "Measuring..." : "Measure Tool"}</span>
-          </button>
         </div>
+      </div>
 
-        {/* Right Side: Quick Focus & Export */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Quick Focus Dropdown */}
-          <div className="flex items-center gap-1.5 bg-white/95 border border-[#E5E0D6] p-1 rounded-xl shadow-lg text-xs">
-            <span className="text-[11px] font-semibold text-slate-400 px-2">Jump to:</span>
-            {QUICK_FOCUS_PRESETS.map((preset) => (
+      {/* API KEY CONFIGURATION MODAL */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl border border-[#E5E0D6] shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-50 text-[#15803D]">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">CARTO & Basemap API Key</h3>
+                  <p className="text-[11px] text-slate-500">Basemaps by CARTO (CartoDB Voyager)</p>
+                </div>
+              </div>
               <button
-                key={preset.label}
-                onClick={() => {
-                  setMapCenter(preset.center);
-                  setMapZoom(preset.zoom);
-                }}
-                className="px-2.5 py-1 rounded-lg hover:bg-[#F0FDF4] hover:text-[#15803D] text-slate-700 font-medium transition-colors text-[11px]"
+                onClick={() => setShowKeyModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
               >
-                {preset.label}
+                <X className="w-4 h-4" />
               </button>
-            ))}
-          </div>
+            </div>
 
-          {/* Export GeoJSON Button */}
-          <button
-            onClick={handleExportGeoJSON}
-            title="Download GeoJSON for QGIS / ArcGIS"
-            className="h-10 px-3 rounded-xl bg-white/95 border border-[#E5E0D6] text-slate-700 hover:text-[#15803D] hover:bg-[#DCFCE7]/40 shadow-lg text-xs font-semibold flex items-center gap-1.5 transition-all"
-          >
-            <Download className="h-4 w-4 text-[#15803D]" />
-            <span className="hidden sm:inline">Export GeoJSON</span>
-          </button>
-        </div>
-      </div>
+            <div className="space-y-3 text-xs">
+              <p className="text-slate-600 leading-relaxed">
+                Paste your <strong>CARTO API key</strong> below to authenticate all <strong>CartoDB Voyager</strong> Cadastral basemap tile requests.
+              </p>
 
-      {/* ───── 2. Floating Layer Filter Bar (Left Side) ───── */}
-      <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2 w-48 rounded-2xl bg-white/95 border border-[#E5E0D6] p-3 shadow-xl backdrop-blur-md text-xs">
-        <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-          <span className="flex items-center gap-1">
-            <Layers className="h-3.5 w-3.5 text-[#0284C7]" />
-            <span>Map Layers</span>
-          </span>
-        </div>
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-800 block">CARTO API Key / Access Token</label>
+                <input
+                  type="text"
+                  value={inputKey}
+                  onChange={(e) => setInputKey(e.target.value)}
+                  placeholder="Paste your CARTO API key here"
+                  className="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg text-xs font-mono focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:border-transparent"
+                />
+              </div>
 
-        <label className="flex items-center justify-between cursor-pointer py-0.5 text-slate-700 hover:text-slate-950">
-          <span className="font-medium">Cadastral Parcels</span>
-          <input
-            type="checkbox"
-            checked={showCadastral}
-            onChange={(e) => setShowCadastral(e.target.checked)}
-            className="accent-[#15803D] h-4 w-4"
-          />
-        </label>
+              <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg p-3 text-[11px] space-y-1 text-slate-600">
+                <div className="font-semibold text-slate-800">Active Basemap Engine:</div>
+                <div>• <strong>Basemaps by CARTO</strong>: CartoDB Voyager tiles with your API key authentication</div>
+                <div>• <strong>Satellite Imagery</strong>: High-resolution Esri World Imagery</div>
+                <div>• <strong>Mapbox / MapTiler</strong>: Auto-detected if token starts with <code>pk.</code> or <code>maptiler</code></div>
+              </div>
+            </div>
 
-        <label className="flex items-center justify-between cursor-pointer py-0.5 text-slate-700 hover:text-slate-950">
-          <span className="font-medium">Corridor Alignment</span>
-          <input
-            type="checkbox"
-            checked={showCorridors}
-            onChange={(e) => setShowCorridors(e.target.checked)}
-            className="accent-[#0284C7] h-4 w-4"
-          />
-        </label>
-
-        <label className="flex items-center justify-between cursor-pointer py-0.5 text-slate-700 hover:text-slate-950">
-          <span className="font-medium">Project Markers</span>
-          <input
-            type="checkbox"
-            checked={showProjects}
-            onChange={(e) => setShowProjects(e.target.checked)}
-            className="accent-[#0284C7] h-4 w-4"
-          />
-        </label>
-
-        <label className="flex items-center justify-between cursor-pointer py-0.5 text-slate-700 hover:text-slate-950">
-          <span className="font-medium">Valuation Heatmap</span>
-          <input
-            type="checkbox"
-            checked={showValuationZones}
-            onChange={(e) => setShowValuationZones(e.target.checked)}
-            className="accent-amber-500 h-4 w-4"
-          />
-        </label>
-
-        {/* Status Filter for Parcels */}
-        <div className="pt-2 border-t border-slate-100 space-y-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Acquisition Status:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg text-xs p-1.5 text-slate-800 font-semibold focus:outline-none"
-          >
-            <option value="all">All Statuses ({EXTENDED_CADASTRAL_PARCELS.length})</option>
-            <option value="possessed">Possessed (Green)</option>
-            <option value="acquired">Acquired (Blue)</option>
-            <option value="notified">Notified (Amber)</option>
-            <option value="surveyed">Surveyed (Purple)</option>
-          </select>
-        </div>
-      </div>
-
-      {/* ───── 3. Measurement HUD Banner (When Active) ───── */}
-      {isMeasuring && (
-        <div className="absolute top-20 right-4 z-[1000] rounded-2xl bg-white/95 border border-[#0284C7] p-3 shadow-2xl backdrop-blur-md text-xs space-y-2 w-72">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-[#0284C7] flex items-center gap-1.5">
-              <Ruler className="h-4 w-4" />
-              <span>Geodesic Distance Ruler</span>
-            </span>
-            <button
-              onClick={() => setMeasurePoints([])}
-              className="text-[10px] text-slate-400 hover:text-red-500 font-semibold underline"
-            >
-              Reset
-            </button>
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Click multiple points on the map to calculate linear corridor RoW distance.
-          </p>
-          <div className="p-2 rounded-xl bg-[#E0F2FE] border border-[#BAE6FD] flex items-baseline justify-between">
-            <span className="text-xs font-semibold text-slate-700">Total Distance:</span>
-            <span className="text-base font-extrabold text-[#0284C7] font-mono">
-              {totalMeasureDistanceKm > 1
-                ? `${totalMeasureDistanceKm.toFixed(3)} km`
-                : `${(totalMeasureDistanceKm * 1000).toFixed(0)} meters`}
-            </span>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              {apiKey && (
+                <button
+                  onClick={() => handleSaveApiKey("")}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors mr-auto"
+                >
+                  Clear Key
+                </button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowKeyModal(false)}
+                className="border-[#E5E0D6] text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleSaveApiKey(inputKey)}
+                className="bg-[#15803D] hover:bg-[#166534] text-white text-xs font-semibold"
+              >
+                Save & Apply
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ───── 4. Leaflet Interactive GIS Canvas ───── */}
-      <div className="flex-1 w-full h-full relative">
+      {/* MAIN MAP AREA + CONNECTED PLOT INSPECTOR */}
+      <div className="relative flex-1 w-full h-full">
+        {/* Leaflet Map Container */}
         <MapContainer
-          center={mapCenter}
-          zoom={mapZoom}
-          scrollWheelZoom={true}
-          className="h-full w-full"
+          key={apiKey || "default-tiles"}
+          center={currentCamera.center}
+          zoom={currentCamera.zoom}
+          className="w-full h-full z-0"
+          zoomControl={false}
         >
-          <MapViewController center={mapCenter} zoom={mapZoom} />
+          <MapCameraController center={currentCamera.center} zoom={currentCamera.zoom} />
           <MapEventTracker
             measuring={isMeasuring}
             onAddPoint={(pt) => setMeasurePoints((prev) => [...prev, pt])}
@@ -806,358 +699,391 @@ export function SpatialMapViewer() {
           />
 
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CARTO'
-            url={baseMapTiles[selectedBaseMap]}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url={baseMapTiles[baseMap]}
           />
 
-          {/* Valuation Heatmap Density Zones */}
-          {showValuationZones &&
-            VALUATION_ZONES.map((zone, idx) => (
-              <Circle
-                key={idx}
-                center={zone.center}
-                radius={zone.radius}
-                pathOptions={{
-                  color: zone.color,
-                  fillColor: zone.color,
-                  fillOpacity: 0.18,
-                  weight: 1.5,
-                  dashArray: "6",
-                }}
-              >
-                <Popup>
-                  <div className="p-1 text-xs">
-                    <span className="font-bold text-slate-900 block">{zone.tier}</span>
-                    <span className="text-slate-600">Circle Rate: {zone.rate}</span>
-                  </div>
-                </Popup>
-              </Circle>
-            ))}
-
-          {/* Infrastructure Corridor Polylines */}
-          {showCorridors &&
-            INFRASTRUCTURE_CORRIDORS.map((corr) => (
-              <React.Fragment key={corr.id}>
-                {/* Glow Outer Buffer Polyline */}
-                <Polyline
-                  positions={corr.path}
-                  pathOptions={{
-                    color: corr.color,
-                    weight: 10,
-                    opacity: 0.25,
-                  }}
+          {/* Measurement Polyline */}
+          {isMeasuring && measurePoints.length > 0 && (
+            <>
+              <Polyline
+                positions={measurePoints}
+                pathOptions={{ color: "#0284C7", weight: 3, dashArray: "6, 6" }}
+              />
+              {measurePoints.map((pt, idx) => (
+                <Circle
+                  key={idx}
+                  center={pt}
+                  radius={2}
+                  pathOptions={{ color: "#0284C7", fillColor: "#ffffff", fillOpacity: 1, weight: 2 }}
                 />
-                {/* Main Core Alignment Polyline */}
-                <Polyline
-                  positions={corr.path}
-                  pathOptions={{
-                    color: corr.color,
-                    weight: 4,
-                    opacity: 0.95,
-                  }}
+              ))}
+            </>
+          )}
+
+          {/* Render All Contiguous Plot Polygons */}
+          {visiblePlots.map((plot) => {
+            const isSelected = selectedPlot?.id === plot.id;
+            const styles = getPlotStyles(plot, isSelected);
+
+            return (
+              <React.Fragment key={plot.id}>
+                <Polygon
+                  positions={plot.polygon}
+                  pathOptions={styles}
                   eventHandlers={{
                     click: () => {
-                      setSelectedCorridor(corr);
-                      setSelectedParcel(null);
-                      setSelectedProject(null);
+                      setSelectedPlot(plot);
+                      setInspectorOpen(true);
                     },
                   }}
                 >
                   <Popup>
-                    <div className="p-1 space-y-1 min-w-[200px] text-xs">
-                      <div className="font-mono text-[10px] text-[#0284C7] font-bold">
-                        {corr.projectCode}
+                    <div className="p-2 space-y-1.5 min-w-[220px] text-xs font-sans">
+                      <div className="flex items-center justify-between border-b pb-1">
+                        <span className="font-bold text-slate-900 text-sm">{plot.plotNumber}</span>
+                        <span
+                          className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            plot.plotStatus === "acquired"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : plot.plotStatus === "available"
+                              ? "bg-sky-100 text-sky-800"
+                              : plot.plotStatus === "disputed"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {plot.plotStatus}
+                        </span>
                       </div>
-                      <h4 className="font-bold text-slate-900 leading-tight">
-                        {corr.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-600">
-                        Right-of-Way (RoW) Buffer: <strong>{corr.rowWidthMeters} meters</strong>
+                      <p className="text-slate-600">
+                        Survey: <strong>{plot.surveyNumber}</strong> | Khasra: <strong>{plot.khasraNumber}</strong>
+                      </p>
+                      <p className="font-mono text-[11px] text-slate-700">
+                        ULPIN: <strong>{plot.ulpin}</strong>
+                      </p>
+                      <p className="text-slate-600">
+                        Owner: <strong>{plot.ownerName}</strong>
+                      </p>
+                      <p className="text-slate-600">
+                        Dimensions: <strong>{plot.dimensions}</strong> ({plot.areaSqMeters.toLocaleString("en-IN")} sq.m)
+                      </p>
+                      <p className="text-[#15803D] font-bold text-xs pt-1 border-t">
+                        Valuation: ₹{(plot.marketValue / 10000000).toFixed(2)} Cr
                       </p>
                     </div>
                   </Popup>
-                </Polyline>
+                </Polygon>
+
+                {/* Centroid Plot Badge Marker */}
+                {showBadges && plot.centroid && (
+                  <Marker
+                    position={plot.centroid}
+                    icon={createPlotBadgeIcon(plot.plotNumber, isSelected, plot.plotStatus)}
+                    eventHandlers={{
+                      click: () => {
+                        setSelectedPlot(plot);
+                        setInspectorOpen(true);
+                      },
+                    }}
+                  />
+                )}
               </React.Fragment>
-            ))}
-
-          {/* Cadastral Land Parcel Boundary Polygons */}
-          {showCadastral &&
-            filteredParcels.map((parcel) => (
-              <Polygon
-                key={parcel.id}
-                positions={parcel.polygon}
-                pathOptions={{
-                  color: getParcelColor(parcel.status),
-                  fillColor: getParcelColor(parcel.status),
-                  fillOpacity: selectedParcel?.id === parcel.id ? 0.65 : 0.4,
-                  weight: selectedParcel?.id === parcel.id ? 3.5 : 2,
-                  dashArray: parcel.status === "notified" ? "4" : undefined,
-                }}
-                eventHandlers={{
-                  click: () => {
-                    setSelectedParcel(parcel);
-                    setSelectedProject(null);
-                    setSelectedCorridor(null);
-                  },
-                }}
-              >
-                <Popup>
-                  <div className="p-1 space-y-1.5 min-w-[200px] text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] text-[#15803D] font-bold">
-                        ULPIN: {parcel.ulpin}
-                      </span>
-                      <span className="text-[10px] capitalize px-1.5 py-0.5 rounded bg-slate-100 font-semibold text-slate-700">
-                        {parcel.status}
-                      </span>
-                    </div>
-                    <h4 className="font-bold text-sm text-slate-900 leading-tight">
-                      Khasra: {parcel.khasraNumber} (Gat {parcel.surveyNumber})
-                    </h4>
-                    <p className="text-[11px] text-slate-600">
-                      Owner: <strong>{parcel.ownerName}</strong>
-                    </p>
-                    <p className="text-[11px] text-slate-600">
-                      Area: <strong>{parcel.areaHectares} ha</strong> ({parcel.landType})
-                    </p>
-                    <p className="text-[11px] font-mono text-[#15803D] font-semibold">
-                      Assessed Valuation: ₹{(parcel.marketValue / 100000).toFixed(2)} Lakh
-                    </p>
-                  </div>
-                </Popup>
-              </Polygon>
-            ))}
-
-          {/* Project Hub Markers */}
-          {showProjects &&
-            MOCK_PROJECTS.map((proj) => (
-              <Marker
-                key={proj.id}
-                position={[proj.centerLat, proj.centerLng]}
-                icon={createCustomPin(getSectorPinColor(proj.type))}
-                eventHandlers={{
-                  click: () => {
-                    setSelectedProject(proj);
-                    setSelectedParcel(null);
-                    setSelectedCorridor(null);
-                  },
-                }}
-              >
-                <Popup>
-                  <div className="p-1 space-y-1 min-w-[210px] text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-[#0284C7] font-bold">
-                        {proj.projectCode}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 font-semibold text-slate-700">
-                        {proj.state}
-                      </span>
-                    </div>
-                    <h4 className="font-bold text-sm text-slate-900 leading-tight">
-                      {proj.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-600">
-                      Acquired: <strong>{formatArea(proj.areaAcquired)}</strong> / {formatArea(proj.totalAreaRequired)} ha
-                    </p>
-                    <p className="text-[11px] text-[#15803D] font-mono font-semibold">
-                      Disbursed: ₹{proj.compensationDisbursed} L
-                    </p>
-                    <Link
-                      href={`/projects/${proj.id}`}
-                      className="inline-block mt-1 text-[11px] font-bold text-[#0284C7] hover:underline"
-                    >
-                      Open Project Dossier →
-                    </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-
-          {/* Active Measurement Polyline and Points */}
-          {measurePoints.length > 0 && (
-            <>
-              <Polyline
-                positions={measurePoints}
-                pathOptions={{
-                  color: "#0284c7",
-                  weight: 3,
-                  dashArray: "6",
-                }}
-              />
-              {measurePoints.map((pt, idx) => (
-                <Marker key={idx} position={pt} icon={measureIcon} />
-              ))}
-            </>
-          )}
+            );
+          })}
         </MapContainer>
-      </div>
 
-      {/* ───── 5. Bottom Live Telemetry Coordinates HUD Bar ───── */}
-      <div className="absolute bottom-4 left-4 z-[1000] flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/95 border border-[#E5E0D6] shadow-xl backdrop-blur-md text-[11px] font-mono text-slate-700">
-        <div className="flex items-center gap-1.5 text-[#15803D] font-semibold">
-          <span className="h-2 w-2 rounded-full bg-[#16A34A] animate-ping" />
-          <span>NavIC • Bhuvan GIS Online</span>
+        {/* MEASUREMENT HUD OVERLAY */}
+        {isMeasuring && (
+          <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md border border-[#0284C7] shadow-lg rounded-xl p-3 max-w-xs text-xs">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                <Ruler className="w-4 h-4 text-[#0284C7]" />
+                Linear Measurement Tool
+              </span>
+              <button
+                onClick={() => {
+                  setIsMeasuring(false);
+                  setMeasurePoints([]);
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className="text-slate-600 mt-1.5 leading-relaxed">
+              Click anywhere on the map to add measurement points along plot boundaries.
+            </p>
+            <div className="mt-2 bg-sky-50 rounded-lg p-2 border border-sky-100 flex items-center justify-between font-mono">
+              <span className="text-sky-800 font-medium">Total Distance:</span>
+              <span className="text-sky-950 font-bold text-sm">{measuredDistanceMeters} meters</span>
+            </div>
+            {measurePoints.length > 0 && (
+              <button
+                onClick={() => setMeasurePoints([])}
+                className="mt-2 w-full text-center text-[11px] text-slate-500 hover:text-slate-800 underline"
+              >
+                Reset measurement points
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* MAP LEGEND (Bottom-Left) */}
+        <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md border border-[#E5E0D6] shadow-md rounded-xl p-3 text-xs hidden md:block">
+          <div className="font-bold text-slate-800 text-[11px] uppercase tracking-wider mb-2">
+            Cadastral Plot Legend
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-3.5 h-3.5 rounded bg-emerald-500 border border-emerald-700"></div>
+              <span className="text-slate-700">Acquired / Possessed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3.5 h-3.5 rounded bg-sky-400 border border-sky-600"></div>
+              <span className="text-slate-700">Available / Notified (Sec 11)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3.5 h-3.5 rounded bg-amber-400 border border-amber-600"></div>
+              <span className="text-slate-700">Disputed / In Litigation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3.5 h-3.5 rounded bg-purple-400 border border-purple-600"></div>
+              <span className="text-slate-700">Reserved / Public Utility</span>
+            </div>
+          </div>
         </div>
-        <span className="text-slate-300">|</span>
-        <span>LAT: {cursorPos.lat.toFixed(5)}° N</span>
-        <span>LNG: {cursorPos.lng.toFixed(5)}° E</span>
-        <span className="text-slate-300">|</span>
-        <span className="text-[#0284C7] font-semibold">EPSG:4326 (WGS 84)</span>
-      </div>
 
-      {/* ───── 6. Rich Cadastral & Corridor Inspection Drawer (Bottom Right) ───── */}
-      <div className="absolute bottom-4 right-4 z-[1000] w-80 sm:w-[400px] rounded-2xl border border-[#E5E0D6] bg-white/95 p-5 backdrop-blur-xl shadow-2xl space-y-4 max-h-[460px] overflow-y-auto">
-        
-        {selectedParcel ? (
-          <div>
-            {/* Header */}
-            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+        {/* CONNECTED PLOT INSPECTOR (Floating Right Panel) */}
+        {inspectorOpen && selectedPlot && (
+          <div className="absolute top-4 right-4 bottom-4 z-20 w-88 md:w-96 bg-white/95 backdrop-blur-md border border-[#E5E0D6] shadow-xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-right-4 duration-300">
+            {/* Inspector Header */}
+            <div className="p-4 border-b border-[#E5E0D6] bg-gradient-to-b from-[#FAF8F5] to-white flex items-start justify-between shrink-0">
               <div>
-                <span className="text-[10px] font-mono text-[#15803D] font-bold uppercase tracking-wider flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>Cadastral Parcel Identified</span>
-                </span>
-                <h3 className="text-base font-bold text-slate-900 mt-0.5">
-                  Khasra #{selectedParcel.khasraNumber} (Gat {selectedParcel.surveyNumber})
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-mono font-bold text-slate-500">{selectedPlot.id}</span>
+                  <span
+                    className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                      selectedPlot.plotStatus === "acquired"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : selectedPlot.plotStatus === "available"
+                        ? "bg-sky-100 text-sky-800"
+                        : selectedPlot.plotStatus === "disputed"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-purple-100 text-purple-800"
+                    }`}
+                  >
+                    {selectedPlot.plotStatus}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                  {selectedPlot.plotNumber}
                 </h3>
-                <span className="text-xs text-slate-500 font-medium">
-                  {selectedParcel.village}, {selectedParcel.tehsil}, {selectedParcel.district}
-                </span>
+                <p className="text-xs text-slate-600 mt-0.5">{currentProject.name}</p>
               </div>
-              <Badge
-                variant={selectedParcel.status === "possessed" ? "success" : "default"}
-                className="text-xs uppercase"
+              <button
+                onClick={() => setInspectorOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-[#F4EFEA] transition-colors"
+                title="Close Inspector"
               >
-                {selectedParcel.status}
-              </Badge>
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Entity Details Grid */}
-            <div className="space-y-2 py-3 text-xs text-slate-700">
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">14-Digit ULPIN (Bhu-Aadhaar):</span>
-                <span className="font-mono font-bold text-[#0284C7]">
-                  {selectedParcel.ulpin}
-                </span>
+            {/* Scrollable Inspector Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              {/* ULPIN Card */}
+              <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold">
+                  <span>ULPIN (Bhu-Aadhaar)</span>
+                  <button
+                    onClick={() => copyToClipboard(selectedPlot.ulpin)}
+                    className="flex items-center gap-1 text-[#0284C7] hover:underline font-normal"
+                  >
+                    {copiedULPIN ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="text-emerald-600">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="font-mono text-sm font-bold text-slate-900 tracking-wider">
+                  {selectedPlot.ulpin}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Survey No: <strong className="text-slate-800">{selectedPlot.surveyNumber}</strong> | Khasra:{" "}
+                  <strong className="text-slate-800">{selectedPlot.khasraNumber}</strong>
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Owner of Record:</span>
-                <span className="font-bold text-slate-900">
-                  {selectedParcel.ownerName}
-                </span>
+
+              {/* Physical Dimensions & Geometry */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <Ruler className="w-3.5 h-3.5 text-[#0284C7]" />
+                  Parcel Dimensions & Area
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg p-2.5">
+                    <span className="text-[10px] text-slate-500 block">Boundary Dimensions</span>
+                    <span className="font-semibold text-slate-900 text-xs font-mono">
+                      {selectedPlot.dimensions}
+                    </span>
+                  </div>
+                  <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg p-2.5">
+                    <span className="text-[10px] text-slate-500 block">Square Meters</span>
+                    <span className="font-semibold text-slate-900 text-xs font-mono">
+                      {selectedPlot.areaSqMeters.toLocaleString("en-IN")} sq.m
+                    </span>
+                  </div>
+                  <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg p-2.5">
+                    <span className="text-[10px] text-slate-500 block">Metric Hectares</span>
+                    <span className="font-semibold text-slate-900 text-xs font-mono">
+                      {selectedPlot.areaHectares} ha
+                    </span>
+                  </div>
+                  <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-lg p-2.5">
+                    <span className="text-[10px] text-slate-500 block">Imperial Acres</span>
+                    <span className="font-semibold text-slate-900 text-xs font-mono">
+                      {(selectedPlot.areaHectares * 2.471).toFixed(2)} acres
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Classification:</span>
-                <span className="font-medium text-slate-800">
-                  {selectedParcel.khasraClassification}
-                </span>
+
+              {/* Ownership & Classification */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <Landmark className="w-3.5 h-3.5 text-[#15803D]" />
+                  Ownership & Land Category
+                </h4>
+                <div className="bg-[#FAF8F5] border border-[#E5E0D6] rounded-xl p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Registered Owner:</span>
+                    <span className="font-semibold text-slate-900 text-right">{selectedPlot.ownerName}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Ownership Type:</span>
+                    <span className="font-medium text-slate-800 capitalize">{selectedPlot.ownershipType}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Land Use / Class:</span>
+                    <span className="font-medium text-slate-800">{selectedPlot.khasraClassification}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Jurisdiction:</span>
+                    <span className="font-medium text-slate-800">
+                      {selectedPlot.village}, {selectedPlot.tehsil} ({selectedPlot.district})
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Parcel Area:</span>
-                <span className="font-bold text-slate-900">
-                  {selectedParcel.areaHectares} Hectares ({selectedParcel.landType})
-                </span>
+
+              {/* Financial Valuation & Solatium */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5 text-[#D97706]" />
+                  RFCTLARR Act 2013 Compensation
+                </h4>
+                <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-2 text-emerald-950">
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-800">Assessed Market Value:</span>
+                    <span className="font-semibold font-mono">
+                      ₹{(selectedPlot.marketValue / 10000000).toFixed(2)} Cr
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-800">100% Solatium (Sec 30):</span>
+                    <span className="font-semibold font-mono">
+                      ₹{((selectedPlot.solatiumAmount || selectedPlot.marketValue) / 10000000).toFixed(2)} Cr
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-emerald-200 text-xs font-bold">
+                    <span>Total Compensation Award:</span>
+                    <span className="font-mono text-emerald-900">
+                      ₹{((selectedPlot.marketValue * 2) / 10000000).toFixed(2)} Cr
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-emerald-700 italic">
+                    Determined at ₹{(selectedPlot.pricePerSqM || 3800).toLocaleString("en-IN")}/sq.m with rural multiplication factor 2.0x.
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Base Circle Rate:</span>
-                <span className="font-mono font-semibold text-slate-900">
-                  ₹{(selectedParcel.marketRatePerHa / 100000).toFixed(1)} L/ha
-                </span>
-              </div>
-              <div className="flex justify-between py-1 bg-[#F0FDF4] p-2 rounded-xl">
-                <span className="text-[#15803D] font-bold">Sec 26-30 Assessed Award:</span>
-                <span className="font-mono font-extrabold text-[#15803D]">
-                  ₹{(selectedParcel.marketValue / 100000).toFixed(2)} Lakh
-                </span>
-              </div>
+
+              {/* Disputed Note if Disputed */}
+              {selectedPlot.plotStatus === "disputed" && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1.5 text-amber-950">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Litigation Notice on Title</span>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Title dispute under RFCTLARR Authority Section 64. Disbursement withheld pending amicable division between legal heirs.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Quick Actions */}
-            <div className="pt-2 flex gap-2">
+            {/* Inspector Footer Actions */}
+            <div className="p-3 border-t border-[#E5E0D6] bg-[#FAF8F5] flex items-center gap-2 shrink-0">
               <Link
-                href={`/compensation?khasra=${selectedParcel.khasraNumber}`}
-                className="flex-1"
+                href={`/projects/${selectedPlot.projectId}`}
+                className="flex-1 text-center py-2 px-3 rounded-lg bg-[#15803D] hover:bg-[#166534] text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
               >
-                <Button variant="default" size="sm" className="w-full bg-[#15803D] hover:bg-[#16A34A] text-white text-xs font-semibold">
-                  Calculate Sec 26-30 Award →
-                </Button>
+                <span>View Project File</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
-              <Link href={`/projects/${selectedParcel.projectId}`}>
-                <Button variant="outline" size="sm" className="text-xs border-[#E5E0D6] hover:bg-slate-50">
-                  Dossier
-                </Button>
-              </Link>
+              <button
+                onClick={() => {
+                  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedPlot, null, 2));
+                  const downloadAnchor = document.createElement("a");
+                  downloadAnchor.setAttribute("href", dataStr);
+                  downloadAnchor.setAttribute("download", `cadastral_${selectedPlot.id}.json`);
+                  document.body.appendChild(downloadAnchor);
+                  downloadAnchor.click();
+                  downloadAnchor.remove();
+                }}
+                className="py-2 px-3 rounded-lg bg-white border border-[#E5E0D6] hover:bg-[#F4EFEA] text-slate-700 font-semibold text-xs transition-colors flex items-center gap-1"
+                title="Download Parcel JSON"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>JSON</span>
+              </button>
             </div>
           </div>
-        ) : selectedCorridor ? (
-          <div>
-            <div className="border-b border-slate-100 pb-3">
-              <span className="text-[10px] font-mono text-[#0284C7] font-bold uppercase tracking-wider">
-                Linear Infrastructure Alignment
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-0.5">
-                {selectedCorridor.name}
-              </h3>
-              <span className="text-xs font-mono text-slate-500">
-                {selectedCorridor.projectCode}
-              </span>
-            </div>
-            <div className="space-y-2 py-3 text-xs text-slate-700">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Right-of-Way Buffer:</span>
-                <span className="font-bold text-slate-900">{selectedCorridor.rowWidthMeters} meters</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Geodesic Points:</span>
-                <span className="font-mono">{selectedCorridor.path.length} survey waypoints</span>
-              </div>
-            </div>
-          </div>
-        ) : selectedProject ? (
-          <div>
-            <div className="border-b border-slate-100 pb-3">
-              <span className="text-[10px] font-mono text-[#0284C7] font-bold uppercase tracking-wider">
-                {selectedProject.projectCode}
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-0.5">
-                {selectedProject.name}
-              </h3>
-              <span className="text-xs text-slate-500">
-                {selectedProject.district}, {selectedProject.state}
-              </span>
-            </div>
-            <div className="space-y-2 py-3 text-xs text-slate-700">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Implementing Agency:</span>
-                <span className="font-bold text-slate-900">{selectedProject.lrbName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Land Acquired:</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatArea(selectedProject.areaAcquired)} / {formatArea(selectedProject.totalAreaRequired)} ha
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Disbursed (PFMS):</span>
-                <span className="font-mono font-bold text-[#15803D]">
-                  ₹{selectedProject.compensationDisbursed} Lakhs
-                </span>
-              </div>
-            </div>
-            <Link href={`/projects/${selectedProject.id}`} className="block pt-1">
-              <Button variant="default" size="sm" className="w-full bg-[#0284C7] hover:bg-[#0369a1] text-white text-xs font-semibold">
-                Open Statutory Project Dossier →
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="text-center py-6 text-xs text-slate-500 space-y-2">
-            <Compass className="h-6 w-6 mx-auto text-[#0284C7] animate-spin" />
-            <p className="font-medium text-slate-700">Select any parcel, corridor, or marker on the map to inspect geospatial attributes.</p>
-          </div>
+        )}
+
+        {/* Re-open Inspector Floating Button (if closed) */}
+        {!inspectorOpen && selectedPlot && (
+          <button
+            onClick={() => setInspectorOpen(true)}
+            className="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-md border border-[#E5E0D6] shadow-lg rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-800 hover:bg-[#F4EFEA] flex items-center gap-2 transition-all"
+          >
+            <Info className="w-4 h-4 text-[#15803D]" />
+            <span>Inspect {selectedPlot.plotNumber}</span>
+          </button>
         )}
       </div>
 
+      {/* Cross-Jurisdiction Request Access Modal */}
+      {requestAccessResource && (
+        <RequestAccessModal
+          isOpen={!!requestAccessResource}
+          onClose={() => setRequestAccessResource(null)}
+          targetType={requestAccessResource.targetType}
+          targetId={requestAccessResource.targetId}
+          targetName={requestAccessResource.targetName}
+          targetState={requestAccessResource.targetState}
+          targetDistrict={requestAccessResource.targetDistrict}
+          seniorAuthorityName={requestAccessResource.seniorAuthorityName}
+          seniorAuthorityRole={requestAccessResource.seniorAuthorityRole}
+        />
+      )}
     </div>
   );
 }

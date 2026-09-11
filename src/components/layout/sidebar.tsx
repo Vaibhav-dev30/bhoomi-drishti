@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
+  ShieldCheck,
   Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,14 +35,14 @@ const NAVIGATION_ITEMS = [
     nameHi: "जीआईएस स्थानिक मानचित्र",
     href: "/map",
     icon: MapPin,
-    badge: "Live OGC",
+    badge: "30 Plots",
   },
   {
     name: "Projects Management",
     nameHi: "परियोजना प्रबंधन",
     href: "/projects",
     icon: FolderKanban,
-    badge: "12",
+    badge: "3 Active",
   },
   {
     name: "Valuation & Compensation",
@@ -62,7 +63,7 @@ const NAVIGATION_ITEMS = [
     nameHi: "वैधानिक अधिसूचनाएं",
     href: "/notifications",
     icon: BellRing,
-    badge: "8 Active",
+    badge: "6 Notices",
   },
   {
     name: "Affected Families",
@@ -77,6 +78,20 @@ const NAVIGATION_ITEMS = [
     href: "/reports",
     icon: FileBarChart,
     badge: "CAG",
+  },
+  {
+    name: "Access Requests",
+    nameHi: "पहुंच अनुरोध",
+    href: "/access-requests",
+    icon: ShieldCheck,
+    badge: "Sanctions",
+  },
+  {
+    name: "Audit Trail",
+    nameHi: "ऑडिट ट्रेल",
+    href: "/audit-trail",
+    icon: ShieldAlert,
+    badge: "Sec 101",
   },
   {
     name: "Citizen Public Portal",
