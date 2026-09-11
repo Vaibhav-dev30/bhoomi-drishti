@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -13,23 +13,28 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser } = useApp();
+  const [mounted, setMounted] = useState(false);
 
   const isPublicPage = PUBLIC_ROUTES.includes(pathname);
   const isMapPage = pathname === "/map";
 
   useEffect(() => {
-    if (!isPublicPage && currentUser === null) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isPublicPage && currentUser === null) {
       router.push("/login");
     }
-  }, [isPublicPage, currentUser, router]);
+  }, [mounted, isPublicPage, currentUser, router]);
 
   if (isPublicPage) {
     return <>{children}</>;
   }
 
-  if (!currentUser) {
+  if (!mounted || !currentUser) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#FAF8F5]">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#FAF8F5]" suppressHydrationWarning>
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-[#15803D] border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-semibold text-slate-500">Checking authorization...</span>

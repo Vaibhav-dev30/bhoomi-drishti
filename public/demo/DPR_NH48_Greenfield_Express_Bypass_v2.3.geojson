@@ -1,0 +1,414 @@
+{
+  "type": "FeatureCollection",
+  "name": "NH48_Greenfield_Express_Bypass_Alignment_v2.3",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::4326"
+    }
+  },
+  "metadata": {
+    "projectId": "DL-INFRA-001",
+    "projectName": "NH-48 Greenfield Express Bypass",
+    "preparedBy": "National Highways Authority of India — Project Implementation Unit",
+    "dprVersion": "2.3",
+    "dateOfSurvey": "2026-03-15",
+    "surveyAgency": "Survey of India — Northern Region Directorate",
+    "corridorWidth_m": 60,
+    "rightOfWay_m": 60,
+    "totalLength_km": 12.4,
+    "totalAffectedArea_ha": 234.5,
+    "coordinateSystem": "WGS 84 / EPSG:4326",
+    "sourceData": "DGPS Survey + Drone Orthomosaic (GSD 5cm)",
+    "rfctlarrSection": "Section 4 — Social Impact Assessment",
+    "stateName": "Delhi NCT",
+    "districtName": "North Delhi",
+    "tehsil": "Alipur",
+    "revenueVillages": [
+      "Alipur",
+      "Narela",
+      "Hamidpur",
+      "Bakhtawarpur"
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "alignment_centerline",
+        "name": "NH-48 Bypass Centerline",
+        "chainage_start_km": 0.0,
+        "chainage_end_km": 12.4,
+        "roadClass": "National Highway — 6 Lane Expressway",
+        "surfaceType": "Rigid Pavement (PQC)",
+        "designSpeed_kmph": 120,
+        "status": "Proposed"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.1320,
+            28.7950
+          ],
+          [
+            77.1345,
+            28.7920
+          ],
+          [
+            77.1380,
+            28.7885
+          ],
+          [
+            77.1410,
+            28.7850
+          ],
+          [
+            77.1445,
+            28.7810
+          ],
+          [
+            77.1470,
+            28.7780
+          ],
+          [
+            77.1500,
+            28.7740
+          ],
+          [
+            77.1530,
+            28.7700
+          ],
+          [
+            77.1555,
+            28.7665
+          ],
+          [
+            77.1580,
+            28.7630
+          ],
+          [
+            77.1610,
+            28.7590
+          ],
+          [
+            77.1640,
+            28.7555
+          ],
+          [
+            77.1670,
+            28.7520
+          ],
+          [
+            77.1700,
+            28.7480
+          ],
+          [
+            77.1725,
+            28.7450
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "corridor_boundary",
+        "name": "60m Right-of-Way Corridor",
+        "corridorWidth_m": 60,
+        "totalArea_ha": 234.5,
+        "bufferMethod": "Euclidean offset from centerline"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1317,
+              28.7953
+            ],
+            [
+              77.1342,
+              28.7923
+            ],
+            [
+              77.1377,
+              28.7888
+            ],
+            [
+              77.1407,
+              28.7853
+            ],
+            [
+              77.1442,
+              28.7813
+            ],
+            [
+              77.1467,
+              28.7783
+            ],
+            [
+              77.1497,
+              28.7743
+            ],
+            [
+              77.1527,
+              28.7703
+            ],
+            [
+              77.1552,
+              28.7668
+            ],
+            [
+              77.1577,
+              28.7633
+            ],
+            [
+              77.1607,
+              28.7593
+            ],
+            [
+              77.1637,
+              28.7558
+            ],
+            [
+              77.1667,
+              28.7523
+            ],
+            [
+              77.1697,
+              28.7483
+            ],
+            [
+              77.1728,
+              28.7453
+            ],
+            [
+              77.1722,
+              28.7447
+            ],
+            [
+              77.1703,
+              28.7477
+            ],
+            [
+              77.1673,
+              28.7517
+            ],
+            [
+              77.1643,
+              28.7552
+            ],
+            [
+              77.1613,
+              28.7587
+            ],
+            [
+              77.1583,
+              28.7627
+            ],
+            [
+              77.1558,
+              28.7662
+            ],
+            [
+              77.1533,
+              28.7697
+            ],
+            [
+              77.1503,
+              28.7737
+            ],
+            [
+              77.1473,
+              28.7777
+            ],
+            [
+              77.1448,
+              28.7807
+            ],
+            [
+              77.1413,
+              28.7847
+            ],
+            [
+              77.1383,
+              28.7882
+            ],
+            [
+              77.1348,
+              28.7917
+            ],
+            [
+              77.1323,
+              28.7947
+            ],
+            [
+              77.1317,
+              28.7953
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "affected_parcel",
+        "khasraNo": "142/1",
+        "village": "Alipur",
+        "tehsil": "Alipur",
+        "area_ha": 2.8,
+        "landUse": "Agricultural — Rabi/Kharif",
+        "ownerName": "Ramesh Kumar Sharma",
+        "rorStatus": "Verified",
+        "acquisitionStage": "Section 11 Notified"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1380,
+              28.7900
+            ],
+            [
+              77.1400,
+              28.7900
+            ],
+            [
+              77.1400,
+              28.7880
+            ],
+            [
+              77.1380,
+              28.7880
+            ],
+            [
+              77.1380,
+              28.7900
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "affected_parcel",
+        "khasraNo": "87/3",
+        "village": "Narela",
+        "tehsil": "Alipur",
+        "area_ha": 1.5,
+        "landUse": "Residential — Built-up",
+        "ownerName": "Sunita Devi",
+        "rorStatus": "Verified",
+        "acquisitionStage": "Section 19 Declaration"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1450,
+              28.7820
+            ],
+            [
+              77.1470,
+              28.7820
+            ],
+            [
+              77.1470,
+              28.7800
+            ],
+            [
+              77.1450,
+              28.7800
+            ],
+            [
+              77.1450,
+              28.7820
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "affected_parcel",
+        "khasraNo": "203/A",
+        "village": "Hamidpur",
+        "tehsil": "Alipur",
+        "area_ha": 3.2,
+        "landUse": "Agricultural — Horticultural",
+        "ownerName": "Mohammad Irfan",
+        "rorStatus": "Mutation Pending",
+        "acquisitionStage": "Section 4 SIA In Progress"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1520,
+              28.7750
+            ],
+            [
+              77.1550,
+              28.7750
+            ],
+            [
+              77.1550,
+              28.7720
+            ],
+            [
+              77.1520,
+              28.7720
+            ],
+            [
+              77.1520,
+              28.7750
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "structure_inventory",
+        "structureType": "Flyover / Grade Separator",
+        "name": "Alipur–Narela Grade Separator",
+        "chainage_km": 4.2,
+        "span_m": 180,
+        "status": "Design Finalized"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.1410,
+          28.7850
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "featureType": "structure_inventory",
+        "structureType": "Minor Bridge / Culvert",
+        "name": "Yamuna Canal Crossing",
+        "chainage_km": 8.1,
+        "span_m": 45,
+        "status": "Survey Complete"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.1555,
+          28.7665
+        ]
+      }
+    }
+  ]
+}

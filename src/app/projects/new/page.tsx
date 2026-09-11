@@ -10,6 +10,10 @@ import {
   Building,
   MapPin,
   Upload,
+  FileText,
+  FileJson,
+  Trash2,
+  Sparkles,
 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/mock-data";
 import { ProjectType } from "@/types";
@@ -36,10 +40,32 @@ export default function NewProjectProposalPage() {
   const [targetDate, setTargetDate] = useState("");
   const [sajraSheet, setSajraSheet] = useState("Sheet 04 - Alipur, North Delhi (110036)");
   const [corridorWidth, setCorridorWidth] = useState("60m");
+  const [demoFiles, setDemoFiles] = useState<{name: string; size: string; type: string; icon: "pdf" | "geojson"}[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+  };
+
+  const loadDemoFiles = () => {
+    setDemoFiles([
+      {
+        name: "DPR_NH48_Greenfield_Express_Bypass_v2.3_NHAI.pdf",
+        size: "14.2 MB",
+        type: "Detailed Project Report (DPR)",
+        icon: "pdf",
+      },
+      {
+        name: "NH48_Alignment_Corridor_Survey_EPSG4326.geojson",
+        size: "1.8 MB",
+        type: "GeoJSON Alignment Map",
+        icon: "geojson",
+      },
+    ]);
+  };
+
+  const removeFile = (index: number) => {
+    setDemoFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -284,16 +310,74 @@ export default function NewProjectProposalPage() {
             {/* Step 3: Document Uploads & DPR */}
             {step === 3 && (
               <div className="space-y-4">
-                <h3 className="text-sm font-extrabold text-slate-800 border-b border-[#F2EFE8] pb-2 flex items-center gap-2">
-                  <Upload className="h-4 w-4 text-[#0284C7]" />
-                  <span>3. Document Annexures & Digital Affirmation</span>
-                </h3>
+                <div className="flex items-center justify-between border-b border-[#F2EFE8] pb-2">
+                  <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-[#0284C7]" />
+                    <span>3. Document Annexures & Digital Affirmation</span>
+                  </h3>
+                  {demoFiles.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={loadDemoFiles}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#15803D] to-[#166534] text-[11px] font-bold text-white hover:from-[#166534] hover:to-[#14532D] transition-all shadow-sm"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Load Demo Data
+                    </button>
+                  )}
+                </div>
 
                 <div className="space-y-3">
+                  {/* Attached files list */}
+                  {demoFiles.length > 0 && (
+                    <div className="space-y-2">
+                      {demoFiles.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-3 rounded-xl border border-[#BBF7D0] bg-[#F0FDF4] px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300"
+                          style={{ animationDelay: `${idx * 120}ms`, animationFillMode: "both" }}
+                        >
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                            file.icon === "pdf"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-[#E0F2FE] text-[#0284C7]"
+                          }`}>
+                            {file.icon === "pdf" ? (
+                              <FileText className="h-5 w-5" />
+                            ) : (
+                              <FileJson className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-slate-900 truncate">
+                              {file.name}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              {file.type} · {file.size}
+                            </p>
+                          </div>
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                            <CheckCircle2 className="h-3 w-3" /> Uploaded
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(idx)}
+                            className="p-1 rounded-md hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload zone */}
                   <div className="rounded-2xl border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-6 text-center hover:bg-[#E0F2FE]/40 transition-colors">
                     <Upload className="mx-auto h-8 w-8 text-[#0284C7] mb-2" />
                     <p className="text-xs font-bold text-slate-900">
-                      Upload Detailed Project Report (DPR) & Alignment Map
+                      {demoFiles.length > 0
+                        ? "Upload Additional Documents"
+                        : "Upload Detailed Project Report (DPR) & Alignment Map"}
                     </p>
                     <p className="text-[11px] text-slate-500 mt-1">
                       PDF, GeoJSON, or KML up to 50MB (Must contain survey schedule)
