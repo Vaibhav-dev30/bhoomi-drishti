@@ -439,7 +439,7 @@ export function SpatialMapViewer() {
                         isSelected ? "bg-white/25 text-white" : "bg-white text-slate-600"
                       }`}
                     >
-                      {project.id === "PRJ-001" ? "12 Plots" : project.id === "PRJ-002" ? "10 Plots" : "8 Plots"}
+                      {MOCK_PLOTS.filter((p) => p.projectId === project.id).length} Plots
                     </span>
                   )}
                 </button>

@@ -58,7 +58,7 @@ export default function LoginPage() {
   const [signupDistrict, setSignupDistrict] = useState("Nashik");
   const [signupDistrictCode, setSignupDistrictCode] = useState("NSK");
   const [signupProjectId, setSignupProjectId] = useState("PRJ-001");
-  const [signupProjectName, setSignupProjectName] = useState("Sinnar Agro-Industrial Logistics Park");
+  const [signupProjectName, setSignupProjectName] = useState("NH-48 Greenfield Express Bypass Corridor");
 
   // 1-Click quick persona select
   const handleSelectPersona = (id: string) => {
@@ -553,15 +553,11 @@ export default function LoginPage() {
                         value={signupProjectId}
                         onChange={(e) => {
                           setSignupProjectId(e.target.value);
-                          if (e.target.value === "PRJ-001") setSignupProjectName("Sinnar Agro-Industrial Logistics Park");
-                          if (e.target.value === "PRJ-002") setSignupProjectName("Bhadla Clean Energy Solar Enclave");
-                          if (e.target.value === "PRJ-003") setSignupProjectName("Varanasi Riverfront Eco-Buffer & Greenway");
+                          if (e.target.value === "PRJ-001") setSignupProjectName("NH-48 Greenfield Express Bypass Corridor");
                         }}
                         className="w-full px-2.5 py-1.5 bg-white border border-[#CBD5E1] rounded-lg text-xs"
                       >
-                        <option value="PRJ-001">PRJ-001: Sinnar Agro-Industrial Logistics Park</option>
-                        <option value="PRJ-002">PRJ-002: Bhadla Clean Energy Solar Enclave</option>
-                        <option value="PRJ-003">PRJ-003: Varanasi Riverfront Eco-Buffer & Greenway</option>
+                        <option value="PRJ-001">PRJ-001: NH-48 Greenfield Express Bypass Corridor (Musalgaon, Nashik)</option>
                       </select>
                     </div>
                   )}
