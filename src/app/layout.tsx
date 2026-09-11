@@ -3,6 +3,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { AppProvider } from "@/context/app-context";
 import { LayoutShell } from "@/components/layout/layout-shell";
+import { JudgeScenarioBar } from "@/components/demo/judge-scenario-bar";
 
 export const metadata: Metadata = {
   title: "BhoomiDrishti — National Land Acquisition & Management System | भूमि दृष्टि",
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#FAF8F5] text-slate-900 antialiased selection:bg-[#0284C7] selection:text-white">
         <AppProvider>
           <LayoutShell>{children}</LayoutShell>
+          <JudgeScenarioBar />
         </AppProvider>
       </body>
     </html>

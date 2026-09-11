@@ -339,6 +339,10 @@ const DELHI_PARCELS_RAW = [
   { khasra: "DEMO-111", area: 1.49, owner: "Demo Landholder - Shri Vinod Chawla (Demonstration Data)", village: "Alipur", lat: 28.735, lng: 77.159, status: "Pending Verification" as const },
   { khasra: "DEMO-112", area: 2.10, owner: "Demo Landholder - Shri Mahender Pal (Demonstration Data)", village: "Alipur", lat: 28.738, lng: 77.164, status: "Verified" as const, isBuffer: true },
   { khasra: "DEMO-113", area: 2.00, owner: "Demo Landholder - Smt. Saroj Bala (Demonstration Data)", village: "Hamidpur", lat: 28.709, lng: 77.123, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-114", area: 2.40, owner: "Demo Landholder - Shri Kuldeep Tanwar (Demonstration Data)", village: "Narela", lat: 28.735, lng: 77.135, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-115", area: 1.95, owner: "Demo Landholder - Shri Krishan Kumar (Demonstration Data)", village: "Alipur", lat: 28.715, lng: 77.155, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-116", area: 2.15, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Hamidpur", lat: 28.725, lng: 77.120, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-117", area: 1.80, owner: "Demo Landholder - Smt. Vimla Devi (Demonstration Data)", village: "Narela", lat: 28.740, lng: 77.145, status: "Pending Verification" as const, isBuffer: true },
 ];
 
 const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
@@ -544,11 +548,11 @@ export const BHUNAKSHA_PROJECTS: BhuNakshaProject[] = [
       [28.724, 77.146],
       [28.732, 77.158],
     ],
-    totalParcelsInVillageSheet: 14,
+    totalParcelsInVillageSheet: 18,
     totalAffectedParcels: 12,
-    totalVillageAreaHa: 22.5,
+    totalVillageAreaHa: 30.8,
     totalAffectedAreaHa: 18.4,
-    totalUnaffectedAreaHa: 4.1,
+    totalUnaffectedAreaHa: 12.4,
     totalEstimatedCompensationLakhs: 3120.0,
     totalCompensationDisbursedLakhs: 980.0,
     currentWorkflowStageIndex: 1,

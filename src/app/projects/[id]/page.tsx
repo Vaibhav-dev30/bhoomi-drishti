@@ -480,31 +480,81 @@ export default function ProjectDetailPage({
             <CardContent className="pt-4">
               <div className="space-y-2">
                 {[
-                  { title: "Gazette Notification under Section 11(1)", date: "10 Feb 2024", size: "2.4 MB", ref: "GZ/MH/2024/1234" },
-                  { title: "Social Impact Assessment (SIA) Final Report", date: "20 Nov 2023", size: "14.8 MB", ref: "SIA/TISS/2023/88" },
-                  { title: "Expert Group Recommendation under Section 7", date: "15 Jan 2024", size: "1.1 MB", ref: "EG/REV/2024/02" },
-                  { title: "Section 19 Declaration of Acquisition", date: "15 Aug 2024", size: "3.2 MB", ref: "GZ/MH/2024/5678" },
-                  { title: "Collector's Draft Award Schedule (Sec 23)", date: "01 Mar 2025", size: "5.6 MB", ref: "AWD/NSK/2025/11" },
+                  {
+                    title: "Section 11(1) Preliminary Gazette Notification",
+                    date: "10 Feb 2026",
+                    size: "2.4 MB",
+                    ref: "GZ/DL/DEL/2026/0401",
+                    version: "v2.3 (Final Gazette)",
+                    hash: "SHA-256: 7e2f...91a0",
+                    auditTrail: "Digitally certified by Principal Secy Revenue · Stamped at Gov Press",
+                  },
+                  {
+                    title: "Social Impact Assessment (SIA) & SIMP Final Report",
+                    date: "20 Nov 2025",
+                    size: "14.8 MB",
+                    ref: "SIA/TISS/2025/88",
+                    version: "v2.0 (Approved)",
+                    hash: "SHA-256: 4b1c...89d4",
+                    auditTrail: "Recommended by Expert Group under Section 7 · SIA Unit Delhi",
+                  },
+                  {
+                    title: "Section 19 Declaration of Land Requirement",
+                    date: "15 Jan 2026",
+                    size: "3.2 MB",
+                    ref: "GZ/DL/DEL/2026/1908",
+                    version: "v1.2 (Sanctioned)",
+                    hash: "SHA-256: 9f0a...33c2",
+                    auditTrail: "Sanctioned by Joint Secretary MoRTH & DDA Planning Cell",
+                  },
+                  {
+                    title: "DPR Alignment Corridor Survey (GeoJSON & DGPS Cadastre)",
+                    date: "12 Mar 2026",
+                    size: "1.8 MB",
+                    ref: "DPR/NHAI/2026/60M",
+                    version: "v3.1 (Latest Survey)",
+                    hash: "SHA-256: e8d4...11b7",
+                    auditTrail: "Survey of India DGPS team verified with BhuNaksha WFS",
+                  },
+                  {
+                    title: "Competent Authority Draft Award Decree (Section 23)",
+                    date: "01 Mar 2026",
+                    size: "5.6 MB",
+                    ref: "AWD/CALA/2026/11",
+                    version: "v1.0 (Signed)",
+                    hash: "SHA-256: 2a7c...55e9",
+                    auditTrail: "Passed by DM & CALA North Delhi · 100% Solatium verified",
+                  },
                 ].map((doc, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-3 rounded-2xl border border-[#E5E0D6] bg-[#FAF8F5] hover:bg-white hover:border-[#CBD5E1] transition-all text-xs"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl border border-[#E5E0D6] bg-[#FAF8F5] hover:bg-white hover:border-[#0284C7]/40 transition-all text-xs gap-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-[#FEF3C7] text-[#B45309]">
-                        <FileText className="h-4 w-4 shrink-0" />
+                    <div className="flex items-start sm:items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#FEF3C7] text-[#B45309] shrink-0 mt-0.5 sm:mt-0">
+                        <FileText className="h-4 w-4" />
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-900">{doc.title}</p>
-                        <p className="text-[10px] text-slate-500 font-mono">
-                          Ref: {doc.ref} • Published: {doc.date} • {doc.size}
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-slate-900 text-xs sm:text-sm">{doc.title}</p>
+                          <span className="font-mono text-[10px] font-bold bg-[#DCFCE7] text-[#15803D] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                            {doc.version}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-mono">
+                          Ref: {doc.ref} • {doc.date} • {doc.size}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          {doc.hash} · <span className="text-slate-600 font-sans">{doc.auditTrail}</span>
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE] gap-1">
-                      <Download className="h-3.5 w-3.5" />
-                      <span>Download PDF</span>
-                    </Button>
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                      <Button variant="outline" size="sm" className="text-xs font-bold text-[#0284C7] hover:bg-[#E0F2FE] gap-1 h-8 rounded-xl">
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Download</span>
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

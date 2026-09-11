@@ -14,6 +14,11 @@ import {
   Info,
 } from "lucide-react";
 import { BHUNAKSHA_PROJECTS } from "@/lib/bhunaksha-service";
+import {
+  SPATIAL_PROJECTS,
+  ALL_DEMO_SPATIAL_PARCELS,
+  runSpatialAnalysis,
+} from "@/lib/spatial-engine";
 import { AffectedLandTable } from "@/components/workflow/affected-land-table";
 import { AcquisitionWorkflowStepper } from "@/components/workflow/acquisition-workflow-stepper";
 import { BhuNakshaArchitectureModal } from "@/components/docs/bhunaksha-architecture-modal";
@@ -67,25 +72,65 @@ function MapPageContent() {
     return BHUNAKSHA_PROJECTS[0];
   }, [currentUser]);
 
+  const [currentSelectedProjectId, setCurrentSelectedProjectId] = useState<string>(() => primaryProject.id);
+
+  const activeProject = useMemo(() => {
+    return BHUNAKSHA_PROJECTS.find((p) => p.id === currentSelectedProjectId) || primaryProject;
+  }, [currentSelectedProjectId, primaryProject]);
+
   const authorizedParcels = useMemo(() => {
-    return filterBhuParcelsForUser(currentUser, scopedGrants, primaryProject.parcels);
-  }, [currentUser, scopedGrants, primaryProject]);
+    return filterBhuParcelsForUser(currentUser, scopedGrants, activeProject.parcels);
+  }, [currentUser, scopedGrants, activeProject]);
+
+  // Dynamic project spatial summary calculated strictly from geometry
+  const activeSpatialSummary = useMemo(() => {
+    const matched = SPATIAL_PROJECTS.find((p) => p.projectCode === activeProject.projectCode) || SPATIAL_PROJECTS[0];
+    const { summary } = runSpatialAnalysis(matched, ALL_DEMO_SPATIAL_PARCELS);
+    return summary;
+  }, [activeProject.projectCode]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2.5">
-      {/* ───── Sleek Compact Header Bar (saves 80px vertical height for the map) ───── */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3 py-2 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs shrink-0">
-        <div className="flex items-center gap-2">
+      {/* ───── Sleek Compact Header Bar with Project Switcher ───── */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#DCFCE7] text-[#15803D]">
             <Compass className="h-4 w-4" />
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-extrabold text-slate-900 hidden sm:inline">BhuNaksha Cadastre:</span>
-            <span className="font-bold text-slate-800">{primaryProject.name}</span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
-              RFCTLARR 2013
-            </span>
+            <span className="font-extrabold text-slate-900">Project Area:</span>
           </div>
+
+          {/* Project Switcher Pill (Delhi vs Ghaziabad) */}
+          <div className="flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-xs font-bold">
+            <button
+              onClick={() => setCurrentSelectedProjectId("DL-INFRA-001")}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                currentSelectedProjectId === "DL-INFRA-001"
+                  ? "bg-white text-[#15803D] shadow-xs font-black"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>🏛️ Delhi (North Delhi)</span>
+            </button>
+            <button
+              onClick={() => setCurrentSelectedProjectId("DL-GZB-002")}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                currentSelectedProjectId === "DL-GZB-002"
+                  ? "bg-white text-[#0284C7] shadow-xs font-black"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>🚆 Ghaziabad (NCR Corridor)</span>
+            </button>
+          </div>
+
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
+            RFCTLARR 2013
+          </span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200">
+            Demonstration GIS Data
+          </span>
         </div>
 
         {/* Action Buttons & Tabs */}
@@ -135,11 +180,63 @@ function MapPageContent() {
         </div>
       </div>
 
+      {/* ───── Dynamic Spatial Summary Strip (Calculated from Core Geometry) ───── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 px-1">
+        <div className="bg-white px-3 py-2 rounded-xl border border-[#E5E0D6] shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Parcels</span>
+          <span className="text-base font-extrabold font-mono text-slate-900 block mt-0.5">
+            {activeSpatialSummary.totalParcelsCount}
+          </span>
+          <span className="text-[10px] text-slate-500 truncate block">Cadastral Sheet</span>
+        </div>
+
+        <div className="bg-amber-50/70 px-3 py-2 rounded-xl border border-amber-200/80 shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-amber-700 block">Affected Parcels</span>
+          <span className="text-base font-extrabold font-mono text-amber-900 block mt-0.5">
+            {activeSpatialSummary.affectedParcelsCount}
+          </span>
+          <span className="text-[10px] text-amber-800/80 truncate block">Corridor Overlap</span>
+        </div>
+
+        <div className="bg-white px-3 py-2 rounded-xl border border-[#E5E0D6] shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Land Req.</span>
+          <span className="text-base font-extrabold font-mono text-slate-900 block mt-0.5">
+            {activeSpatialSummary.totalLandRequirementHa} <span className="text-xs font-normal text-slate-500">Ha</span>
+          </span>
+          <span className="text-[10px] text-slate-500 truncate block">Surveyed Area</span>
+        </div>
+
+        <div className="bg-emerald-50/70 px-3 py-2 rounded-xl border border-emerald-200/80 shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-emerald-700 block">Affected Land</span>
+          <span className="text-base font-extrabold font-mono text-emerald-900 block mt-0.5">
+            {activeSpatialSummary.affectedLandHa} <span className="text-xs font-normal text-emerald-700">Ha</span>
+          </span>
+          <span className="text-[10px] text-emerald-800/80 truncate block">Within 60m Corridor</span>
+        </div>
+
+        <div className="bg-white px-3 py-2 rounded-xl border border-[#E5E0D6] shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block">RoR Verified</span>
+          <span className="text-base font-extrabold font-mono text-[#15803D] block mt-0.5">
+            {activeSpatialSummary.rorVerifiedCount}
+          </span>
+          <span className="text-[10px] text-slate-500 truncate block">Bhulekh Matched</span>
+        </div>
+
+        <div className="bg-white px-3 py-2 rounded-xl border border-[#E5E0D6] shadow-2xs">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block">RoR Pending</span>
+          <span className="text-base font-extrabold font-mono text-amber-700 block mt-0.5">
+            {activeSpatialSummary.rorPendingCount}
+          </span>
+          <span className="text-[10px] text-slate-500 truncate block">Under Scrutiny</span>
+        </div>
+      </div>
+
       {/* Main View Tabs */}
       <div className="flex-1 flex flex-col min-h-0">
         {activeTab === "map" && (
           <BhuNakshaMapViewer
-            initialProjectId={primaryProject.id}
+            key={activeProject.id}
+            initialProjectId={activeProject.id}
             initialKhasraNumber={khasraParam ?? undefined}
             initialStageFilter={stageParam ? parseInt(stageParam, 10) : undefined}
           />
@@ -150,7 +247,7 @@ function MapPageContent() {
         )}
 
         {activeTab === "workflow" && (
-          <AcquisitionWorkflowStepper project={primaryProject} />
+          <AcquisitionWorkflowStepper project={activeProject} />
         )}
       </div>
 

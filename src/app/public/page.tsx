@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -29,6 +29,8 @@ import {
   HelpCircle,
   Layers,
   ChevronDown,
+  Printer,
+  Calculator,
 } from "lucide-react";
 import { MOCK_PLOTS, MOCK_FAMILIES, MOCK_PROJECTS, INDIAN_STATES } from "@/lib/mock-data";
 import { LAMS_12_STAGES } from "@/lib/bhunaksha-service";
@@ -42,6 +44,8 @@ import {
   INITIAL_MOCK_GRIEVANCES,
 } from "@/lib/grievance-store";
 import { CitizenGrievance, GrievanceCategory } from "@/types";
+import { CompensationCalculator } from "@/components/calculator/compensation-calculator";
+import { StatutoryAwardModal } from "@/components/documents/statutory-award-modal";
 
 export default function CitizenPublicPortalPage() {
   const [language, setLanguage] = useState<"hi" | "en">("hi");
@@ -52,8 +56,18 @@ export default function CitizenPublicPortalPage() {
   const [searchVillage, setSearchVillage] = useState("Alipur");
   const [hasSearched, setHasSearched] = useState(true);
 
-  // Active view tab: "status" | "objection" | "track_objection"
-  const [activeTab, setActiveTab] = useState<"status" | "objection" | "track_objection">("status");
+  // Active view tab: "status" | "objection" | "track_objection" | "calculator"
+  const [activeTab, setActiveTab] = useState<"status" | "objection" | "track_objection" | "calculator">("status");
+  const [showAwardModal, setShowAwardModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "calculator") {
+        setActiveTab("calculator");
+      }
+    }
+  }, []);
 
   // Objection form state
   const [claimantName, setClaimantName] = useState("Shri Ramesh Chand");
@@ -391,6 +405,18 @@ export default function CitizenPublicPortalPage() {
                   : `Hearing Status & Objections (${matchedGrievances.length})`}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab("calculator")}
+              className={`pb-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === "calculator"
+                  ? "border-[#15803D] text-[#15803D]"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <Calculator className="h-4 w-4" />
+              <span>{language === "hi" ? "🧮 मुआवजा सिमुलेटर" : "🧮 What-If Calculator"}</span>
+            </button>
           </div>
         </div>
       )}
@@ -419,12 +445,22 @@ export default function CitizenPublicPortalPage() {
               </div>
             </div>
 
-            <div className="text-left sm:text-right">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-extrabold text-[#15803D] border border-[#BBF7D0]">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {language === "hi" ? "गजट अधिसूचना में सम्मिलित" : "Gazette Notified Parcel"}
-              </span>
-              <p className="text-[11px] text-slate-500 mt-1">
+            <div className="text-left sm:text-right space-y-2">
+              <div className="flex items-center gap-2 justify-start sm:justify-end">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-extrabold text-[#15803D] border border-[#BBF7D0]">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {language === "hi" ? "गजट अधिसूचना में सम्मिलित" : "Gazette Notified"}
+                </span>
+                <Button
+                  size="sm"
+                  onClick={() => setShowAwardModal(true)}
+                  className="h-7 px-2.5 rounded-lg bg-[#15803D] hover:bg-[#166534] text-white text-[11px] font-bold gap-1 shadow-xs"
+                >
+                  <Printer className="h-3 w-3" />
+                  <span>{language === "hi" ? "आदेश (Form 11)" : "Award Order"}</span>
+                </Button>
+              </div>
+              <p className="text-[11px] text-slate-500">
                 Project: <strong className="text-slate-800">{matchedProject.name}</strong>
               </p>
             </div>
@@ -461,7 +497,7 @@ export default function CitizenPublicPortalPage() {
                 {language === "hi" ? "कुल प्रतिकर अधिनिर्णय" : "Total Statutory Award"}
               </span>
               <div className="text-xl font-extrabold text-[#15803D] font-mono mt-1">
-                {formatCurrency(matchedPlot.marketValue + matchedPlot.solatiumAmount)}
+                {formatCurrency(matchedPlot.marketValue + (matchedPlot.solatiumAmount || 0))}
               </div>
               <span className="text-[11px] text-emerald-700 font-medium">
                 100% Solatium included
@@ -526,7 +562,7 @@ export default function CitizenPublicPortalPage() {
 
                   return (
                     <div
-                      key={stg.id}
+                      key={stg.code}
                       className={`p-3 rounded-2xl border transition-all ${
                         isCurrent
                           ? "border-[#0284C7] bg-[#F0F9FF] shadow-xs ring-2 ring-[#0284C7]/20"
@@ -543,10 +579,10 @@ export default function CitizenPublicPortalPage() {
                         {isCurrent && <span className="h-2 w-2 rounded-full bg-[#0284C7] animate-ping" />}
                       </div>
                       <span className="font-mono font-bold text-[11px] text-slate-900 block truncate">
-                        {stg.section}
+                        {stg.actRef}
                       </span>
                       <p className="text-[11px] font-medium text-slate-600 line-clamp-2 mt-0.5">
-                        {stg.name}
+                        {stg.title}
                       </p>
                       <span
                         className={`mt-2 inline-block text-[9px] font-bold px-1.5 py-0.5 rounded ${
@@ -601,7 +637,7 @@ export default function CitizenPublicPortalPage() {
                       {language === "hi" ? "100% वैधानिक तोषण / Solatium (Sec 30)" : "100% Statutory Solatium (Section 30)"}:
                     </span>
                     <span className="font-mono font-bold text-[#15803D]">
-                      + {formatCurrency(matchedPlot.solatiumAmount)}
+                      + {formatCurrency(matchedPlot.solatiumAmount || 0)}
                     </span>
                   </div>
 
@@ -619,7 +655,7 @@ export default function CitizenPublicPortalPage() {
                       {language === "hi" ? "कुल देय अधिनिर्णय प्रतिकर राशि" : "Total Net Compensation Award"}:
                     </span>
                     <span className="font-mono font-extrabold text-sm text-[#15803D]">
-                      {formatCurrency(matchedPlot.marketValue + matchedPlot.solatiumAmount + Math.round(matchedPlot.marketValue * 0.12))}
+                      {formatCurrency(matchedPlot.marketValue + (matchedPlot.solatiumAmount || 0) + Math.round(matchedPlot.marketValue * 0.12))}
                     </span>
                   </div>
                 </CardContent>
@@ -928,6 +964,19 @@ export default function CitizenPublicPortalPage() {
         </main>
       )}
 
+      {/* ───── Tab 4: What-If Statutory Compensation Calculator ───── */}
+      {activeTab === "calculator" && (
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 animate-in fade-in duration-200">
+          <CompensationCalculator
+            initialArea={matchedPlot?.areaHectares || 1.84}
+            initialCircleRate={matchedPlot?.marketRatePerHa || 7000000}
+            initialMultiplier={1.5}
+            initialAssets={1250000}
+            lang={language}
+          />
+        </main>
+      )}
+
       {/* ───── 7. Statutory Rights Legal Explainer Footer ───── */}
       <footer className="max-w-5xl mx-auto px-4 sm:px-6 pt-12">
         <div className="rounded-3xl border border-[#E5E0D6] bg-white p-6 shadow-sm space-y-4">
@@ -969,6 +1018,31 @@ export default function CitizenPublicPortalPage() {
           </div>
         </div>
       </footer>
+
+      {/* Official Form 11 Award Decree Print/PDF Modal */}
+      {matchedPlot && (
+        <StatutoryAwardModal
+          isOpen={showAwardModal}
+          onClose={() => setShowAwardModal(false)}
+          landownerName={matchedFamily?.familyHeadName || matchedPlot.ownerName}
+          fatherName={matchedFamily?.fatherHusbandName || "Recorded Landholder"}
+          khasraNo={matchedPlot.khasraNumber}
+          ulpin={matchedPlot.ulpin}
+          village={matchedPlot.village}
+          tehsil={matchedPlot.tehsil}
+          district={matchedPlot.district}
+          state={matchedPlot.state}
+          areaHa={matchedPlot.areaHectares}
+          marketValue={matchedPlot.marketValue}
+          solatium={matchedPlot.solatiumAmount || matchedPlot.marketValue}
+          totalAward={
+            matchedPlot.marketValue +
+            (matchedPlot.solatiumAmount || matchedPlot.marketValue) +
+            Math.round(matchedPlot.marketValue * 0.12)
+          }
+          projectName={matchedProject.name}
+        />
+      )}
     </div>
   );
 }

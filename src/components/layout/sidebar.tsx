@@ -40,44 +40,37 @@ interface NavGroup {
 
 const NAVIGATION_GROUPS: NavGroup[] = [
   {
-    id: "overview",
-    title: "Overview",
-    titleHi: "सिंहावलोकन",
+    id: "operations",
+    title: "Core Operations",
+    titleHi: "मुख्य परिचालन",
     items: [
       {
-        name: "National Dashboard",
-        nameHi: "राष्ट्रीय डैशबोर्ड",
+        name: "Command Dashboard",
+        nameHi: "कमांड डैशबोर्ड",
         href: "/dashboard",
         icon: LayoutDashboard,
         badge: null,
-      },
-    ],
-  },
-  {
-    id: "acquisition",
-    title: "Land Acquisition",
-    titleHi: "भूमि अधिग्रहण",
-    items: [
-      {
-        name: "Proposal & Requisition",
-        nameHi: "नवीन प्रस्ताव",
-        href: "/projects/new",
-        icon: FilePlus2,
-        badge: "Stage 1",
       },
       {
         name: "BhuNaksha Cadastral Map",
         nameHi: "भू-नक्शा कैडस्ट्रल मैप",
         href: "/map",
         icon: MapPin,
-        badge: "NIC WFS",
+        badge: "NIC GIS",
       },
       {
         name: "Projects Management",
         nameHi: "परियोजना प्रबंधन",
         href: "/projects",
         icon: FolderKanban,
-        badge: "3 Active",
+        badge: "12 Stages",
+      },
+      {
+        name: "Affected Families & Outreach",
+        nameHi: "प्रभावित परिवार व संदेश",
+        href: "/families",
+        icon: Users,
+        badge: "WhatsApp",
       },
       {
         name: "Valuation & Compensation",
@@ -87,33 +80,33 @@ const NAVIGATION_GROUPS: NavGroup[] = [
         badge: "Sec 26-30",
       },
       {
-        name: "Rehabilitation (R&R)",
-        nameHi: "पुनर्वास और पुनर्स्थापन",
-        href: "/rr",
-        icon: HeartHandshake,
-        badge: "Sch II/III",
+        name: "Citizen Public Portal",
+        nameHi: "नागरिक सेवा पोर्टल",
+        href: "/public",
+        icon: Globe2,
+        badge: "G2C Live",
       },
+    ],
+  },
+  {
+    id: "compliance",
+    title: "Statutory & Compliance",
+    titleHi: "वैधानिक व अनुपालन",
+    items: [
       {
         name: "Statutory Notifications",
         nameHi: "वैधानिक अधिसूचनाएं",
         href: "/notifications",
         icon: BellRing,
-        badge: "6 Notices",
+        badge: "Gazette",
       },
       {
-        name: "Affected Families",
-        nameHi: "प्रभावित परिवार",
-        href: "/families",
-        icon: Users,
-        badge: null,
+        name: "Rehabilitation (R&R)",
+        nameHi: "पुनर्वास और पुनर्स्थापन",
+        href: "/rr",
+        icon: HeartHandshake,
+        badge: "Sch II",
       },
-    ],
-  },
-  {
-    id: "reports",
-    title: "Reports & Audits",
-    titleHi: "रिपोर्ट व ऑडिट",
-    items: [
       {
         name: "MIS & Executive Reports",
         nameHi: "एमआईएस व रिपोर्ट",
@@ -127,27 +120,6 @@ const NAVIGATION_GROUPS: NavGroup[] = [
         href: "/audit-trail",
         icon: ShieldAlert,
         badge: "Sec 101",
-      },
-    ],
-  },
-  {
-    id: "admin",
-    title: "Administration & Public",
-    titleHi: "प्रशासन व नागरिक",
-    items: [
-      {
-        name: "Access Requests",
-        nameHi: "पहुंच अनुरोध",
-        href: "/access-requests",
-        icon: ShieldCheck,
-        badge: "Sanctions",
-      },
-      {
-        name: "Citizen Public Portal",
-        nameHi: "नागरिक सेवा पोर्टल",
-        href: "/public",
-        icon: Globe2,
-        badge: "G2C",
       },
     ],
   },
