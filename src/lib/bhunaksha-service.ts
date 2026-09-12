@@ -1,3 +1,4 @@
+import { makeIrregularPolygon } from "@/lib/spatial-engine";
 // ============================================================
 // BhoomiDrishti — BhuNaksha Cadastral Engine & Service Layer
 // National Informatics Centre (NIC) Cadastral Integration Suite
@@ -313,45 +314,49 @@ export const LAMS_12_STAGES: Lams12Stage[] = [
 ];
 
 function makePolygon(lat: number, lng: number, size = 0.0015): [number, number][] {
-  return [
-    [lat - size, lng - size],
-    [lat + size, lng - size],
-    [lat + size, lng + size],
-    [lat - size, lng + size],
-  ];
+  return makeIrregularPolygon(lat, lng, 130, 130);
 }
 
 // ------------------------------------------------------------
 // PROJECT 1: Delhi Land & Infrastructure Development Project
 // ------------------------------------------------------------
 const DELHI_PARCELS_RAW = [
-  { khasra: "DEMO-482", area: 1.84, owner: "Demo Landholder - Shri Ramesh Chand (Demonstration Data)", village: "Alipur", lat: 28.721, lng: 77.141, status: "Verified" as const },
-  { khasra: "DEMO-101", area: 1.45, owner: "Demo Landholder - Smt. Kamla Devi (Demonstration Data)", village: "Alipur", lat: 28.723, lng: 77.143, status: "Verified" as const },
-  { khasra: "DEMO-102", area: 1.62, owner: "Demo Landholder - Shri Naresh Yadav (Demonstration Data)", village: "Alipur", lat: 28.725, lng: 77.145, status: "Verified" as const },
-  { khasra: "DEMO-103", area: 1.20, owner: "Demo Landholder - Shri Satish Bansal (Demonstration Data)", village: "Narela", lat: 28.727, lng: 77.148, status: "Verified" as const },
-  { khasra: "DEMO-104", area: 1.75, owner: "Demo Landholder - Shri Om Prakash (Demonstration Data)", village: "Narela", lat: 28.729, lng: 77.151, status: "Verified" as const },
-  { khasra: "DEMO-105", area: 1.30, owner: "Demo Landholder - Shri Suresh Tyagi (Demonstration Data)", village: "Narela", lat: 28.731, lng: 77.153, status: "Discrepancy Found" as const },
-  { khasra: "DEMO-106", area: 1.55, owner: "Demo Landholder - Smt. Geeta Sharma (Demonstration Data)", village: "Hamidpur", lat: 28.718, lng: 77.137, status: "Verified" as const },
-  { khasra: "DEMO-107", area: 1.40, owner: "Demo Landholder - Shri Jagdish Prasad (Demonstration Data)", village: "Hamidpur", lat: 28.716, lng: 77.134, status: "Verified" as const },
-  { khasra: "DEMO-108", area: 1.50, owner: "Demo Landholder - Shri Harish Rawat (Demonstration Data)", village: "Hamidpur", lat: 28.714, lng: 77.131, status: "Verified" as const },
-  { khasra: "DEMO-109", area: 1.60, owner: "Demo Landholder - Smt. Meena Varma (Demonstration Data)", village: "Hamidpur", lat: 28.712, lng: 77.128, status: "Pending Verification" as const },
-  { khasra: "DEMO-110", area: 1.70, owner: "Demo Landholder - Shri Anil Gupta (Demonstration Data)", village: "Alipur", lat: 28.733, lng: 77.156, status: "Pending Verification" as const },
-  { khasra: "DEMO-111", area: 1.49, owner: "Demo Landholder - Shri Vinod Chawla (Demonstration Data)", village: "Alipur", lat: 28.735, lng: 77.159, status: "Pending Verification" as const },
-  { khasra: "DEMO-112", area: 2.10, owner: "Demo Landholder - Shri Mahender Pal (Demonstration Data)", village: "Alipur", lat: 28.738, lng: 77.164, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-113", area: 2.00, owner: "Demo Landholder - Smt. Saroj Bala (Demonstration Data)", village: "Hamidpur", lat: 28.709, lng: 77.123, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-114", area: 2.40, owner: "Demo Landholder - Shri Kuldeep Tanwar (Demonstration Data)", village: "Narela", lat: 28.735, lng: 77.135, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-115", area: 1.95, owner: "Demo Landholder - Shri Krishan Kumar (Demonstration Data)", village: "Alipur", lat: 28.715, lng: 77.155, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-116", area: 2.15, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Hamidpur", lat: 28.725, lng: 77.120, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-117", area: 1.80, owner: "Demo Landholder - Smt. Vimla Devi (Demonstration Data)", village: "Narela", lat: 28.740, lng: 77.145, status: "Pending Verification" as const, isBuffer: true },
+  // 12 Acquisition Parcels
+  { khasra: "DEMO-109", area: 1.60, owner: "Demo Landholder - Smt. Meena Varma (Demonstration Data)", village: "Hamidpur", lat: 28.7100, lng: 77.1285, widthM: 126, heightM: 127, status: "Pending Verification" as const },
+  { khasra: "DEMO-108", area: 1.50, owner: "Demo Landholder - Shri Harish Rawat (Demonstration Data)", village: "Hamidpur", lat: 28.7121, lng: 77.1308, widthM: 122, heightM: 123, status: "Verified" as const, isPartial: true },
+  { khasra: "DEMO-107", area: 1.40, owner: "Demo Landholder - Shri Jagdish Prasad (Demonstration Data)", village: "Hamidpur", lat: 28.7139, lng: 77.1335, widthM: 118, heightM: 119, status: "Verified" as const },
+  { khasra: "DEMO-106", area: 1.55, owner: "Demo Landholder - Smt. Geeta Sharma (Demonstration Data)", village: "Hamidpur", lat: 28.7158, lng: 77.1361, widthM: 125, heightM: 124, status: "Verified" as const, isPartial: true },
+  { khasra: "DEMO-482", area: 1.84, owner: "Demo Landholder - Shri Ramesh Chand (Demonstration Data)", village: "Alipur", lat: 28.7180, lng: 77.1385, widthM: 135, heightM: 136, status: "Verified" as const },
+  { khasra: "DEMO-101", area: 1.45, owner: "Demo Landholder - Smt. Kamla Devi (Demonstration Data)", village: "Alipur", lat: 28.7199, lng: 77.1411, widthM: 120, heightM: 121, status: "Verified" as const },
+  { khasra: "DEMO-102", area: 1.62, owner: "Demo Landholder - Shri Naresh Yadav (Demonstration Data)", village: "Alipur", lat: 28.7220, lng: 77.1434, widthM: 128, heightM: 126, status: "Verified" as const },
+  { khasra: "DEMO-110", area: 1.70, owner: "Demo Landholder - Shri Anil Gupta (Demonstration Data)", village: "Alipur", lat: 28.7241, lng: 77.1458, widthM: 130, heightM: 131, status: "Pending Verification" as const, isPartial: true },
+  { khasra: "DEMO-103", area: 1.20, owner: "Demo Landholder - Shri Satish Bansal (Demonstration Data)", village: "Narela", lat: 28.7257, lng: 77.1486, widthM: 110, heightM: 109, status: "Verified" as const },
+  { khasra: "DEMO-104", area: 1.75, owner: "Demo Landholder - Shri Om Prakash (Demonstration Data)", village: "Narela", lat: 28.7274, lng: 77.1514, widthM: 132, heightM: 132, status: "Verified" as const },
+  { khasra: "DEMO-105", area: 1.30, owner: "Demo Landholder - Shri Suresh Tyagi (Demonstration Data)", village: "Narela", lat: 28.7293, lng: 77.1539, widthM: 114, heightM: 114, status: "Discrepancy Found" as const },
+  { khasra: "DEMO-111", area: 1.49, owner: "Demo Landholder - Shri Vinod Chawla (Demonstration Data)", village: "Alipur", lat: 28.7307, lng: 77.1559, widthM: 122, heightM: 122, status: "Pending Verification" as const },
+  // 6 Buffer Parcels
+  { khasra: "DEMO-112", area: 2.10, owner: "Demo Landholder - Shri Mahender Pal (Demonstration Data)", village: "Alipur", lat: 28.7278, lng: 77.1543, widthM: 145, heightM: 145, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-113", area: 2.00, owner: "Demo Landholder - Smt. Saroj Bala (Demonstration Data)", village: "Hamidpur", lat: 28.7121, lng: 77.1284, widthM: 141, heightM: 142, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-114", area: 2.40, owner: "Demo Landholder - Shri Kuldeep Tanwar (Demonstration Data)", village: "Narela", lat: 28.7275, lng: 77.1480, widthM: 155, heightM: 155, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-115", area: 1.95, owner: "Demo Landholder - Shri Krishan Kumar (Demonstration Data)", village: "Alipur", lat: 28.7181, lng: 77.1413, widthM: 140, heightM: 139, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-116", area: 2.15, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Hamidpur", lat: 28.7138, lng: 77.1362, widthM: 146, heightM: 147, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-117", area: 1.80, owner: "Demo Landholder - Smt. Vimla Devi (Demonstration Data)", village: "Narela", lat: 28.7218, lng: 77.1462, widthM: 134, heightM: 134, status: "Pending Verification" as const, isBuffer: true },
 ];
 
 const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
   const isAffected = !p.isBuffer;
+  const isPartial = Boolean((p as any).isPartial);
+  const acquisitionType = isAffected ? (isPartial ? "partial" : "full") : "buffer";
+  const affectedAreaHa = isAffected ? (isPartial ? +(p.area * 0.55).toFixed(2) : p.area) : 0;
+  const residualAreaHa = +(p.area - affectedAreaHa).toFixed(2);
+  const affectedAreaPercentage = isAffected ? (isPartial ? 55 : 100) : 0;
+  const severanceClaimEligible = isPartial && residualAreaHa < 0.25;
+
   const rate = 7000000;
-  const baseMarketValue = Math.round(p.area * rate);
+  const baseMarketValue = Math.round(affectedAreaHa * rate);
   const multipliedValue = Math.round(baseMarketValue * 1.5);
   const solatiumAmount = multipliedValue;
-  const totalCompensation = multipliedValue + solatiumAmount + 250000;
+  const totalCompensation = isAffected ? multipliedValue + solatiumAmount + 250000 : 0;
 
   return {
     id: `BN-DL-${p.khasra}`,
@@ -369,7 +374,7 @@ const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
     gisCalculatedAreaHa: p.area,
     recordedRoRAreaHa: p.area,
     areaSqMeters: Math.round(p.area * 10000),
-    dimensions: "130m × 120m",
+    dimensions: `${p.widthM}m × ${p.heightM}m`,
     landClassification: "irrigated_agricultural",
     soilClass: "Alluvial Class I (Yamuna Floodplain)",
     circleRatePerHa: rate,
@@ -385,23 +390,23 @@ const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
       },
     ],
     isAffected,
-    affectedAreaHa: isAffected ? p.area : 0,
-    affectedAreaPercentage: isAffected ? 100 : 0,
-    residualAreaHa: isAffected ? 0 : p.area,
-    acquisitionType: isAffected ? "full" : "buffer",
-    severanceClaimEligible: false,
+    affectedAreaHa,
+    affectedAreaPercentage,
+    residualAreaHa,
+    acquisitionType,
+    severanceClaimEligible,
     status: isAffected ? "notified_sec11" : "proposed",
     valuation: {
       baseMarketValue,
       ruralMultiplier: 1.5,
       multipliedValue,
       solatiumAmount,
-      assetsValue: 250000,
+      assetsValue: isAffected ? 250000 : 0,
       additionalInterest: Math.round(baseMarketValue * 0.12),
       totalCompensationPayable: totalCompensation,
     },
     coordinates: [p.lat, p.lng],
-    polygon: makePolygon(p.lat, p.lng),
+    polygon: makeIrregularPolygon(p.lat, p.lng, p.widthM, p.heightM),
     chauhaddi: {
       north: "Adjacent Khasra Cadastral Border",
       south: "Internal Locality Road / Utility Line",
@@ -424,35 +429,48 @@ const DELHI_PARCELS: BhuNakshaParcel[] = DELHI_PARCELS_RAW.map((p, idx) => {
 // PROJECT 2: Delhi–Ghaziabad Regional Connectivity Project
 // ------------------------------------------------------------
 const GZB_PARCELS_RAW = [
-  { khasra: "DEMO-501", area: 1.56, owner: "Demo Landholder - Shri Virender Singh (Demonstration Data)", village: "Sahibabad", lat: 28.665, lng: 77.395, status: "Verified" as const },
-  { khasra: "DEMO-502", area: 1.50, owner: "Demo Landholder - Smt. Usha Rani (Demonstration Data)", village: "Sahibabad", lat: 28.668, lng: 77.401, status: "Verified" as const },
-  { khasra: "DEMO-503", area: 1.62, owner: "Demo Landholder - Shri Satendra Tyagi (Demonstration Data)", village: "Arthala", lat: 28.672, lng: 77.412, status: "Verified" as const },
-  { khasra: "DEMO-504", area: 1.38, owner: "Demo Landholder - Shri Manoj Kumar (Demonstration Data)", village: "Arthala", lat: 28.675, lng: 77.420, status: "Verified" as const },
-  { khasra: "DEMO-505", area: 1.75, owner: "Demo Landholder - Smt. Rajbala (Demonstration Data)", village: "Morta", lat: 28.679, lng: 77.428, status: "Verified" as const },
-  { khasra: "DEMO-506", area: 1.43, owner: "Demo Landholder - Shri Jagdish Tyagi (Demonstration Data)", village: "Morta", lat: 28.682, lng: 77.433, status: "Discrepancy Found" as const },
-  { khasra: "DEMO-507", area: 1.62, owner: "Demo Landholder - Shri Dharmender Singh (Demonstration Data)", village: "Duhai", lat: 28.686, lng: 77.441, status: "Verified" as const },
-  { khasra: "DEMO-508", area: 1.44, owner: "Demo Landholder - Shri Sunil Sharma (Demonstration Data)", village: "Duhai", lat: 28.689, lng: 77.448, status: "Verified" as const },
-  { khasra: "DEMO-509", area: 1.50, owner: "Demo Landholder - Shri Prem Chand (Demonstration Data)", village: "Sahibabad", lat: 28.663, lng: 77.391, status: "Verified" as const },
-  { khasra: "DEMO-510", area: 1.35, owner: "Demo Landholder - Smt. Pushpa Devi (Demonstration Data)", village: "Sahibabad", lat: 28.661, lng: 77.387, status: "Verified" as const },
-  { khasra: "DEMO-511", area: 1.40, owner: "Demo Landholder - Shri Rohit Tyagi (Demonstration Data)", village: "Arthala", lat: 28.670, lng: 77.408, status: "Verified" as const },
-  { khasra: "DEMO-512", area: 1.55, owner: "Demo Landholder - Shri Devender Pal (Demonstration Data)", village: "Arthala", lat: 28.674, lng: 77.416, status: "Pending Verification" as const },
-  { khasra: "DEMO-513", area: 1.45, owner: "Demo Landholder - Smt. Anita Chaudhry (Demonstration Data)", village: "Morta", lat: 28.677, lng: 77.424, status: "Pending Verification" as const },
-  { khasra: "DEMO-514", area: 1.50, owner: "Demo Landholder - Shri Surender Kumar (Demonstration Data)", village: "Morta", lat: 28.680, lng: 77.430, status: "Pending Verification" as const },
-  { khasra: "DEMO-515", area: 1.35, owner: "Demo Landholder - Shri Naresh Kumar (Demonstration Data)", village: "Duhai", lat: 28.684, lng: 77.437, status: "Pending Verification" as const },
-  { khasra: "DEMO-516", area: 1.40, owner: "Demo Landholder - Smt. Sushila Devi (Demonstration Data)", village: "Duhai", lat: 28.687, lng: 77.444, status: "Pending Verification" as const },
-  { khasra: "DEMO-517", area: 1.25, owner: "Demo Landholder - Shri Mukesh Verma (Demonstration Data)", village: "Sahibabad", lat: 28.659, lng: 77.383, status: "Pending Verification" as const },
-  { khasra: "DEMO-518", area: 1.25, owner: "Demo Landholder - Shri Sanjay Singh (Demonstration Data)", village: "Duhai", lat: 28.691, lng: 77.452, status: "Verified" as const },
-  { khasra: "DEMO-519", area: 2.80, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Sahibabad", lat: 28.655, lng: 77.378, status: "Verified" as const, isBuffer: true },
-  { khasra: "DEMO-520", area: 2.80, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Duhai", lat: 28.695, lng: 77.458, status: "Verified" as const, isBuffer: true },
+  // 16 Acquisition Parcels
+  { khasra: "DEMO-510", area: 1.35, owner: "Demo Landholder - Smt. Pushpa Devi (Demonstration Data)", village: "Sahibabad", lat: 28.6506, lng: 77.3791, widthM: 120, heightM: 120, status: "Verified" as const },
+  { khasra: "DEMO-509", area: 1.50, owner: "Demo Landholder - Shri Prem Chand (Demonstration Data)", village: "Sahibabad", lat: 28.6530, lng: 77.3835, widthM: 125, heightM: 125, status: "Verified" as const },
+  { khasra: "DEMO-501", area: 1.56, owner: "Demo Landholder - Shri Virender Singh (Demonstration Data)", village: "Sahibabad", lat: 28.6556, lng: 77.3875, widthM: 125, heightM: 125, status: "Pending Verification" as const, isPartial: true },
+  { khasra: "DEMO-502", area: 1.50, owner: "Demo Landholder - Smt. Usha Rani (Demonstration Data)", village: "Sahibabad", lat: 28.6587, lng: 77.3923, widthM: 125, heightM: 125, status: "Verified" as const },
+  
+  { khasra: "DEMO-511", area: 1.40, owner: "Demo Landholder - Shri Rohit Tyagi (Demonstration Data)", village: "Arthala", lat: 28.6615, lng: 77.3973, widthM: 120, heightM: 120, status: "Verified" as const },
+  { khasra: "DEMO-503", area: 1.62, owner: "Demo Landholder - Shri Satendra Tyagi (Demonstration Data)", village: "Arthala", lat: 28.6641, lng: 77.4014, widthM: 125, heightM: 125, status: "Verified" as const },
+  { khasra: "DEMO-512", area: 1.55, owner: "Demo Landholder - Shri Devender Pal (Demonstration Data)", village: "Arthala", lat: 28.6665, lng: 77.4059, widthM: 125, heightM: 125, status: "Pending Verification" as const },
+  { khasra: "DEMO-504", area: 1.38, owner: "Demo Landholder - Shri Manoj Kumar (Demonstration Data)", village: "Arthala", lat: 28.6691, lng: 77.4100, widthM: 120, heightM: 120, status: "Verified" as const, isPartial: true },
+  
+  { khasra: "DEMO-513", area: 1.45, owner: "Demo Landholder - Smt. Anita Chaudhry (Demonstration Data)", village: "Morta", lat: 28.6716, lng: 77.4140, widthM: 125, heightM: 125, status: "Pending Verification" as const },
+  { khasra: "DEMO-505", area: 1.75, owner: "Demo Landholder - Smt. Rajbala (Demonstration Data)", village: "Morta", lat: 28.6740, lng: 77.4185, widthM: 130, heightM: 130, status: "Verified" as const },
+  { khasra: "DEMO-514", area: 1.50, owner: "Demo Landholder - Shri Surender Kumar (Demonstration Data)", village: "Morta", lat: 28.6765, lng: 77.4228, widthM: 125, heightM: 125, status: "Pending Verification" as const },
+  { khasra: "DEMO-506", area: 1.43, owner: "Demo Landholder - Shri Jagdish Tyagi (Demonstration Data)", village: "Morta", lat: 28.6791, lng: 77.4268, widthM: 120, heightM: 120, status: "Discrepancy Found" as const, isPartial: true },
+  
+  { khasra: "DEMO-515", area: 1.35, owner: "Demo Landholder - Shri Naresh Kumar (Demonstration Data)", village: "Duhai", lat: 28.6817, lng: 77.4309, widthM: 120, heightM: 120, status: "Pending Verification" as const },
+  { khasra: "DEMO-507", area: 1.62, owner: "Demo Landholder - Shri Dharmender Singh (Demonstration Data)", village: "Duhai", lat: 28.6841, lng: 77.4353, widthM: 125, heightM: 125, status: "Verified" as const },
+  { khasra: "DEMO-516", area: 1.40, owner: "Demo Landholder - Smt. Sushila Devi (Demonstration Data)", village: "Duhai", lat: 28.6867, lng: 77.4392, widthM: 120, heightM: 120, status: "Pending Verification" as const },
+  { khasra: "DEMO-508", area: 1.44, owner: "Demo Landholder - Shri Sunil Sharma (Demonstration Data)", village: "Duhai", lat: 28.6887, lng: 77.4429, widthM: 125, heightM: 125, status: "Verified" as const, isPartial: true },
+
+  // 4 Buffer Parcels
+  { khasra: "DEMO-517", area: 2.80, owner: "Demo Landholder - Gram Sabha Reserve (Demonstration Data)", village: "Sahibabad", lat: 28.6553, lng: 77.3839, widthM: 150, heightM: 150, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-518", area: 2.80, owner: "Demo Landholder - UP State Industrial Reserve (Demonstration Data)", village: "Duhai", lat: 28.6840, lng: 77.4382, widthM: 150, heightM: 150, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-519", area: 2.20, owner: "Demo Landholder - Shri Mahavir Singh (Demonstration Data)", village: "Arthala", lat: 28.6640, lng: 77.4044, widthM: 140, heightM: 140, status: "Verified" as const, isBuffer: true },
+  { khasra: "DEMO-520", area: 2.10, owner: "Demo Landholder - Smt. Kamlesh Devi (Demonstration Data)", village: "Morta", lat: 28.6762, lng: 77.4189, widthM: 140, heightM: 140, status: "Verified" as const, isBuffer: true },
 ];
 
 const GZB_PARCELS: BhuNakshaParcel[] = GZB_PARCELS_RAW.map((p, idx) => {
   const isAffected = !p.isBuffer;
+  const isPartial = Boolean((p as any).isPartial);
+  const acquisitionType = isAffected ? (isPartial ? "partial" : "full") : "buffer";
+  const affectedAreaHa = isAffected ? (isPartial ? +(p.area * 0.70).toFixed(2) : p.area) : 0;
+  const residualAreaHa = +(p.area - affectedAreaHa).toFixed(2);
+  const affectedAreaPercentage = isAffected ? (isPartial ? 70 : 100) : 0;
+  const severanceClaimEligible = isPartial && residualAreaHa < 0.25;
+
   const rate = 6500000;
-  const baseMarketValue = Math.round(p.area * rate);
+  const baseMarketValue = Math.round(affectedAreaHa * rate);
   const multipliedValue = Math.round(baseMarketValue * 1.5);
   const solatiumAmount = multipliedValue;
-  const totalCompensation = multipliedValue + solatiumAmount + 300000;
+  const totalCompensation = isAffected ? multipliedValue + solatiumAmount + 300000 : 0;
 
   return {
     id: `BN-GZB-${p.khasra}`,
@@ -470,7 +488,7 @@ const GZB_PARCELS: BhuNakshaParcel[] = GZB_PARCELS_RAW.map((p, idx) => {
     gisCalculatedAreaHa: p.area,
     recordedRoRAreaHa: p.area,
     areaSqMeters: Math.round(p.area * 10000),
-    dimensions: "135m × 120m",
+    dimensions: `${p.widthM}m × ${p.heightM}m`,
     landClassification: "irrigated_agricultural",
     soilClass: "Alluvial Loam (Hindon Basin)",
     circleRatePerHa: rate,
@@ -486,23 +504,23 @@ const GZB_PARCELS: BhuNakshaParcel[] = GZB_PARCELS_RAW.map((p, idx) => {
       },
     ],
     isAffected,
-    affectedAreaHa: isAffected ? p.area : 0,
-    affectedAreaPercentage: isAffected ? 100 : 0,
-    residualAreaHa: isAffected ? 0 : p.area,
-    acquisitionType: isAffected ? "full" : "buffer",
-    severanceClaimEligible: false,
+    affectedAreaHa,
+    affectedAreaPercentage,
+    residualAreaHa,
+    acquisitionType,
+    severanceClaimEligible,
     status: isAffected ? "notified_sec11" : "proposed",
     valuation: {
       baseMarketValue,
       ruralMultiplier: 1.5,
       multipliedValue,
       solatiumAmount,
-      assetsValue: 300000,
+      assetsValue: isAffected ? 300000 : 0,
       additionalInterest: Math.round(baseMarketValue * 0.12),
       totalCompensationPayable: totalCompensation,
     },
     coordinates: [p.lat, p.lng],
-    polygon: makePolygon(p.lat, p.lng),
+    polygon: makeIrregularPolygon(p.lat, p.lng, p.widthM, p.heightM),
     chauhaddi: {
       north: "National Highway / Arterial Road Boundary",
       south: "Locality Cadastral Boundary",
@@ -551,8 +569,8 @@ export const BHUNAKSHA_PROJECTS: BhuNakshaProject[] = [
     totalParcelsInVillageSheet: 18,
     totalAffectedParcels: 12,
     totalVillageAreaHa: 30.8,
-    totalAffectedAreaHa: 18.4,
-    totalUnaffectedAreaHa: 12.4,
+    totalAffectedAreaHa: 14.7,
+    totalUnaffectedAreaHa: 16.1,
     totalEstimatedCompensationLakhs: 3120.0,
     totalCompensationDisbursedLakhs: 980.0,
     currentWorkflowStageIndex: 1,
@@ -585,10 +603,10 @@ export const BHUNAKSHA_PROJECTS: BhuNakshaProject[] = [
       [28.690, 77.445],
     ],
     totalParcelsInVillageSheet: 20,
-    totalAffectedParcels: 18,
+    totalAffectedParcels: 16,
     totalVillageAreaHa: 32.4,
-    totalAffectedAreaHa: 26.8,
-    totalUnaffectedAreaHa: 5.6,
+    totalAffectedAreaHa: 20.8,
+    totalUnaffectedAreaHa: 11.6,
     totalEstimatedCompensationLakhs: 5240.0,
     totalCompensationDisbursedLakhs: 2150.0,
     currentWorkflowStageIndex: 2,
@@ -599,7 +617,6 @@ export const BHUNAKSHA_PROJECTS: BhuNakshaProject[] = [
   },
 ];
 
-// ------------------------------------------------------------
 // GeoJSON Export Generator
 // ------------------------------------------------------------
 export function generateBhuNakshaGeoJSON(project: BhuNakshaProject) {

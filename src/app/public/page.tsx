@@ -194,8 +194,8 @@ export default function CitizenPublicPortalPage() {
           <div className="flex items-center justify-between h-16">
             {/* Gov Identity */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#15803D] text-white shadow-sm font-bold text-sm">
-                <Landmark className="h-5 w-5" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-[#E5E0D6] shadow-xs overflow-hidden p-0.5 shrink-0">
+                <img src="/logo.png" alt="BhoomiDrishti Logo" className="h-full w-full object-contain" />
               </div>
               <div>
                 <div className="flex items-center gap-2">

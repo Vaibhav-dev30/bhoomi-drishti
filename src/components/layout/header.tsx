@@ -71,8 +71,11 @@ export function Header() {
 
       {/* Main Header Row */}
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 gap-3">
-        {/* Left: Search input */}
-        <div className="flex items-center gap-3 flex-1 max-w-md">
+        {/* Left: Mobile Brand & Search input */}
+        <div className="flex items-center gap-2.5 flex-1 max-w-md">
+          <Link href="/dashboard" className="flex md:hidden items-center gap-1.5 shrink-0">
+            <img src="/logo.png" alt="BhoomiDrishti" className="h-8 w-8 object-contain rounded-lg border border-[#E5E0D6] bg-white p-0.5" />
+          </Link>
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0284C7]" />
             <input

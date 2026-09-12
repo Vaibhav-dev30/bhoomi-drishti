@@ -423,8 +423,8 @@ export function SmsWhatsappPanel({
                     {/* WhatsApp Header */}
                     <div className="bg-[#075E54] text-white px-3 py-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#128C7E] text-white font-bold text-xs border border-white/20">
-                          <Building2 className="h-4 w-4" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white overflow-hidden border border-white/40 shrink-0 p-0.5 shadow-2xs">
+                          <img src="/logo.png" alt="BhoomiDrishti Gov" className="h-full w-full object-contain" />
                         </div>
                         <div>
                           <div className="flex items-center gap-1">

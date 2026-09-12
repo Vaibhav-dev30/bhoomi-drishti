@@ -47,6 +47,8 @@ import {
   Tag,
   Play,
   Activity,
+  BarChart3,
+  Zap,
 } from "lucide-react";
 import {
   BHUNAKSHA_PROJECTS,
@@ -62,6 +64,7 @@ import {
   ALL_DEMO_SPATIAL_PARCELS,
   runSpatialAnalysis,
   generateAlignmentBufferPolygon,
+  getShiftedCenterline,
   SpatialAnalysisResult,
   ProjectSpatialSummary,
   SpatialProjectEntity,
@@ -249,84 +252,122 @@ export function BhuNakshaMapViewer({
   const [architectureModalOpen, setArchitectureModalOpen] = useState<boolean>(false);
   const [copiedULPIN, setCopiedULPIN] = useState<boolean>(false);
   // ───── Core Spatial Analysis Layer State ─────
+  const [corridorWidth, setCorridorWidth] = useState<number>(60);
+  const [alignmentShift, setAlignmentShift] = useState<number>(0); // 0 = statutory, 25 = +25m shift
   const [spatialAnalysisRunning, setSpatialAnalysisRunning] = useState<boolean>(false);
   const [spatialAnalysisProgress, setSpatialAnalysisProgress] = useState<string>("");
   const [analysisCompletedNotice, setAnalysisCompletedNotice] = useState<boolean>(false);
+  const [scanningParcelIndex, setScanningParcelIndex] = useState<number>(-1);
+  const [spatialReportModalOpen, setSpatialReportModalOpen] = useState<boolean>(false);
+
+  // Dynamic Effective Centerline (accounting for Section 15 route-shift simulation)
+  const effectiveCenterline = useMemo(() => {
+    const raw = currentProject.corridorCenterline || [];
+    return alignmentShift !== 0 ? getShiftedCenterline(raw, alignmentShift) : raw;
+  }, [currentProject.corridorCenterline, alignmentShift]);
+
+  // Dynamic Corridor Buffer Polygon
+  const corridorBufferPolygon = useMemo(() => {
+    if (!effectiveCenterline || effectiveCenterline.length < 2) return [];
+    return generateAlignmentBufferPolygon(effectiveCenterline, corridorWidth);
+  }, [effectiveCenterline, corridorWidth]);
+
   const [spatialSummary, setSpatialSummary] = useState<ProjectSpatialSummary | null>(() => {
     const matchedProject = SPATIAL_PROJECTS.find(p => p.projectCode === currentProject.projectCode) || SPATIAL_PROJECTS[0];
-    const { summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS);
+    const { summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS, corridorWidth, effectiveCenterline);
     return summary;
   });
   const [spatialResultsMap, setSpatialResultsMap] = useState<Map<string, SpatialAnalysisResult>>(() => {
     const matchedProject = SPATIAL_PROJECTS.find(p => p.projectCode === currentProject.projectCode) || SPATIAL_PROJECTS[0];
-    const { results } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS);
+    const { results } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS, corridorWidth, effectiveCenterline);
     return new Map(results.map(r => [r.surveyNumber, r]));
   });
 
-  // Re-run spatial analysis dynamically whenever selected project changes
+  // Re-run spatial analysis dynamically whenever project, corridor width, or route shift changes
   useEffect(() => {
     const matchedProject = SPATIAL_PROJECTS.find(p => p.projectCode === currentProject.projectCode) || SPATIAL_PROJECTS[0];
-    const { results, summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS);
+    const { results, summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS, corridorWidth, effectiveCenterline);
     setSpatialResultsMap(new Map(results.map(r => [r.surveyNumber, r])));
     setSpatialSummary(summary);
     setSelectedParcel(null);
-  }, [currentProject.projectCode]);
+  }, [currentProject.projectCode, corridorWidth, effectiveCenterline]);
 
-  // Execute interactive 3-step spatial analysis pipeline
+  // Execute interactive 4-stage spatial analysis pipeline with progressive laser sweep
   const handleRunSpatialAnalysis = () => {
     setSpatialAnalysisRunning(true);
     setAnalysisCompletedNotice(false);
-    setSpatialAnalysisProgress("Analyzing project corridor (60m buffer)...");
+    setSpatialAnalysisProgress(`1/4: Generating ${corridorWidth}m Geodetic Right-of-Way Buffer Corridor...`);
+
+    let sweepIdx = 0;
+    const sweepTimer = setInterval(() => {
+      if (sweepIdx < authorizedParcels.length) {
+        setScanningParcelIndex(sweepIdx);
+        sweepIdx++;
+      } else {
+        clearInterval(sweepTimer);
+      }
+    }, 60);
 
     setTimeout(() => {
-      setSpatialAnalysisProgress("Checking parcel geometry intersections...");
+      setSpatialAnalysisProgress("2/4: Computing Sutherland-Hodgman & Ray-Casting Intersections...");
 
       setTimeout(() => {
-        setSpatialAnalysisProgress("Calculating affected areas & overlap percentages...");
+        setSpatialAnalysisProgress("3/4: Quantifying Overlap Acreage & RFCTLARR Sec 27 Severance...");
 
         setTimeout(() => {
-          const matchedProject = SPATIAL_PROJECTS.find(p => p.projectCode === currentProject.projectCode) || SPATIAL_PROJECTS[0];
-          const { results, summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS);
-          setSpatialResultsMap(new Map(results.map(r => [r.surveyNumber, r])));
-          setSpatialSummary(summary);
-          setSpatialAnalysisRunning(false);
-          setSpatialAnalysisProgress("");
-          setAnalysisCompletedNotice(true);
-          setTimeout(() => setAnalysisCompletedNotice(false), 4500);
-        }, 400);
-      }, 400);
-    }, 400);
+          setSpatialAnalysisProgress("4/4: Harmonizing Boundary Intersect with Bhulekh RoR Records...");
+
+          setTimeout(() => {
+            const matchedProject = SPATIAL_PROJECTS.find(p => p.projectCode === currentProject.projectCode) || SPATIAL_PROJECTS[0];
+            const { results, summary } = runSpatialAnalysis(matchedProject, ALL_DEMO_SPATIAL_PARCELS, corridorWidth, effectiveCenterline);
+            setSpatialResultsMap(new Map(results.map(r => [r.surveyNumber, r])));
+            setSpatialSummary(summary);
+            setSpatialAnalysisRunning(false);
+            setScanningParcelIndex(-1);
+            setSpatialAnalysisProgress("");
+            setAnalysisCompletedNotice(true);
+            setTimeout(() => setAnalysisCompletedNotice(false), 5000);
+          }, 300);
+        }, 300);
+      }, 300);
+    }, 300);
   };
 
-  // 60m Corridor Buffer Polygon (dynamically generated from alignment geometry)
-  const corridorBufferPolygon = useMemo(() => {
-    if (!currentProject.corridorCenterline) return [];
-    return generateAlignmentBufferPolygon(currentProject.corridorCenterline, currentProject.corridorWidthMeters || 60);
-  }, [currentProject.corridorCenterline, currentProject.corridorWidthMeters]);
+  // Dynamic filter counts strictly derived from active spatial results
+  const affectedCount = useMemo(() => {
+    let count = 0;
+    for (const p of authorizedParcels) {
+      if (spatialResultsMap.get(p.khasraNumber)?.isAffected) count++;
+    }
+    return count;
+  }, [authorizedParcels, spatialResultsMap]);
 
+  const bufferCount = authorizedParcels.length - affectedCount;
+
+  // Filtered visible parcels based on dynamic spatial results
+  const visibleParcels = useMemo(() => {
+    return authorizedParcels.filter((p) => {
+      const sRes = spatialResultsMap.get(p.khasraNumber);
+      const isAff = sRes ? sRes.isAffected : p.isAffected;
+      if (filterImpact === "affected") return isAff;
+      if (filterImpact === "unaffected") return !isAff;
+      return true;
+    });
+  }, [authorizedParcels, filterImpact, spatialResultsMap]);
 
   // Live Telemetry
   const [cursorPos, setCursorPos] = useState<{ lat: number; lng: number }>(() => ({
-    lat: authorizedParcels[0]?.coordinates[0] || (activeProjectId === "DL-GZB-002" ? 28.68 : 28.72),
-    lng: authorizedParcels[0]?.coordinates[1] || (activeProjectId === "DL-GZB-002" ? 77.44 : 77.14),
+    lat: authorizedParcels[0]?.coordinates[0] || (selectedProjectId === "DL-GZB-002" ? 28.67 : 28.72),
+    lng: authorizedParcels[0]?.coordinates[1] || (selectedProjectId === "DL-GZB-002" ? 77.41 : 77.14),
   }));
 
   // Camera coordinates
   const cameraConfig = useMemo(() => {
     if (selectedProjectId === "DL-GZB-002") {
-      return { center: [28.675, 77.418] as [number, number], zoom: 13 };
+      return { center: [28.670, 77.411] as [number, number], zoom: 13 };
     }
-    return { center: [28.724, 77.144] as [number, number], zoom: 14 };
+    return { center: [28.721, 77.142] as [number, number], zoom: 14 };
   }, [selectedProjectId]);
-
-  // Filtered parcels
-  const visibleParcels = useMemo(() => {
-    return authorizedParcels.filter((p) => {
-      if (filterImpact === "affected") return p.isAffected;
-      if (filterImpact === "unaffected") return !p.isAffected;
-      return true;
-    });
-  }, [authorizedParcels, filterImpact]);
 
   // Copy ULPIN helper
   const handleCopyULPIN = (ulpin: string) => {
@@ -335,11 +376,23 @@ export function BhuNakshaMapViewer({
     setTimeout(() => setCopiedULPIN(false), 2000);
   };
 
-  // Polygon Styles for BhuNaksha Cadastral parcels based on actual spatial intersection
-  const getParcelPolygonStyle = (parcel: BhuNakshaParcel) => {
+  // Polygon Styles for Cadastral parcels based on actual spatial intersection
+  const getParcelPolygonStyle = (parcel: BhuNakshaParcel, index: number) => {
     const isSelected = selectedParcel?.id === parcel.id;
+    const isScanning = scanningParcelIndex === index;
     const spatialResult = spatialResultsMap.get(parcel.khasraNumber);
     const isAffected = spatialResult ? spatialResult.isAffected : parcel.isAffected;
+    const isSeverance = spatialResult?.severanceClaimEligible;
+
+    if (isScanning) {
+      return {
+        color: "#22C55E",
+        weight: 3.5,
+        dashArray: "3, 3",
+        fillColor: "#4ADE80",
+        fillOpacity: 0.70,
+      };
+    }
 
     if (isSelected) {
       return {
@@ -351,11 +404,19 @@ export function BhuNakshaMapViewer({
     }
 
     if (isAffected) {
+      if (isSeverance) {
+        return {
+          color: "#DC2626", // Red for Section 27 severance
+          weight: 2.5,
+          fillColor: "#EF4444",
+          fillOpacity: 0.40,
+        };
+      }
       return {
         color: "#D97706", // Subtle amber/orange outline
         weight: 2.2,
         fillColor: "#F59E0B",
-        fillOpacity: 0.32,
+        fillOpacity: 0.35,
       };
     }
 
@@ -368,9 +429,108 @@ export function BhuNakshaMapViewer({
     };
   };
 
+  // Export Spatial Analysis GeoJSON
+  const handleDownloadSpatialGeoJSON = () => {
+    const features = authorizedParcels.map((p) => {
+      const sRes = spatialResultsMap.get(p.khasraNumber);
+      return {
+        type: "Feature",
+        id: p.ulpin,
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              ...p.polygon.map(([lat, lng]) => [lng, lat]),
+              [p.polygon[0][1], p.polygon[0][0]],
+            ],
+          ],
+        },
+        properties: {
+          khasraNumber: p.khasraNumber,
+          surveyNumber: p.surveyNumber,
+          village: p.village,
+          tehsil: p.tehsil,
+          district: p.district,
+          totalAreaHa: p.gisCalculatedAreaHa,
+          isAffected: sRes?.isAffected ?? p.isAffected,
+          affectedAreaHa: sRes?.affectedAreaHa ?? p.affectedAreaHa,
+          affectedPercentage: sRes?.affectedPercentage ?? p.affectedAreaPercentage,
+          residualAreaHa: sRes?.residualAreaHa ?? p.residualAreaHa,
+          acquisitionType: sRes?.acquisitionType ?? p.acquisitionType,
+          severanceEligible: sRes?.severanceClaimEligible ?? false,
+          rorStatus: sRes?.rorStatus ?? "Verified",
+          estimatedCompensationINR: sRes?.estimatedCompensationINR ?? p.valuation.totalCompensationPayable,
+        },
+      };
+    });
+
+    const geojson = {
+      type: "FeatureCollection",
+      name: `BhoomiDrishti_Spatial_Analysis_${currentProject.projectCode}`,
+      crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+      features,
+    };
+
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/geo+json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `spatial_analysis_${currentProject.projectCode}_${corridorWidth}m.geojson`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export Spatial CSV Register
+  const handleDownloadSpatialCSV = () => {
+    const headers = [
+      "Khasra No",
+      "Survey No",
+      "Village",
+      "Tehsil",
+      "District",
+      "Total Area (Ha)",
+      "Corridor Overlap %",
+      "Acquired Area (Ha)",
+      "Residual Area (Ha)",
+      "Acquisition Type",
+      "Sec 27 Severance Eligible",
+      "RoR Title Status",
+      "Circle Rate (INR/Ha)",
+      "Est Compensation Award (INR)",
+    ];
+
+    const rows = authorizedParcels.map((p) => {
+      const s = spatialResultsMap.get(p.khasraNumber);
+      return [
+        p.khasraNumber,
+        p.surveyNumber,
+        p.village,
+        p.tehsil,
+        p.district,
+        p.gisCalculatedAreaHa,
+        s?.affectedPercentage ?? (p.isAffected ? 100 : 0),
+        s?.affectedAreaHa ?? p.affectedAreaHa,
+        s?.residualAreaHa ?? p.residualAreaHa,
+        s?.acquisitionType ?? p.acquisitionType,
+        s?.severanceClaimEligible ? "YES" : "NO",
+        s?.rorStatus ?? "Verified",
+        p.circleRatePerHa,
+        s?.estimatedCompensationINR ?? p.valuation.totalCompensationPayable,
+      ].join(",");
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const a = document.createElement("a");
+    a.href = encodedUri;
+    a.download = `spatial_register_${currentProject.projectCode}_${corridorWidth}m.csv`;
+    a.click();
+  };
+
   // Active GeoJSON preview for API Inspector
   const activeGeoJsonPreview = useMemo(() => {
     const p = selectedParcel || currentProject.parcels[0];
+    const sRes = spatialResultsMap.get(p.khasraNumber);
     return {
       type: "Feature",
       id: p.ulpin,
@@ -390,31 +550,34 @@ export function BhuNakshaMapViewer({
         sheetNumber: p.sheetNumber,
         gisAreaHa: p.gisCalculatedAreaHa,
         recordedRoRAreaHa: p.recordedRoRAreaHa,
-        isAffected: p.isAffected,
-        affectedAreaHa: p.affectedAreaHa,
-        acquisitionType: p.acquisitionType,
+        isAffected: sRes?.isAffected ?? p.isAffected,
+        affectedAreaHa: sRes?.affectedAreaHa ?? p.affectedAreaHa,
+        affectedPercentage: sRes?.affectedPercentage ?? p.affectedAreaPercentage,
+        acquisitionType: sRes?.acquisitionType ?? p.acquisitionType,
+        severanceClaimEligible: sRes?.severanceClaimEligible ?? false,
         owners: p.owners.map((o) => ({
           name: o.name,
           share: `${o.sharePercentage}%`,
         })),
         circleRateINR: p.circleRatePerHa,
-        totalCompensationPayableINR: p.valuation.totalCompensationPayable,
+        totalCompensationPayableINR: sRes?.estimatedCompensationINR ?? p.valuation.totalCompensationPayable,
       },
     };
-  }, [selectedParcel, currentProject]);
+  }, [selectedParcel, currentProject, spatialResultsMap]);
 
   return (
     <div className="relative w-full h-[calc(100vh-115px)] min-h-[580px] flex-1 flex flex-col bg-[#FAF8F5] overflow-hidden rounded-3xl border border-[#E5E0D6] shadow-sm">
       {/* ───── STREAMLINED 1-ROW GIS TOOLBAR (NO DUPLICATE HEADERS) ───── */}
       {!zenMode && (
-        <div className="z-10 bg-white/95 backdrop-blur-md border-b border-[#E5E0D6] px-3.5 py-2 shadow-xs shrink-0">
-          <div className="flex flex-wrap items-center justify-between gap-2.5">
-            {/* Left: Base Map Switcher & Corridor Toggle */}
-            <div className="flex items-center gap-2">
+        <div className="z-10 bg-white/95 backdrop-blur-md border-b border-[#E5E0D6] px-3 py-1.5 shadow-xs shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Left: Base Map Switcher, Buffer Width, and Corridor Controls */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {/* Base Map Switcher */}
               <div className="flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-xs font-bold">
                 <button
                   onClick={() => setMapMode("cadastralSheet")}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
                     mapMode === "cadastralSheet"
                       ? "bg-white text-[#15803D] shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
@@ -425,7 +588,7 @@ export function BhuNakshaMapViewer({
                 </button>
                 <button
                   onClick={() => setMapMode("hybrid")}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
                     mapMode === "hybrid"
                       ? "bg-white text-[#0284C7] shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
@@ -436,7 +599,7 @@ export function BhuNakshaMapViewer({
                 </button>
                 <button
                   onClick={() => setMapMode("osm")}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
                     mapMode === "osm"
                       ? "bg-white text-slate-900 shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
@@ -447,21 +610,57 @@ export function BhuNakshaMapViewer({
                 </button>
               </div>
 
-              {/* Corridor Toggle */}
+              {/* Dynamic RoW Buffer Width Selector */}
+              <div className="flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-xs font-bold">
+                <span className="text-[10px] uppercase font-mono text-slate-400 px-1.5 flex items-center gap-0.5">
+                  <Ruler className="h-2.5 w-2.5" />
+                  <span>Buffer:</span>
+                </span>
+                {[30, 60, 90, 120].map((w) => (
+                  <button
+                    key={w}
+                    onClick={() => setCorridorWidth(w)}
+                    className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer font-mono text-xs ${
+                      corridorWidth === w
+                        ? "bg-[#EA580C] text-white shadow-xs font-black"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                    title={`Set Corridor Right-of-Way Buffer to ${w}m`}
+                  >
+                    {w}m{w === 60 ? "★" : ""}
+                  </button>
+                ))}
+              </div>
+
+              {/* Section 15 Alignment Route Shift Simulation */}
               <button
-                onClick={() => setShowCorridor(!showCorridor)}
-                className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
-                  showCorridor
-                    ? "bg-red-50 text-red-700 border-red-200"
+                onClick={() => setAlignmentShift((prev) => (prev === 0 ? 25 : 0))}
+                className={`px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all cursor-pointer ${
+                  alignmentShift !== 0
+                    ? "bg-purple-100 text-purple-900 border-purple-300 font-black shadow-xs"
                     : "bg-white text-slate-500 border-[#E5E0D6] hover:text-slate-800"
                 }`}
-                title="Toggle 60m Highway Corridor Right-of-Way"
+                title="Simulate Section 15 Public Objection Alignment Shift (+25m lateral offset) to evaluate parcel preservation"
               >
-                <span className={`h-2 w-2 rounded-full ${showCorridor ? "bg-red-600 animate-pulse" : "bg-slate-300"}`} />
-                <span>60m Corridor</span>
+                <Zap className="h-3 w-3 text-purple-600" />
+                <span>{alignmentShift !== 0 ? "Shifted (+25m Alt)" : "Sec 15 Shift"}</span>
               </button>
 
-              {/* Parcel Filter Pills */}
+              {/* Corridor Overlay Toggle */}
+              <button
+                onClick={() => setShowCorridor(!showCorridor)}
+                className={`px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all cursor-pointer ${
+                  showCorridor
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-white text-slate-400 border-[#E5E0D6] hover:text-slate-700"
+                }`}
+                title="Toggle Corridor Right-of-Way Overlay"
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${showCorridor ? "bg-red-600 animate-pulse" : "bg-slate-300"}`} />
+                <span>{corridorWidth}m RoW</span>
+              </button>
+
+              {/* Dynamic Parcel Filter Pills (Synchronized with Spatial Engine) */}
               <div className="hidden sm:flex items-center bg-[#FAF8F5] p-0.5 rounded-xl border border-[#E5E0D6] text-[11px] font-bold">
                 <button
                   onClick={() => setFilterImpact("all")}
@@ -469,7 +668,7 @@ export function BhuNakshaMapViewer({
                     filterImpact === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  All ({currentProject.parcels.length})
+                  All ({authorizedParcels.length})
                 </button>
                 <button
                   onClick={() => setFilterImpact("affected")}
@@ -477,7 +676,7 @@ export function BhuNakshaMapViewer({
                     filterImpact === "affected" ? "bg-red-500 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  Affected ({currentProject.totalAffectedParcels})
+                  Affected ({affectedCount})
                 </button>
                 <button
                   onClick={() => setFilterImpact("unaffected")}
@@ -485,14 +684,14 @@ export function BhuNakshaMapViewer({
                     filterImpact === "unaffected" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  Buffer ({currentProject.parcels.length - currentProject.totalAffectedParcels})
+                  Buffer ({bufferCount})
                 </button>
               </div>
             </div>
 
-            {/* Right: GIS Toggles (Labels, Popups, Zen Mode, API) */}
+            {/* Right: GIS Toggles, Spatial Report, API Drawer & Run Analysis */}
             <div className="flex items-center gap-1.5">
-              {/* Labels Toggle */}
+              {/* Plot Numbers Toggle */}
               <button
                 onClick={() => setShowKhasraLabels(!showKhasraLabels)}
                 className={`px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
@@ -514,11 +713,21 @@ export function BhuNakshaMapViewer({
                     ? "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]"
                     : "bg-white text-slate-400 border-[#E5E0D6]"
                 }`}
-                title={showTooltips ? "Hover tooltips enabled" : "Hover tooltips disabled for clean map inspection"}
+                title={showTooltips ? "Hover tooltips enabled" : "Hover tooltips disabled"}
               >
                 <MessageSquare className="h-3 w-3" />
                 <span className="hidden md:inline">Popups</span>
                 <span className="text-[10px] font-mono">{showTooltips ? "ON" : "OFF"}</span>
+              </button>
+
+              {/* Comprehensive Spatial Report Modal Button */}
+              <button
+                onClick={() => setSpatialReportModalOpen(true)}
+                className="px-2 py-1 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
+                title="View Full Spatial Intersection Dossier and Breakdown"
+              >
+                <BarChart3 className="h-3 w-3 text-amber-700" />
+                <span className="hidden lg:inline">Report</span>
               </button>
 
               {/* Zen / Full Map Mode Toggle */}
@@ -528,7 +737,7 @@ export function BhuNakshaMapViewer({
                 title="Zen Focus Mode: Hide all overlays to inspect pure cadastral map"
               >
                 <Maximize2 className="h-3 w-3 text-slate-500" />
-                <span className="hidden lg:inline">Zen View</span>
+                <span className="hidden xl:inline">Zen View</span>
               </button>
 
               {/* Raw API Drawer Button */}
@@ -538,7 +747,7 @@ export function BhuNakshaMapViewer({
                 title="Inspect NIC BhuNaksha WFS 2.0 GeoJSON Endpoint"
               >
                 <Code2 className="h-3 w-3" />
-                <span className="hidden lg:inline">API</span>
+                <span className="hidden xl:inline">API</span>
               </button>
 
               {/* Run Spatial Analysis Button */}
@@ -546,7 +755,7 @@ export function BhuNakshaMapViewer({
                 onClick={handleRunSpatialAnalysis}
                 disabled={spatialAnalysisRunning}
                 className="px-3 py-1 rounded-xl text-xs font-bold bg-[#15803D] hover:bg-[#166534] text-white shadow-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
-                title="Execute geometric intersection pipeline against 60m project corridor"
+                title="Execute geometric intersection pipeline against project corridor buffer"
               >
                 {spatialAnalysisRunning ? (
                   <>
@@ -610,32 +819,32 @@ export function BhuNakshaMapViewer({
             />
           )}
 
-          {/* 60m Highway Corridor Right-of-Way Buffer & Centerline */}
-          {showCorridor && currentProject.corridorCenterline && (
+          {/* Highway Corridor Right-of-Way Buffer & Centerline */}
+          {showCorridor && effectiveCenterline.length > 0 && (
             <>
-              {/* Generated 60m Corridor Polygon Buffer (Subtle transparent overlay) */}
+              {/* Generated Corridor Polygon Buffer */}
               {corridorBufferPolygon.length > 0 && (
                 <Polygon
                   positions={corridorBufferPolygon}
                   pathOptions={{
-                    color: "#EA580C",
-                    weight: 1.5,
+                    color: alignmentShift !== 0 ? "#7C3AED" : "#EA580C",
+                    weight: 2,
                     dashArray: "4, 4",
-                    fillColor: "#FB923C",
-                    fillOpacity: 0.14,
+                    fillColor: alignmentShift !== 0 ? "#A855F7" : "#FB923C",
+                    fillOpacity: 0.18,
                   }}
                 />
               )}
               {/* Project Alignment: Clear solid dark / high-contrast line */}
               <Polyline
-                positions={currentProject.corridorCenterline}
+                positions={effectiveCenterline}
                 pathOptions={{
-                  color: "#0F172A",
+                  color: alignmentShift !== 0 ? "#581C87" : "#0F172A",
                   weight: 3.5,
                 }}
               />
               <Polyline
-                positions={currentProject.corridorCenterline}
+                positions={effectiveCenterline}
                 pathOptions={{
                   color: "#FFFFFF",
                   weight: 1.5,
@@ -646,10 +855,12 @@ export function BhuNakshaMapViewer({
           )}
 
           {/* BhuNaksha Cadastral Khasra Vector Polygons */}
-          {visibleParcels.map((parcel) => {
+          {visibleParcels.map((parcel, index) => {
             const isSelected = selectedParcel?.id === parcel.id;
             const enriched = getParcel12StageInfo(parcel);
-            const style = getParcelPolygonStyle(parcel);
+            const style = getParcelPolygonStyle(parcel, index);
+            const sRes = spatialResultsMap.get(parcel.khasraNumber);
+            const isAff = sRes ? sRes.isAffected : parcel.isAffected;
 
             return (
               <React.Fragment key={parcel.id}>
@@ -663,24 +874,24 @@ export function BhuNakshaMapViewer({
                     },
                   }}
                 >
-                  {/* Subtle, non-sticky, clean 1-line tooltip ONLY when enabled */}
+                  {/* Tooltip on hover */}
                   {showTooltips && (
                     <Tooltip direction="top" offset={[0, -8]} opacity={0.92}>
                       <span className="font-mono text-xs font-semibold text-slate-900">
-                        Khasra {parcel.khasraNumber} &bull; {parcel.gisCalculatedAreaHa} Ha &bull; {parcel.isAffected ? "Affected" : "Buffer"}
+                        Khasra {parcel.khasraNumber} &bull; {parcel.gisCalculatedAreaHa} Ha &bull; {isAff ? `Affected (${sRes?.affectedPercentage ?? 100}%)` : "Buffer (0%)"}
                       </span>
                     </Tooltip>
                   )}
                 </Polygon>
 
-                {/* Minimalist Centroid Plot Number Label */}
+                {/* Centroid Plot Number Label */}
                 {showKhasraLabels && (
                   <Marker
                     position={parcel.coordinates}
                     icon={createKhasraBadgeIcon(
                       parcel.khasraNumber,
                       isSelected,
-                      parcel.isAffected,
+                      isAff,
                       enriched.stageIndex
                     )}
                   />
@@ -703,24 +914,31 @@ export function BhuNakshaMapViewer({
 
         {/* ───── SLEEK MINIMAL TOP-LEFT BADGE (DOES NOT COVER PARCELS) ───── */}
         {!zenMode && (
-          <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-col gap-2">
+          <div className="absolute top-3 left-3 z-10 pointer-events-none flex flex-col gap-2 max-w-md">
             <div className="bg-white/90 backdrop-blur-md border border-[#E5E0D6] rounded-xl px-2.5 py-1 shadow-xs pointer-events-auto flex items-center gap-2 text-[11px] font-semibold text-slate-700">
               <span className="h-2 w-2 rounded-full bg-[#15803D]" />
               <span className="font-bold text-slate-900">{currentProject.village}</span>
               <span className="text-slate-400">&bull;</span>
               <span className="font-mono text-slate-600">{currentProject.sajraSheetNumber}</span>
               <span className="text-slate-400">&bull;</span>
-              <span className="text-red-700 font-bold">{spatialSummary ? `${spatialSummary.affectedParcelsCount} Affected` : `${currentProject.totalAffectedParcels} Affected`}</span>
+              <span className="text-red-700 font-bold">{spatialSummary ? `${spatialSummary.affectedParcelsCount} Affected` : `${affectedCount} Affected`}</span>
+              <span className="text-slate-400">&bull;</span>
+              <span className="font-mono text-[#EA580C]">{corridorWidth}m RoW</span>
+              {alignmentShift !== 0 && (
+                <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 rounded">
+                  +25m Shift
+                </span>
+              )}
             </div>
 
             {/* Spatial Analysis In-Progress HUD */}
             {spatialAnalysisRunning && (
-              <div className="bg-slate-900/90 text-white backdrop-blur-md border border-slate-700 rounded-xl px-3 py-2 shadow-lg pointer-events-auto flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-2">
+              <div className="bg-slate-900/95 text-white backdrop-blur-md border border-slate-700 rounded-2xl px-3.5 py-2.5 shadow-xl pointer-events-auto flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-2">
                 <RefreshCw className="h-4 w-4 text-[#4ADE80] animate-spin shrink-0" />
                 <div>
                   <div className="font-bold text-slate-100 flex items-center gap-1.5">
-                    <span>Spatial Geometric Engine</span>
-                    <span className="text-[10px] text-[#4ADE80] font-mono font-bold bg-[#15803D]/60 px-1.5 py-0.2 rounded">LIVE</span>
+                    <span>Spatial Geometric Intersection Engine</span>
+                    <span className="text-[10px] text-[#4ADE80] font-mono font-bold bg-[#15803D]/60 px-1.5 py-0.5 rounded">SCANNING</span>
                   </div>
                   <div className="text-[11px] text-slate-300 font-mono mt-0.5">{spatialAnalysisProgress}</div>
                 </div>
@@ -729,17 +947,25 @@ export function BhuNakshaMapViewer({
 
             {/* Spatial Analysis Complete Notice */}
             {analysisCompletedNotice && spatialSummary && (
-              <div className="bg-white/95 text-slate-900 backdrop-blur-md border border-[#15803D]/40 rounded-xl px-3 py-2 shadow-xl pointer-events-auto text-xs font-semibold animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-1.5 text-[#15803D] font-bold text-xs">
-                  <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
-                  <span>Spatial Intersection Complete</span>
+              <div className="bg-white/95 text-slate-900 backdrop-blur-md border border-[#15803D]/40 rounded-2xl p-3 shadow-xl pointer-events-auto text-xs font-semibold animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[#15803D] font-bold text-xs">
+                    <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
+                    <span>Spatial Intersection Complete</span>
+                  </div>
+                  <button
+                    onClick={() => setSpatialReportModalOpen(true)}
+                    className="text-[11px] font-bold text-[#0284C7] hover:underline cursor-pointer"
+                  >
+                    View Dossier &rarr;
+                  </button>
                 </div>
                 <div className="text-[11px] text-slate-600 font-mono mt-1 flex flex-wrap items-center gap-2">
                   <span><strong>{spatialSummary.affectedParcelsCount}</strong> of {spatialSummary.totalParcelsCount} Parcels Affected</span>
                   <span>&bull;</span>
-                  <span><strong>{spatialSummary.affectedLandHa}</strong> Ha Acquisition Area</span>
+                  <span><strong>{spatialSummary.affectedLandHa}</strong> Ha Acquired</span>
                   <span>&bull;</span>
-                  <span>Villages: {spatialSummary.affectedVillages.join(", ")}</span>
+                  <span>₹<strong>{spatialSummary.totalEstimatedCompensationLakhs}</strong> L Est. Award</span>
                 </div>
               </div>
             )}
@@ -1313,6 +1539,228 @@ export function BhuNakshaMapViewer({
                 className="text-xs bg-slate-900 text-white font-bold"
               >
                 Close Inspector
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ───── COMPREHENSIVE SPATIAL ANALYSIS REPORT MODAL ───── */}
+        {spatialReportModalOpen && spatialSummary && (
+          <div className="absolute inset-x-3 bottom-3 top-12 z-40 bg-white/98 backdrop-blur-lg border border-[#E5E0D6] rounded-3xl shadow-2xl flex flex-col overflow-hidden max-w-5xl mx-auto animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-[#E5E0D6] bg-[#FAF8F5] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-800">
+                  <BarChart3 className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                    <span>Spatial Intersection & Cadastral Impact Report</span>
+                    <Badge className="bg-[#15803D] text-white text-[10px]">
+                      {corridorWidth}m RoW Corridor
+                    </Badge>
+                    {alignmentShift !== 0 && (
+                      <Badge className="bg-purple-600 text-white text-[10px]">
+                        +25m Shifted Route
+                      </Badge>
+                    )}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-mono">
+                    {currentProject.name} &bull; {currentProject.district} ({currentProject.state})
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadSpatialGeoJSON}
+                  className="h-8 text-xs font-bold gap-1 border-slate-300 cursor-pointer"
+                  title="Download GeoJSON FeatureCollection"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>GeoJSON</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadSpatialCSV}
+                  className="h-8 text-xs font-bold gap-1 border-slate-300 cursor-pointer"
+                  title="Download CSV Register"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>CSV</span>
+                </Button>
+                <button
+                  onClick={() => setSpatialReportModalOpen(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-[#F2EFE8] transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Metric Cards Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-4 bg-white border-b border-[#E5E0D6]">
+              <div className="bg-[#FAF8F5] p-3 rounded-2xl border border-[#E5E0D6]">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Parcels</span>
+                <span className="text-xl font-extrabold font-mono text-slate-900 block mt-0.5">
+                  {spatialSummary.totalParcelsCount}
+                </span>
+                <span className="text-[10px] text-slate-500">Cadastral Sajra</span>
+              </div>
+
+              <div className="bg-amber-50/80 p-3 rounded-2xl border border-amber-200">
+                <span className="text-[10px] uppercase font-bold text-amber-700 block">Affected Parcels</span>
+                <span className="text-xl font-extrabold font-mono text-amber-900 block mt-0.5">
+                  {spatialSummary.affectedParcelsCount}
+                </span>
+                <span className="text-[10px] text-amber-800">
+                  {((spatialSummary.affectedParcelsCount / spatialSummary.totalParcelsCount) * 100).toFixed(0)}% of sheet
+                </span>
+              </div>
+
+              <div className="bg-white p-3 rounded-2xl border border-[#E5E0D6]">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Full / Partial</span>
+                <span className="text-xl font-extrabold font-mono text-slate-900 block mt-0.5">
+                  {spatialSummary.fullAcquisitionsCount} / {spatialSummary.partialAcquisitionsCount}
+                </span>
+                <span className="text-[10px] text-slate-500">Acquisition Type</span>
+              </div>
+
+              <div className="bg-red-50/80 p-3 rounded-2xl border border-red-200">
+                <span className="text-[10px] uppercase font-bold text-red-700 block">Sec 27 Severance</span>
+                <span className="text-xl font-extrabold font-mono text-red-900 block mt-0.5">
+                  {spatialSummary.severanceParcelsCount}
+                </span>
+                <span className="text-[10px] text-red-700">Residual &lt; 0.25 Ha</span>
+              </div>
+
+              <div className="bg-emerald-50/80 p-3 rounded-2xl border border-emerald-200">
+                <span className="text-[10px] uppercase font-bold text-emerald-700 block">Acquired Land</span>
+                <span className="text-xl font-extrabold font-mono text-emerald-900 block mt-0.5">
+                  {spatialSummary.affectedLandHa} <span className="text-xs font-normal">Ha</span>
+                </span>
+                <span className="text-[10px] text-emerald-800">of {spatialSummary.totalLandRequirementHa} Ha</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-2xl border border-[#E5E0D6]">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Est. Award Budget</span>
+                <span className="text-xl font-extrabold font-mono text-[#15803D] block mt-0.5">
+                  ₹{spatialSummary.totalEstimatedCompensationLakhs} <span className="text-xs font-normal">L</span>
+                </span>
+                <span className="text-[10px] text-slate-500">RFCTLARR Award</span>
+              </div>
+            </div>
+
+            {/* Scrollable Parcel Breakdown Table */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span>Plot-by-Plot Cadastral Spatial Intersect Register:</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  Analysis Timestamp: {new Date(spatialSummary.analysisTimestamp).toLocaleTimeString()}
+                </span>
+              </div>
+
+              <div className="border border-[#E5E0D6] rounded-2xl overflow-hidden bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#FAF8F5] border-b border-[#E5E0D6] text-[10px] uppercase font-extrabold text-slate-500">
+                      <th className="py-2.5 px-3">Khasra</th>
+                      <th className="py-2.5 px-3">Village</th>
+                      <th className="py-2.5 px-3">Total Ha</th>
+                      <th className="py-2.5 px-3">Overlap %</th>
+                      <th className="py-2.5 px-3">Acquired Ha</th>
+                      <th className="py-2.5 px-3">Residual Ha</th>
+                      <th className="py-2.5 px-3">Type</th>
+                      <th className="py-2.5 px-3">RoR Title</th>
+                      <th className="py-2.5 px-3 text-right">Est. Award (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E0D6] font-mono text-[11px]">
+                    {authorizedParcels.map((p) => {
+                      const s = spatialResultsMap.get(p.khasraNumber);
+                      const isAff = s?.isAffected ?? p.isAffected;
+                      const isSev = s?.severanceClaimEligible;
+
+                      return (
+                        <tr
+                          key={p.id}
+                          className={`hover:bg-[#FAF8F5] transition-colors cursor-pointer ${
+                            selectedParcel?.id === p.id ? "bg-sky-50/70" : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedParcel(p);
+                            setSpatialReportModalOpen(false);
+                            setInspectorOpen(true);
+                          }}
+                        >
+                          <td className="py-2 px-3 font-bold text-slate-900">
+                            {p.khasraNumber}
+                          </td>
+                          <td className="py-2 px-3 font-sans text-slate-700">
+                            {p.village}
+                          </td>
+                          <td className="py-2 px-3 text-slate-800">
+                            {p.gisCalculatedAreaHa}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span className={`font-bold ${isAff ? "text-amber-700" : "text-slate-400"}`}>
+                              {s?.affectedPercentage ?? 0}%
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 font-bold text-slate-900">
+                            {s?.affectedAreaHa ?? 0}
+                          </td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {s?.residualAreaHa ?? p.gisCalculatedAreaHa}
+                          </td>
+                          <td className="py-2 px-3 font-sans">
+                            {isAff ? (
+                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                                isSev
+                                  ? "bg-red-100 text-red-800"
+                                  : s?.acquisitionType === "full"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-orange-100 text-orange-800"
+                              }`}>
+                                {isSev ? "SEVERANCE" : s?.acquisitionType?.toUpperCase()}
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                                BUFFER
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-3 font-sans">
+                            <span className={`text-[10px] font-bold ${
+                              (s?.rorStatus ?? "Verified") === "Verified" ? "text-[#15803D]" : "text-amber-700"
+                            }`}>
+                              {s?.rorStatus ?? "Verified"}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-right font-bold text-[#15803D]">
+                            {isAff ? `₹${((s?.estimatedCompensationINR ?? 0) / 100000).toFixed(2)} L` : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 border-t border-[#E5E0D6] bg-[#FAF8F5] flex items-center justify-between">
+              <div className="text-[11px] text-slate-500 font-medium">
+                Click any row in the table to fly to and inspect the parcel directly on the cadastral map.
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setSpatialReportModalOpen(false)}
+                className="text-xs bg-slate-900 text-white font-bold rounded-xl"
+              >
+                Close Report
               </Button>
             </div>
           </div>

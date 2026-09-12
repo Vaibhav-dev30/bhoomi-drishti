@@ -94,8 +94,8 @@ function MapPageContent() {
       {/* ───── Sleek Compact Header Bar with Project Switcher ───── */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white border border-[#E5E0D6] shadow-xs shrink-0">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#DCFCE7] text-[#15803D]">
-            <Compass className="h-4 w-4" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-[#E5E0D6] shadow-2xs overflow-hidden p-0.5 shrink-0">
+            <img src="/logo.png" alt="BhoomiDrishti" className="h-full w-full object-contain" />
           </div>
           <div className="flex items-center gap-1.5 text-xs">
             <span className="font-extrabold text-slate-900">Project Area:</span>

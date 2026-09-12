@@ -111,7 +111,7 @@ export function StatutoryAwardModal({
           {/* Government Formal Header */}
           <div className="text-center border-b-2 border-slate-900 pb-4 space-y-1">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Landmark className="h-7 w-7 text-slate-900" />
+              <img src="/logo.png" alt="BhoomiDrishti Official Insignia" className="h-14 w-14 object-contain" />
             </div>
             <h2 className="text-sm font-bold tracking-wider uppercase">
               Government of India · Ministry of Rural Development

@@ -199,9 +199,9 @@ export default function LoginPage() {
             Return to Public Portal
           </Link>
 
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-[#15803D] text-white shadow-sm flex items-center justify-center">
-              <Compass className="w-5 h-5 animate-spin-slow" />
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-[#E5E0D6] shadow-sm flex items-center justify-center overflow-hidden p-1 shrink-0">
+              <img src="/logo.png" alt="BhoomiDrishti Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">

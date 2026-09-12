@@ -36,7 +36,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#FAF8F5]" suppressHydrationWarning>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-[#15803D] border-t-transparent rounded-full animate-spin" />
+          <div className="w-14 h-14 rounded-2xl bg-white border border-[#E5E0D6] shadow-sm flex items-center justify-center overflow-hidden p-1.5 animate-pulse">
+            <img src="/logo.png" alt="BhoomiDrishti Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="w-6 h-6 border-2 border-[#15803D] border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-semibold text-slate-500">Checking authorization...</span>
         </div>
       </div>

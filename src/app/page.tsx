@@ -118,8 +118,8 @@ export default function LandingPage() {
             onClick={scrollToTop}
             className="flex items-center gap-3 text-left group cursor-pointer focus:outline-hidden"
           >
-            <div className="w-9 h-9 rounded-lg bg-[#0F2942] text-white flex items-center justify-center font-serif text-lg font-bold shadow-xs">
-              <Compass className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center overflow-hidden p-0.5 shrink-0">
+              <img src="/logo.png" alt="BhoomiDrishti Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="font-bold text-lg text-slate-900 tracking-tight leading-none group-hover:text-[#0F2942] transition-colors">
@@ -994,9 +994,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Column 1: Brand & Ministry Details */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/10 text-emerald-400 flex items-center justify-center font-bold">
-                  <Compass className="w-4 h-4" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white p-0.5 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+                  <img src="/logo.png" alt="BhoomiDrishti Logo" className="w-full h-full object-contain" />
                 </div>
                 <div className="font-bold text-white text-base tracking-tight leading-none">
                   BhoomiDrishti

@@ -146,8 +146,8 @@ export function Sidebar() {
       {/* ───── 1. BRAND HEADER ───── */}
       <div className="flex h-14 items-center justify-between border-b border-[#E5E0D6] px-3 bg-white shrink-0">
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#DCFCE7] border border-[#BBF7D0] text-[#15803D] font-bold shadow-xs">
-            <Compass className="h-5 w-5" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-[#E5E0D6] shadow-xs overflow-hidden p-0.5">
+            <img src="/logo.png" alt="BhoomiDrishti Logo" className="h-full w-full object-contain" />
           </div>
           {expanded && (
             <div className="flex flex-col min-w-0 animate-in fade-in duration-200">

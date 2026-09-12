@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   description:
     "End-to-End Digital Monitoring, RFCTLARR Act 2013 Statutory Compliance, GIS Spatial Visualizer, and Decision Support Platform.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

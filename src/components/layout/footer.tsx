@@ -6,15 +6,18 @@ export function Footer() {
     <footer className="mt-auto border-t border-[#E5E0D6] bg-[#F5F2EB] text-xs text-slate-500 py-6 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left: Official compliance notes */}
-        <div className="flex flex-col gap-1 text-center md:text-left">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-800 font-semibold">
-            <span>BhoomiDrishti — National Land Acquisition & Management System</span>
-            <span className="text-slate-400">•</span>
-            <span className="text-[#0284C7] font-bold">भूमि दृष्टि</span>
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="BhoomiDrishti Logo" className="h-10 w-10 object-contain rounded-xl bg-white border border-[#E5E0D6] p-0.5 shrink-0 shadow-2xs" />
+          <div className="flex flex-col gap-1 text-center md:text-left">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-800 font-semibold">
+              <span>BhoomiDrishti — National Land Acquisition & Management System</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-[#0284C7] font-bold">भूमि दृष्टि</span>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Designed in compliance with the RFCTLARR Act 2013, Guidelines for Indian Government Websites (GIGW 3.0), and STQC / CERT-In security standards.
+            </p>
           </div>
-          <p className="text-[11px] text-slate-500">
-            Designed in compliance with the RFCTLARR Act 2013, Guidelines for Indian Government Websites (GIGW 3.0), and STQC / CERT-In security standards.
-          </p>
         </div>
 
         {/* Right: Badges & Sovereign Cloud details */}
